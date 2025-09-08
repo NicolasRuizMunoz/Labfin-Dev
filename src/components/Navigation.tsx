@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { TrendingUp, Home, CreditCard, PiggyBank, Menu, Brain } from 'lucide-react';
+import labfinLogo from '@/assets/labfin-logo.png';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,11 +27,13 @@ const Navigation = () => {
       <div className="container flex h-16 max-w-6xl mx-auto items-center px-6">
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-hero flex items-center justify-center">
-            <Brain className="w-5 h-5 text-white" />
-          </div>
-          <span className="hidden sm:inline-block font-bold text-xl text-foreground">
-            FinanceLearn
+          <img 
+            src={labfinLogo} 
+            alt="LabFin Logo" 
+            className="w-8 h-8 object-contain"
+          />
+          <span className="hidden sm:inline-block font-bold text-xl text-primary">
+            LabFin
           </span>
         </Link>
 

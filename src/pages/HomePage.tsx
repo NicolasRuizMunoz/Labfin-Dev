@@ -51,9 +51,9 @@ const HomePage = () => {
       <section className="relative overflow-hidden bg-gradient-hero py-20 px-6">
         <div className="container max-w-6xl mx-auto text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-primary-foreground mb-6">
-            Learn Finance by
-            <span className="block bg-gradient-to-r from-financial-glow to-primary-glow bg-clip-text text-transparent">
-              Simulating Real Decisions
+            Master Finance with 
+            <span className="block bg-gradient-to-r from-green-400 to-purple-400 bg-clip-text text-transparent">
+              LabFin Simulations
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-primary-foreground/90 mb-8 max-w-3xl mx-auto">

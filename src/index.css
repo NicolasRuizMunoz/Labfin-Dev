@@ -6,58 +6,58 @@
 
 @layer base {
   :root {
-    /* Core Background & Text */
-    --background: 210 40% 98%;
-    --foreground: 215 25% 15%;
+    /* Core Background & Text - LabFin Brand */
+    --background: 33 20% 88%;
+    --foreground: 222.2 84% 4.9%;
 
     /* Card System */
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 222.2 84% 4.9%;
 
     /* Popover System */
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 222.2 84% 4.9%;
 
-    /* Primary - Professional Financial Blue */
-    --primary: 210 100% 45%;
+    /* Primary - LabFin Green */
+    --primary: 142 48% 31%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 210 100% 55%;
+    --primary-glow: 142 48% 41%;
 
-    /* Secondary - Subtle Background */
-    --secondary: 210 30% 96%;
-    --secondary-foreground: 215 25% 25%;
+    /* Secondary - LabFin Purple */
+    --secondary: 264 41% 38%;
+    --secondary-foreground: 0 0% 100%;
 
     /* Financial Green - Growth & Success */
-    --financial: 142 70% 45%;
+    --financial: 142 48% 31%;
     --financial-foreground: 0 0% 100%;
-    --financial-glow: 142 70% 55%;
+    --financial-glow: 142 48% 41%;
 
     /* Risk Colors */
-    --risk-low: 142 70% 45%;
+    --risk-low: 142 48% 31%;
     --risk-medium: 35 90% 55%;
     --risk-high: 0 85% 60%;
 
     /* Muted Tones */
-    --muted: 210 30% 94%;
-    --muted-foreground: 215 15% 50%;
+    --muted: 33 15% 85%;
+    --muted-foreground: 222.2 45% 25%;
 
-    /* Accent - Highlight Color */
-    --accent: 210 30% 94%;
-    --accent-foreground: 215 25% 25%;
+    /* Accent - LabFin Purple */
+    --accent: 264 41% 38%;
+    --accent-foreground: 0 0% 100%;
 
     /* Destructive */
     --destructive: 0 85% 60%;
     --destructive-foreground: 0 0% 100%;
 
     /* UI Elements */
-    --border: 210 20% 88%;
-    --input: 210 20% 88%;
-    --ring: 210 100% 45%;
+    --border: 33 15% 80%;
+    --input: 33 15% 85%;
+    --ring: 142 48% 31%;
 
-    /* Financial Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(210 100% 45%), hsl(210 100% 55%));
-    --gradient-success: linear-gradient(135deg, hsl(142 70% 45%), hsl(142 70% 55%));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 30% 98%));
+    /* LabFin Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(142 48% 31%), hsl(264 41% 38%));
+    --gradient-success: linear-gradient(135deg, hsl(142 48% 31%), hsl(142 48% 41%));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(33 15% 95%));
 
     /* Shadows */
     --shadow-card: 0 4px 24px -8px hsl(210 40% 8% / 0.08);
