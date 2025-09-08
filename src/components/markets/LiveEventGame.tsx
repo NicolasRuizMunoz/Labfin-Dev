@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import { Play, TrendingUp, TrendingDown, Minus, Zap, Clock, Trophy } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Play, TrendingUp, TrendingDown, Minus, Zap, Clock, Trophy, Square, Gauge } from 'lucide-react';
 
 interface Asset {
   id: string;
@@ -40,7 +41,11 @@ interface GameState {
     action: 'buy' | 'hold' | 'sell';
     priceChange: number;
     result: number;
+    optimalAction: 'buy' | 'hold' | 'sell';
   }>;
+  usedEventIds: string[];
+  gameSpeed: 'slow' | 'normal' | 'fast';
+  initialValue: number;
 }
 
 const INITIAL_ASSETS: Asset[] = [
@@ -99,6 +104,54 @@ const MARKET_EVENTS: MarketEvent[] = [
     affects: ['SPY', 'AAPL', 'TSLA'],
     impact: { min: -0.08, max: -0.02 },
     duration: 1
+  },
+  {
+    id: '7',
+    title: 'AI Breakthrough',
+    description: 'Major tech companies announce breakthrough in artificial intelligence capabilities.',
+    affects: ['AAPL', 'TSLA'],
+    impact: { min: 0.06, max: 0.14 },
+    duration: 1
+  },
+  {
+    id: '8',
+    title: 'China Trade Deal',
+    description: 'Unexpected positive development in US-China trade negotiations.',
+    affects: ['AAPL', 'SPY'],
+    impact: { min: 0.04, max: 0.10 },
+    duration: 1
+  },
+  {
+    id: '9',
+    title: 'Crypto Exchange Hack',
+    description: 'Major cryptocurrency exchange reports security breach, market confidence shaken.',
+    affects: ['BTC', 'ETH'],
+    impact: { min: -0.15, max: -0.05 },
+    duration: 1
+  },
+  {
+    id: '10',
+    title: 'Green Energy Initiative',
+    description: 'Government announces massive green energy investment program.',
+    affects: ['TSLA'],
+    impact: { min: 0.08, max: 0.18 },
+    duration: 1
+  },
+  {
+    id: '11',
+    title: 'Banking Crisis Fear',
+    description: 'Regional bank failures spark concerns about financial sector stability.',
+    affects: ['SPY', 'AAPL', 'TSLA'],
+    impact: { min: -0.12, max: -0.04 },
+    duration: 1
+  },
+  {
+    id: '12',
+    title: 'Crypto ETF Approval',
+    description: 'SEC approves first Bitcoin ETF, institutional adoption accelerates.',
+    affects: ['BTC', 'ETH'],
+    impact: { min: 0.10, max: 0.25 },
+    duration: 1
   }
 ];
 
@@ -110,32 +163,54 @@ export const LiveEventGame = () => {
     action: 'buy' | 'hold' | 'sell';
   } | null>(null);
   const [showResults, setShowResults] = useState(false);
+  const [gameSpeed, setGameSpeed] = useState<'slow' | 'normal' | 'fast'>('normal');
+  const [gamePaused, setGamePaused] = useState(false);
 
   const startGame = () => {
     const totalValue = INITIAL_ASSETS.reduce((sum, asset) => sum + (asset.currentPrice * asset.shares), 0);
+    const initialPortfolioValue = totalValue + 10000;
     
     setGameState({
       cash: 10000,
-      totalValue: totalValue + 10000,
-      roundsLeft: 6,
+      totalValue: initialPortfolioValue,
+      roundsLeft: 10,
       currentEvent: null,
       assets: [...INITIAL_ASSETS],
-      decisions: []
+      decisions: [],
+      usedEventIds: [],
+      gameSpeed,
+      initialValue: initialPortfolioValue
     });
     setGameStarted(true);
+    setGamePaused(false);
     triggerNextEvent();
   };
 
   const triggerNextEvent = () => {
-    if (!gameState) return;
+    if (!gameState || gamePaused) return;
     
-    const randomEvent = MARKET_EVENTS[Math.floor(Math.random() * MARKET_EVENTS.length)];
-    setGameState(prev => prev ? { ...prev, currentEvent: randomEvent } : null);
+    // Select event ensuring variety - avoid recently used events when possible
+    let availableEvents = MARKET_EVENTS.filter(e => !gameState.usedEventIds.includes(e.id));
+    if (availableEvents.length === 0) {
+      // If all events used, reset but avoid the last 2 events
+      const recentEvents = gameState.usedEventIds.slice(-2);
+      availableEvents = MARKET_EVENTS.filter(e => !recentEvents.includes(e.id));
+    }
+    if (availableEvents.length === 0) {
+      availableEvents = MARKET_EVENTS; // Fallback
+    }
+    
+    const randomEvent = availableEvents[Math.floor(Math.random() * availableEvents.length)];
+    setGameState(prev => prev ? { 
+      ...prev, 
+      currentEvent: randomEvent,
+      usedEventIds: [...prev.usedEventIds, randomEvent.id].slice(-6) // Keep last 6 events
+    } : null);
     setCurrentDecision(null);
   };
 
   const makeDecision = (assetId: string, action: 'buy' | 'hold' | 'sell') => {
-    if (!gameState?.currentEvent) return;
+    if (!gameState?.currentEvent || gamePaused) return;
 
     const event = gameState.currentEvent;
     const asset = gameState.assets.find(a => a.id === assetId);
@@ -150,6 +225,16 @@ export const LiveEventGame = () => {
     let result = 0;
     const priceChange = baseImpact;
     const newPrice = asset.currentPrice * (1 + priceChange);
+
+    // Determine optimal action
+    let optimalAction: 'buy' | 'hold' | 'sell';
+    if (priceChange > 0.03) {
+      optimalAction = 'buy';
+    } else if (priceChange < -0.03) {
+      optimalAction = 'sell';
+    } else {
+      optimalAction = 'hold';
+    }
 
     // Calculate decision result
     if (action === 'buy' && priceChange > 0) {
@@ -173,7 +258,8 @@ export const LiveEventGame = () => {
       assetId,
       action,
       priceChange,
-      result
+      result,
+      optimalAction
     };
 
     // Update game state
@@ -190,12 +276,25 @@ export const LiveEventGame = () => {
 
     setCurrentDecision({ assetId, action });
 
+    // Get delay based on game speed
+    const getDelay = () => {
+      switch (gameState.gameSpeed) {
+        case 'slow': return 3000;
+        case 'fast': return 1000;
+        default: return 2000;
+      }
+    };
+
     // Continue game or end
     if (gameState.roundsLeft <= 1) {
-      setTimeout(() => setShowResults(true), 2000);
+      setTimeout(() => setShowResults(true), getDelay());
     } else {
-      setTimeout(() => triggerNextEvent(), 2000);
+      setTimeout(() => triggerNextEvent(), getDelay());
     }
+  };
+
+  const stopGame = () => {
+    setShowResults(true);
   };
 
   const resetGame = () => {
@@ -203,6 +302,7 @@ export const LiveEventGame = () => {
     setGameStarted(false);
     setShowResults(false);
     setCurrentDecision(null);
+    setGamePaused(false);
   };
 
   const formatCurrency = (value: number) => {
@@ -239,7 +339,7 @@ export const LiveEventGame = () => {
               </p>
             </div>
             <div>
-              <h4 className="font-semibold text-financial mb-2">6 Market Events</h4>
+              <h4 className="font-semibold text-financial mb-2">10+ Market Events</h4>
               <p className="text-sm text-muted-foreground">
                 Real scenarios like earnings, Fed decisions, crypto news
               </p>
@@ -251,6 +351,24 @@ export const LiveEventGame = () => {
               </p>
             </div>
           </div>
+          
+          <div className="mb-6">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Gauge className="w-4 h-4" />
+              <span className="text-sm font-medium">Game Speed</span>
+            </div>
+            <Select value={gameSpeed} onValueChange={(value: 'slow' | 'normal' | 'fast') => setGameSpeed(value)}>
+              <SelectTrigger className="w-48 mx-auto">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="slow">Slow (3s between events)</SelectItem>
+                <SelectItem value="normal">Normal (2s between events)</SelectItem>
+                <SelectItem value="fast">Fast (1s between events)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <Button onClick={startGame} size="lg" className="bg-gradient-hero">
             <Play className="w-5 h-5 mr-2" />
             Start Game
@@ -262,10 +380,22 @@ export const LiveEventGame = () => {
 
   if (showResults) {
     const goodDecisions = gameState.decisions.filter(d => d.result === 1).length;
+    const optimalDecisions = gameState.decisions.filter(d => d.optimalAction).length;
     const totalDecisions = gameState.decisions.length;
     const successRate = (goodDecisions / totalDecisions) * 100;
-    const initialValue = 110000; // Approximate initial portfolio value
-    const totalReturn = ((gameState.totalValue - initialValue) / initialValue) * 100;
+    const actualReturn = ((gameState.totalValue - gameState.initialValue) / gameState.initialValue) * 100;
+    
+    // Calculate optimal return if all decisions were perfect
+    let optimalValue = gameState.initialValue;
+    gameState.decisions.forEach(decision => {
+      const asset = gameState.assets.find(a => a.id === decision.assetId);
+      if (asset && decision.optimalAction === 'buy' && decision.priceChange > 0) {
+        optimalValue += Math.abs(decision.priceChange) * asset.currentPrice * asset.shares;
+      } else if (asset && decision.optimalAction === 'sell' && decision.priceChange < 0) {
+        optimalValue += Math.abs(decision.priceChange) * asset.currentPrice * asset.shares;
+      }
+    });
+    const optimalReturn = ((optimalValue - gameState.initialValue) / gameState.initialValue) * 100;
 
     return (
       <Card>
@@ -280,7 +410,7 @@ export const LiveEventGame = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Final Stats */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             <Card>
               <CardContent className="p-4 text-center">
                 <p className="text-2xl font-bold text-financial">
@@ -291,10 +421,18 @@ export const LiveEventGame = () => {
             </Card>
             <Card>
               <CardContent className="p-4 text-center">
-                <p className={`text-2xl font-bold ${totalReturn >= 0 ? 'text-financial' : 'text-risk-high'}`}>
-                  {totalReturn >= 0 ? '+' : ''}{totalReturn.toFixed(1)}%
+                <p className={`text-2xl font-bold ${actualReturn >= 0 ? 'text-financial' : 'text-risk-high'}`}>
+                  {actualReturn >= 0 ? '+' : ''}{actualReturn.toFixed(1)}%
                 </p>
-                <p className="text-sm text-muted-foreground">Total Return</p>
+                <p className="text-sm text-muted-foreground">Your ROI</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <p className="text-2xl font-bold text-primary">
+                  +{optimalReturn.toFixed(1)}%
+                </p>
+                <p className="text-sm text-muted-foreground">Optimal ROI</p>
               </CardContent>
             </Card>
             <Card>
@@ -330,6 +468,9 @@ export const LiveEventGame = () => {
                         <span className={`text-sm ${decision.priceChange >= 0 ? 'text-financial' : 'text-risk-high'}`}>
                           {decision.priceChange >= 0 ? '+' : ''}{formatPercentage(decision.priceChange)}
                         </span>
+                        <div className="text-xs text-muted-foreground">
+                          Optimal: {decision.optimalAction.toUpperCase()}
+                        </div>
                         {decision.result === 1 ? (
                           <TrendingUp className="w-4 h-4 text-financial" />
                         ) : decision.result === 0.5 ? (
@@ -352,24 +493,24 @@ export const LiveEventGame = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-2 text-sm">
-                {successRate >= 70 && (
+                {actualReturn >= optimalReturn * 0.8 && (
                   <p className="text-financial">
-                    🎉 Excellent performance! You made {successRate.toFixed(0)}% good decisions. You understand how to react to market events.
+                    🎉 Outstanding performance! You achieved {actualReturn.toFixed(1)}% return vs optimal {optimalReturn.toFixed(1)}%. You made {successRate.toFixed(0)}% good decisions.
                   </p>
                 )}
-                {successRate >= 40 && successRate < 70 && (
+                {actualReturn >= optimalReturn * 0.5 && actualReturn < optimalReturn * 0.8 && (
                   <p className="text-risk-medium">
-                    📈 Good job! You made {successRate.toFixed(0)}% good decisions. Practice recognizing which events favor buying vs selling.
+                    📈 Good performance! You achieved {actualReturn.toFixed(1)}% return vs optimal {optimalReturn.toFixed(1)}%. Room to improve decision timing.
                   </p>
                 )}
-                {successRate < 40 && (
+                {actualReturn < optimalReturn * 0.5 && (
                   <p className="text-risk-high">
-                    📚 Learning opportunity! You made {successRate.toFixed(0)}% good decisions. Remember: buy good news, sell bad news for affected assets.
+                    📚 Learning opportunity! You achieved {actualReturn.toFixed(1)}% return vs optimal {optimalReturn.toFixed(1)}%. Focus on the optimal actions shown above.
                   </p>
                 )}
                 <Separator className="my-3" />
                 <p className="text-muted-foreground">
-                  <strong>Key Lesson:</strong> Market timing is difficult, but understanding how events affect different assets helps make better decisions. Diversification and dollar-cost averaging often beat trying to time the market perfectly.
+                  <strong>Key Lesson:</strong> Market timing requires understanding event impacts. Buy positive news, sell negative news for affected assets. The optimal ROI shows what was possible with perfect decisions.
                 </p>
               </div>
             </CardContent>
@@ -408,7 +549,21 @@ export const LiveEventGame = () => {
               <p className="text-2xl font-bold text-primary">{gameState.roundsLeft}</p>
             </div>
           </div>
-          <Progress value={((6 - gameState.roundsLeft) / 6) * 100} className="w-full" />
+          <div className="flex items-center gap-2 mb-2">
+            <Progress value={((10 - gameState.roundsLeft) / 10) * 100} className="flex-1" />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={stopGame}
+              className="text-xs"
+            >
+              <Square className="w-3 h-3 mr-1" />
+              Stop
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground text-center">
+            Speed: {gameState.gameSpeed} | Click Stop to end early and see results
+          </p>
         </CardContent>
       </Card>
 
