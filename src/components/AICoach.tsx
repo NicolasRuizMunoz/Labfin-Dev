@@ -124,7 +124,7 @@ export const AICoach = ({ isOpen, onClose }: AICoachProps) => {
         timestamp: new Date().toISOString()
       };
 
-      const response = await fetch('http://localhost:5678/webhook-test/a7721317-edd1-4ffe-bcb7-3fa1e6845f82', {
+      const response = await fetch('http://localhost:5678/webhook/a7721317-edd1-4ffe-bcb7-3fa1e6845f82', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
