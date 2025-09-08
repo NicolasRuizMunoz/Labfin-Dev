@@ -195,6 +195,43 @@ export const LiveEventGame = () => {
   const [gameSpeed, setGameSpeed] = useState<'slow' | 'normal' | 'fast'>('normal');
   const [gamePaused, setGamePaused] = useState(false);
 
+  // Trigger first event when game starts
+  useEffect(() => {
+    if (gameStarted && gameState && !gameState.currentEvent && !showResults && !gamePaused) {
+      const timer = setTimeout(() => {
+        triggerNextEvent();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [gameStarted, gameState, showResults, gamePaused]);
+
+  // Portfolio price movement over time
+  useEffect(() => {
+    if (!gameStarted || !gameState || gamePaused || showResults || gameState.currentEvent) return;
+
+    const interval = setInterval(() => {
+      setGameState(prev => {
+        if (!prev) return prev;
+        
+        // Small random price movements for each asset
+        const updatedAssets = prev.assets.map(asset => ({
+          ...asset,
+          currentPrice: asset.currentPrice * (1 + (Math.random() - 0.5) * 0.01) // ±0.5% random movement
+        }));
+
+        const newTotalValue = updatedAssets.reduce((sum, asset) => sum + (asset.currentPrice * asset.shares), 0) + prev.cash;
+
+        return {
+          ...prev,
+          assets: updatedAssets,
+          totalValue: newTotalValue
+        };
+      });
+    }, 2000); // Update every 2 seconds
+
+    return () => clearInterval(interval);
+  }, [gameStarted, gameState?.currentEvent, gamePaused, showResults]);
+
   const startGame = () => {
     const totalValue = INITIAL_ASSETS.reduce((sum, asset) => sum + (asset.currentPrice * asset.shares), 0);
     const initialPortfolioValue = totalValue + 10000;
@@ -212,7 +249,6 @@ export const LiveEventGame = () => {
     });
     setGameStarted(true);
     setGamePaused(false);
-    triggerNextEvent();
   };
 
   const triggerNextEvent = () => {
