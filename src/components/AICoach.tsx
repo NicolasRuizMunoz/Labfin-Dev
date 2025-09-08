@@ -135,8 +135,8 @@ export const AICoach = ({ isOpen, onClose }: AICoachProps) => {
       // Try to read the response
       try {
         const responseData = await response.json();
-        if (responseData.answer) {
-          addMessage(responseData.answer, 'ai');
+        if (responseData.output) {
+          addMessage(responseData.output, 'ai');
         } else {
           generateLocalResponse(userMessage);
         }
