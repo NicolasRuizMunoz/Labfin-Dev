@@ -129,13 +129,21 @@ export const AICoach = ({ isOpen, onClose }: AICoachProps) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        mode: 'no-cors',
         body: JSON.stringify(payload)
       });
 
-      // Since we're using no-cors, we can't read the response
-      // Generate a local response as fallback
-      generateLocalResponse(userMessage);
+      // Try to read the response
+      try {
+        const responseData = await response.json();
+        if (responseData.answer) {
+          addMessage(responseData.answer, 'ai');
+        } else {
+          generateLocalResponse(userMessage);
+        }
+      } catch {
+        // If we can't read response (due to CORS), use local fallback
+        generateLocalResponse(userMessage);
+      }
 
     } catch (error) {
       console.error('Webhook error:', error);
