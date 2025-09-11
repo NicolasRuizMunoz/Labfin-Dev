@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { TrendingUp, Home, CreditCard, PiggyBank, Menu, Brain } from 'lucide-react';
-const labfinLogo = '/lovable-uploads/84cf9a69-c04c-4e0e-a219-346825c192de.png';
+const labfinLogo = '/lovable-uploads/b5e65f36-4981-4326-b048-7c2763c0d681.png';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
