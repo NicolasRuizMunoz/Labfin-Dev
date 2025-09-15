@@ -236,6 +236,16 @@ const HomePage = () => {
     }
   };
 
+  const getTutorialKey = (featureTitle: string) => {
+    const titleMap = {
+      "Markets Simulator": "markets",
+      "Real Estate": "realestate", 
+      "Credit & Loans": "credit",
+      "Retirement Planning": "retirement"
+    };
+    return titleMap[featureTitle as keyof typeof titleMap];
+  };
+
   const openTutorial = (type: string) => {
     setCurrentTutorial(type);
     setTutorialOpen(true);
@@ -410,7 +420,7 @@ const HomePage = () => {
                       variant="ghost"
                       size="sm"
                       className="w-full text-muted-foreground hover:text-primary"
-                      onClick={() => openTutorial(feature.title.toLowerCase().replace(/[^a-z]/g, ''))}
+                      onClick={() => openTutorial(getTutorialKey(feature.title) || '')}
                     >
                       <BookOpen className="w-4 h-4 mr-2" />
                       Tutorial
