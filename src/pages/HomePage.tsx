@@ -19,20 +19,24 @@ const HomePage = () => {
 
   const tutorialContent = {
     markets: {
-      title: "Markets & Investing Tutorial",
-      description: "Learn the fundamentals of stock market investing and portfolio management",
+      title: "Investment Tutorial",
+      description: "Learn about investment fundamentals and portfolio growth",
       content: [
         {
-          title: "What Are Stock Markets?",
-          text: "Stock markets are platforms where shares of publicly-held companies are bought and sold. They provide a way for companies to raise capital and for investors to own a piece of businesses."
+          title: "What Are Investments?",
+          text: "Investments grow with contributions and time. They help build wealth through compound growth, where your money earns returns, and those returns earn more returns over time."
         },
         {
-          title: "Types of Investments",
-          text: "Stocks represent ownership in companies. ETFs (Exchange-Traded Funds) are baskets of stocks that track an index. Mutual funds are professionally managed portfolios. Cryptocurrency are digital assets with high volatility."
+          title: "Key Inputs",
+          text: "Initial investment: Your starting amount. Monthly contributions: Regular additions to your portfolio. Timeline: How long you'll invest. Risk profile: Your comfort with market ups and downs affects potential returns."
         },
         {
-          title: "Risk vs Return",
-          text: "Higher potential returns typically come with higher risk. Diversification (spreading investments across different assets) helps manage risk. Time horizon matters - longer investment periods can weather short-term volatility."
+          title: "Understanding Outputs",
+          text: "Expected return: Average annual growth rate. Volatility: How much your portfolio value may fluctuate. Portfolio growth: Visual representation of how your money grows over time with compound interest."
+        },
+        {
+          title: "Practical Tip",
+          text: "Consistency matters more than timing—watch compounding in action. Even small monthly contributions can grow significantly over decades due to the power of compound interest."
         }
       ],
       quiz: [
@@ -69,20 +73,24 @@ const HomePage = () => {
       ]
     },
     realestate: {
-      title: "Real Estate Tutorial",
-      description: "Understand property investment and mortgage fundamentals",
+      title: "Real Estate Tutorial", 
+      description: "Understand mortgages and rental property investments",
       content: [
         {
-          title: "Real Estate as Investment",
-          text: "Real estate can provide both rental income and property appreciation. It's considered a tangible asset that can hedge against inflation and provide steady cash flow."
-        },
-        {
           title: "Mortgage Basics",
-          text: "A mortgage is a loan used to purchase property. Key factors include interest rate, loan term, and down payment. Your monthly payment includes principal, interest, taxes, and insurance (PITI)."
+          text: "A mortgage lets you buy a property with a loan. You pay back the loan over time with interest. It's how most people afford homes without paying the full price upfront."
         },
         {
-          title: "Rental Property Analysis",
-          text: "Cap rate measures annual return on investment. Cash flow is monthly rent minus expenses. Location, property condition, and rental demand are crucial factors for success."
+          title: "Key Inputs", 
+          text: "Property price: Total cost of the home. Down payment: Upfront cash you pay (typically 3-20%). Interest rate: Annual cost of borrowing. Loan term: How long you'll pay (usually 15-30 years)."
+        },
+        {
+          title: "Understanding Outputs",
+          text: "Monthly payment: Your regular payment amount. Total interest: What you'll pay in interest over the life of the loan. Total paid: Complete amount including principal and interest. Watch how these change with different inputs."
+        },
+        {
+          title: "Practical Tip & Rental Properties", 
+          text: "Mortgage tip: A higher down payment lowers long-term costs. For rentals: Focus on cash flow (rent minus expenses) and appreciation. Cap rate measures annual return - higher is generally better. Keep expenses realistic for accurate projections."
         }
       ],
       quiz: [
@@ -119,20 +127,24 @@ const HomePage = () => {
       ]
     },
     credit: {
-      title: "Credit & Loans Tutorial",
-      description: "Master the fundamentals of credit, loans, and debt management",
+      title: "Loan Tutorial",
+      description: "Master loans and debt management fundamentals", 
       content: [
         {
-          title: "Understanding Credit",
-          text: "Credit is your ability to borrow money based on trust that you'll repay it. Your credit score (300-850) affects loan approval and interest rates. Payment history is the most important factor."
+          title: "What Are Loans?",
+          text: "Loans cover needs like cars, education, or debt consolidation. You borrow money and pay it back over time with interest. Different loan types have different terms and rates."
         },
         {
-          title: "Types of Loans",
-          text: "Personal loans are unsecured with higher rates. Auto loans are secured by the vehicle. Student loans often have favorable terms. Credit cards are revolving credit with variable rates."
+          title: "Key Inputs",
+          text: "Amount: How much you need to borrow. Rate: Annual interest percentage - your cost of borrowing. Term: How long you'll take to pay it back (months or years). These three factors determine your payment."
         },
         {
-          title: "Loan Amortization",
-          text: "Amortization is how loan payments are split between principal and interest over time. Early payments are mostly interest, later payments mostly principal. Extra principal payments can save significant interest."
+          title: "Understanding Outputs",
+          text: "Monthly payment: Fixed amount you'll pay each month. Total interest: Extra cost beyond what you borrowed. Payoff date: When you'll be debt-free. See how different terms affect your total cost."
+        },
+        {
+          title: "Practical Tip",
+          text: "Even small extra payments reduce interest dramatically. Try adjusting the simulator - paying just $50 extra monthly on a loan can save thousands in interest and years of payments. The earlier you pay extra, the more you save."
         }
       ],
       quiz: [
@@ -170,19 +182,23 @@ const HomePage = () => {
     },
     retirement: {
       title: "Retirement Planning Tutorial",
-      description: "Build your knowledge of retirement savings and planning strategies",
+      description: "Learn about long-term financial planning for retirement",
       content: [
         {
-          title: "Why Start Early?",
-          text: "Compound interest means your money grows exponentially over time. Starting retirement savings early gives you decades for growth. Even small amounts can become substantial with time."
+          title: "Retirement Planning (Coming Soon)",
+          text: "This tool is under development, but soon you'll be able to plan for retirement by combining assets and long-term projections. Retirement planning involves estimating future needs and building a strategy to meet them."
         },
         {
-          title: "Retirement Accounts",
-          text: "401(k) plans are employer-sponsored with potential matching. IRAs are individual accounts with tax advantages. Roth accounts use after-tax dollars but grow tax-free."
+          title: "Why Plan Early?",
+          text: "Think of retirement as the end-goal of your financial journey. The earlier you start, the more time compound interest has to work for you. Even small amounts saved consistently can grow to substantial sums over decades."
         },
         {
-          title: "Planning Your Needs",
-          text: "Most experts suggest replacing 70-90% of pre-retirement income. Consider healthcare costs, inflation, and lifestyle changes. The earlier you plan, the more options you have."
+          title: "Key Concepts",
+          text: "Retirement accounts (401k, IRA): Tax-advantaged savings. Asset allocation: Balancing stocks, bonds, and other investments. Withdrawal rate: How much you can safely take out annually (typically 3-4% of your portfolio)."
+        },
+        {
+          title: "Stay Tuned",
+          text: "Our comprehensive retirement simulator will help you model different scenarios, account types, and withdrawal strategies. For now, use our investment simulator to see how consistent contributions grow over time."
         }
       ],
       quiz: [
