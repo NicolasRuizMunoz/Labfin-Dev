@@ -27,7 +27,7 @@ interface AssessmentResult {
 }
 
 const SelfAssessmentPage = () => {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(-1); // Start at -1 for intro
   const [answers, setAnswers] = useState<number[]>([]);
   const [isCompleted, setIsCompleted] = useState(false);
   const [result, setResult] = useState<AssessmentResult | null>(null);
@@ -182,7 +182,7 @@ const SelfAssessmentPage = () => {
   };
 
   const resetAssessment = () => {
-    setCurrentQuestion(0);
+    setCurrentQuestion(-1);
     setAnswers([]);
     setIsCompleted(false);
     setResult(null);
@@ -303,7 +303,7 @@ const SelfAssessmentPage = () => {
   return (
     <div className="min-h-screen bg-background py-8 px-6">
       <div className="container max-w-3xl mx-auto">
-        {currentQuestion === 0 && answers.length === 0 && (
+        {currentQuestion === -1 && (
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Brain className="w-8 h-8 text-primary" />
@@ -318,7 +318,7 @@ const SelfAssessmentPage = () => {
           </div>
         )}
 
-        {(currentQuestion > 0 || answers.length > 0) && !isCompleted && (
+        {currentQuestion >= 0 && !isCompleted && (
           <div className="space-y-6">
             {/* Progress Bar */}
             <div className="space-y-2">
