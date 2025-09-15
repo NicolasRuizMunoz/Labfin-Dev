@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { TrendingUp, Home, CreditCard, PiggyBank, Menu, Brain } from 'lucide-react';
+import { TrendingUp, Home, CreditCard, PiggyBank, Menu, Brain, CheckCircle2 } from 'lucide-react';
 const labfinLogo = '/lovable-uploads/12094485-6192-4e4a-89bc-352de1dd8110.png';
 
 const Navigation = () => {
@@ -14,6 +14,7 @@ const Navigation = () => {
     { name: 'Markets', href: '/markets', icon: TrendingUp },
     { name: 'Real Estate', href: '/real-estate', icon: Home },
     { name: 'Credit', href: '/credit', icon: CreditCard },
+    { name: 'Self-Assessment Test', href: '/assessment', icon: CheckCircle2 },
     { name: 'Retirement', href: '/retirement', icon: PiggyBank, disabled: true },
   ];
 

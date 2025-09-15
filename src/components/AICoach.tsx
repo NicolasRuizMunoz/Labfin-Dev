@@ -4,13 +4,23 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Brain, User, Target, Clock, TrendingUp } from 'lucide-react';
+import { Send, Brain, User, Target, Clock, TrendingUp, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface UserProfile {
   goal: 'save' | 'invest' | 'pay_debt' | null;
   horizon: 'short' | 'medium' | 'long' | null;
   riskProfile: 'conservative' | 'moderate' | 'aggressive' | null;
+}
+
+interface AssessmentResult {
+  riskProfile: 'Conservative' | 'Moderate' | 'Aggressive';
+  timeHorizon: string;
+  primaryGoal: string;
+  assetPreference: string;
+  incomeStability: string;
+  score: number;
+  completedAt: string;
 }
 
 interface Message {
@@ -31,14 +41,52 @@ export const AICoach = ({ isOpen, onClose }: AICoachProps) => {
     horizon: null,
     riskProfile: null
   });
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      content: "Hi! I'm your AI Finance Coach. I'll help you learn about personal finance through our interactive simulations. First, let me understand your goals better.\n\nWhat's your primary financial goal right now?",
-      sender: 'ai',
-      timestamp: new Date()
+  const [assessmentResult, setAssessmentResult] = useState<AssessmentResult | null>(null);
+  
+  // Load assessment results on mount
+  useEffect(() => {
+    const storedAssessment = localStorage.getItem('userAssessment');
+    if (storedAssessment) {
+      try {
+        const assessment: AssessmentResult = JSON.parse(storedAssessment);
+        setAssessmentResult(assessment);
+        
+        // Update profile based on assessment
+        const newProfile = { ...profile };
+        newProfile.riskProfile = assessment.riskProfile.toLowerCase() as 'conservative' | 'moderate' | 'aggressive';
+        
+        // Map time horizon from assessment
+        if (assessment.timeHorizon.includes('1-3 years')) newProfile.horizon = 'short';
+        else if (assessment.timeHorizon.includes('4-7 years')) newProfile.horizon = 'medium';
+        else if (assessment.timeHorizon.includes('8+')) newProfile.horizon = 'long';
+        
+        setProfile(newProfile);
+      } catch (error) {
+        console.error('Error loading assessment:', error);
+      }
     }
-  ]);
+  }, []);
+
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  // Set initial message based on assessment
+  useEffect(() => {
+    const initialMessage = assessmentResult
+      ? {
+          id: '1',
+          content: `Hi! I'm your AI Finance Coach. I see you've completed our self-assessment - excellent! Based on your ${assessmentResult.riskProfile.toLowerCase()} risk profile and preference for ${assessmentResult.assetPreference.toLowerCase()}, I'm ready to provide personalized guidance.\n\nYour assessment shows you're focused on "${assessmentResult.primaryGoal.toLowerCase()}" with a ${assessmentResult.timeHorizon.toLowerCase()}. How can I help you with your financial goals today?`,
+          sender: 'ai' as const,
+          timestamp: new Date()
+        }
+      : {
+          id: '1',
+          content: "Hi! I'm your AI Finance Coach. I'll help you learn about personal finance through our interactive simulations. For the best personalized experience, I recommend taking our Self-Assessment Test first (available in the navigation). Otherwise, let me understand your goals better.\n\nWhat's your primary financial goal right now?",
+          sender: 'ai' as const,
+          timestamp: new Date()
+        };
+    
+    setMessages([initialMessage]);
+  }, [assessmentResult]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -119,7 +167,8 @@ export const AICoach = ({ isOpen, onClose }: AICoachProps) => {
         context: {
           goal: profile.goal,
           horizon: profile.horizon,
-          riskProfile: profile.riskProfile
+          riskProfile: profile.riskProfile,
+          assessment: assessmentResult // Include assessment data
         },
         timestamp: new Date().toISOString()
       };
@@ -161,14 +210,20 @@ export const AICoach = ({ isOpen, onClose }: AICoachProps) => {
   const generateLocalResponse = (userMessage: string) => {
     let response = "";
     
+    // Use assessment data for personalized responses
+    const riskLevel = assessmentResult?.riskProfile || profile.riskProfile || 'moderate';
+    const assetPref = assessmentResult?.assetPreference || '';
+    
     if (userMessage.toLowerCase().includes('market') || userMessage.toLowerCase().includes('stock')) {
-      response = "Great question about markets! Our Markets simulator lets you practice with stocks, ETFs, and crypto in realistic scenarios. You'll experience market events and learn how different assets behave. Ready to try it?";
+      response = `Great question about markets! Given your ${riskLevel.toLowerCase()} risk profile${assetPref ? ` and preference for ${assetPref.toLowerCase()}` : ''}, our Markets simulator is perfect for you. You'll practice with assets that match your comfort level and learn how different market events affect your investments. Ready to try it?`;
     } else if (userMessage.toLowerCase().includes('real estate') || userMessage.toLowerCase().includes('house')) {
-      response = "Real estate is a powerful wealth-building tool! Our Real Estate section covers both home buying (mortgage calculations) and rental investing. You can see how different down payments and interest rates affect your monthly costs.";
+      response = `Real estate is a powerful wealth-building tool${assessmentResult?.primaryGoal.includes('home') ? ' - and I see that aligns with your goals!' : '!'} Our Real Estate section covers both home buying (mortgage calculations) and rental investing. Based on your profile, I'd recommend starting with the ${riskLevel === 'Conservative' ? 'mortgage calculator' : 'rental property simulator'}.`;
     } else if (userMessage.toLowerCase().includes('debt') || userMessage.toLowerCase().includes('loan')) {
-      response = "Smart to focus on debt management! Our Credit simulator shows exactly how extra payments can save you thousands in interest. You'll see the amortization schedule and learn optimization strategies.";
+      response = `Smart to focus on debt management! Our Credit simulator shows exactly how extra payments can save you thousands in interest. ${assessmentResult?.primaryGoal.includes('debt') ? 'This aligns perfectly with your stated goal of paying off debt.' : ''} You'll see the amortization schedule and learn optimization strategies.`;
     } else {
-      response = "I understand you want to learn more about personal finance. Our simulators provide hands-on experience with real scenarios. Which area interests you most: investing in markets, real estate, or managing credit?";
+      response = assessmentResult 
+        ? `Based on your assessment results, I'd recommend focusing on ${assessmentResult.assetPreference.toLowerCase()} investments with your ${assessmentResult.riskProfile.toLowerCase()} approach. Which simulator would you like to explore first?`
+        : "I understand you want to learn more about personal finance. Our simulators provide hands-on experience with real scenarios. Which area interests you most: investing in markets, real estate, or managing credit?";
     }
 
     setTimeout(() => addMessage(response, 'ai'), 1000);
@@ -190,6 +245,12 @@ export const AICoach = ({ isOpen, onClose }: AICoachProps) => {
 
         {/* Profile Status */}
         <div className="flex flex-wrap gap-2 p-3 bg-muted/50 rounded-lg">
+          {assessmentResult && (
+            <Badge variant="default" className="flex items-center gap-1 bg-green-100 text-green-800">
+              <CheckCircle2 className="w-3 h-3" />
+              Assessment Complete
+            </Badge>
+          )}
           <Badge variant={profile.goal ? "default" : "outline"} className="flex items-center gap-1">
             <Target className="w-3 h-3" />
             Goal: {profile.goal?.replace('_', ' ') || 'Not set'}
