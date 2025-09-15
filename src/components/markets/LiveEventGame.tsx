@@ -320,9 +320,9 @@ export const LiveEventGame = () => {
     // Get delay based on game speed
     const getDelay = () => {
       switch (gameState.gameSpeed) {
-        case 'slow': return 4000;
-        case 'fast': return 2000;
-        default: return 3000;
+        case 'slow': return 10000;
+        case 'fast': return 5000;
+        default: return 7000;
       }
     };
 
@@ -408,9 +408,9 @@ export const LiveEventGame = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="slow">Slow (3s between events)</SelectItem>
-                <SelectItem value="normal">Normal (2s between events)</SelectItem>
-                <SelectItem value="fast">Fast (1s between events)</SelectItem>
+                <SelectItem value="slow">Slow (10s between events)</SelectItem>
+                <SelectItem value="normal">Normal (7s between events)</SelectItem>
+                <SelectItem value="fast">Fast (5s between events)</SelectItem>
               </SelectContent>
             </Select>
           </div>

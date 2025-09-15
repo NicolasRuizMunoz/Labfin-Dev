@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { Home, DollarSign, Calendar, TrendingUp, Info } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { Home, DollarSign, Calendar, TrendingUp, Info, HelpCircle } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface AmortizationEntry {
   month: number;
@@ -123,9 +124,10 @@ export const MortgageSimulator = () => {
     })) || [];
 
   return (
-    <div className="space-y-6">
-      {/* Input Controls */}
-      <div className="grid md:grid-cols-2 gap-6">
+    <TooltipProvider>
+      <div className="space-y-6">
+        {/* Input Controls */}
+        <div className="grid md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Property Details</CardTitle>
@@ -133,7 +135,17 @@ export const MortgageSimulator = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="property-price">Property Price</Label>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="property-price">Property Price</Label>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">The total purchase price of the property. This determines your loan amount based on your down payment percentage.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
               <Input
                 id="property-price"
                 type="number"
@@ -145,7 +157,17 @@ export const MortgageSimulator = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="down-payment">Down Payment (%)</Label>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="down-payment">Down Payment (%)</Label>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">The upfront payment you make when buying the home. Higher down payments reduce your loan amount and may help you avoid PMI (Private Mortgage Insurance).</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
               <Select value={downPaymentPercent.toString()} onValueChange={(value) => setDownPaymentPercent(Number(value))}>
                 <SelectTrigger>
                   <SelectValue />
@@ -161,7 +183,17 @@ export const MortgageSimulator = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="interest-rate">Interest Rate (%)</Label>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="interest-rate">Interest Rate (%)</Label>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">The annual percentage rate charged by the lender. Even small changes (0.5-1%) can significantly impact your monthly payment and total interest paid over the loan term.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
               <Input
                 id="interest-rate"
                 type="number"
@@ -316,7 +348,7 @@ export const MortgageSimulator = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="year" />
                     <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
-                    <Tooltip 
+                    <RechartsTooltip 
                       formatter={(value: number, name: string) => [
                         formatCurrency(value),
                         name === 'equity' ? 'Home Equity' : 'Remaining Balance'
@@ -439,5 +471,6 @@ export const MortgageSimulator = () => {
         </div>
       )}
     </div>
+    </TooltipProvider>
   );
 };
