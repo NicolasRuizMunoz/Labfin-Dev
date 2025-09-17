@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { CreditCard, Calculator, TrendingDown, Clock } from 'lucide-react';
 import { LoanSimulator } from '@/components/credit/LoanSimulator';
 import { DifficultyLevelIndicator } from '@/components/DifficultyLevelIndicator';
+import { RecommendedDifficultyBadge } from '@/components/RecommendedDifficultyBadge';
 
 const CreditPage = () => {
   return (
@@ -20,6 +21,9 @@ const CreditPage = () => {
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           Understand loan amortization, interest calculations, and payment optimization strategies
         </p>
+        <div className="flex justify-center mt-4">
+          <RecommendedDifficultyBadge module="Credit & Loans" />
+        </div>
       </div>
 
       <DifficultyLevelIndicator />

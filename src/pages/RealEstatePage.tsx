@@ -6,6 +6,7 @@ import { Home, Building2, Calculator } from 'lucide-react';
 import { MortgageSimulator } from '@/components/realestate/MortgageSimulator';
 import { RentalSimulator } from '@/components/realestate/RentalSimulator';
 import { DifficultyLevelIndicator } from '@/components/DifficultyLevelIndicator';
+import { RecommendedDifficultyBadge } from '@/components/RecommendedDifficultyBadge';
 
 const RealEstatePage = () => {
   const [activeTab, setActiveTab] = useState('mortgage');
@@ -25,6 +26,9 @@ const RealEstatePage = () => {
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           Explore mortgage calculations for home buying and rental property investment scenarios
         </p>
+        <div className="flex justify-center mt-4">
+          <RecommendedDifficultyBadge module="Real Estate" />
+        </div>
       </div>
 
       <DifficultyLevelIndicator />

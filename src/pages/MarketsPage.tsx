@@ -7,6 +7,7 @@ import { TrendingUp, Play, BarChart3, Zap } from 'lucide-react';
 import { MarketSimulator } from '@/components/markets/MarketSimulator';
 import { LiveEventGame } from '@/components/markets/LiveEventGame';
 import { DifficultyLevelIndicator } from '@/components/DifficultyLevelIndicator';
+import { RecommendedDifficultyBadge } from '@/components/RecommendedDifficultyBadge';
 
 const MarketsPage = () => {
   const [activeTab, setActiveTab] = useState('simulator');
@@ -26,6 +27,9 @@ const MarketsPage = () => {
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           Practice investing in stocks, ETFs, mutual funds, and crypto with realistic market scenarios and live events
         </p>
+        <div className="flex justify-center mt-4">
+          <RecommendedDifficultyBadge module="Markets" />
+        </div>
       </div>
 
       <DifficultyLevelIndicator />

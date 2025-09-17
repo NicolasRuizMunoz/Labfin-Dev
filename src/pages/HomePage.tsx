@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { TrendingUp, Home, CreditCard, PiggyBank, MessageCircle, BookOpen, CheckCircle, XCircle, ArrowRight } from 'lucide-react';
 import { AICoach } from '@/components/AICoach';
+import { RecommendedDifficultyBadge } from '@/components/RecommendedDifficultyBadge';
 import { Link } from 'react-router-dom';
 
 const HomePage = () => {
@@ -402,6 +403,9 @@ const HomePage = () => {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
+                    <div className="flex justify-center mb-3">
+                      <RecommendedDifficultyBadge module={feature.title} />
+                    </div>
                     <Button 
                       variant="outline" 
                       className="w-full group-hover:border-primary group-hover:text-primary transition-colors"
