@@ -28,6 +28,7 @@ interface MarketEvent {
     positive: number;
     negative: number;
   };
+  affectedAssets: string[]; // Asset IDs that are affected by this event
 }
 
 interface GameState {
@@ -64,7 +65,8 @@ const MARKET_EVENTS: MarketEvent[] = [
     description: 'The Federal Reserve announces an unexpected rate cut to stimulate economic growth.',
     correctAnswer: 'BUY',
     reasoning: 'Lower rates make borrowing cheaper and often boost stock prices and growth assets.',
-    impact: { positive: 0.08, negative: -0.02 }
+    impact: { positive: 0.08, negative: -0.02 },
+    affectedAssets: ['STOCKS', 'TECH', 'CRYPTO']
   },
   {
     id: '2',
@@ -72,7 +74,8 @@ const MARKET_EVENTS: MarketEvent[] = [
     description: 'The Fed increases rates significantly to combat inflation concerns.',
     correctAnswer: 'SELL',
     reasoning: 'Higher rates hurt growth stocks and riskier markets, investors move to safer assets.',
-    impact: { positive: -0.06, negative: -0.12 }
+    impact: { positive: -0.06, negative: -0.12 },
+    affectedAssets: ['STOCKS', 'TECH', 'CRYPTO']
   },
   {
     id: '3',
@@ -80,7 +83,8 @@ const MARKET_EVENTS: MarketEvent[] = [
     description: 'International conflicts drive investors to safe haven assets.',
     correctAnswer: 'BUY',
     reasoning: 'Gold acts as a safe haven in uncertainty.',
-    impact: { positive: 0.15, negative: -0.03 }
+    impact: { positive: 0.15, negative: -0.03 },
+    affectedAssets: ['GOLD']
   },
   {
     id: '4',
@@ -88,7 +92,8 @@ const MARKET_EVENTS: MarketEvent[] = [
     description: 'Social media buzz around Tesla\'s autonomous vehicle plans.',
     correctAnswer: 'BUY',
     reasoning: 'Social media hype often drives Tesla\'s price up in the short term.',
-    impact: { positive: 0.12, negative: -0.05 }
+    impact: { positive: 0.12, negative: -0.05 },
+    affectedAssets: ['TECH', 'STOCKS']
   },
   {
     id: '5',
@@ -96,7 +101,8 @@ const MARKET_EVENTS: MarketEvent[] = [
     description: 'A promising AI startup goes public with massive investor interest.',
     correctAnswer: 'BUY',
     reasoning: 'IPOs can pop on day one; educational moment about speculation.',
-    impact: { positive: 0.18, negative: -0.08 }
+    impact: { positive: 0.18, negative: -0.08 },
+    affectedAssets: ['TECH']
   },
   {
     id: '6',
@@ -104,7 +110,8 @@ const MARKET_EVENTS: MarketEvent[] = [
     description: 'Government announces stricter regulations on digital currencies.',
     correctAnswer: 'SELL',
     reasoning: 'Regulation fear typically makes crypto prices fall fast.',
-    impact: { positive: -0.15, negative: -0.25 }
+    impact: { positive: -0.15, negative: -0.25 },
+    affectedAssets: ['CRYPTO']
   },
   {
     id: '7',
@@ -112,7 +119,8 @@ const MARKET_EVENTS: MarketEvent[] = [
     description: 'A nation declares Bitcoin as legal tender, boosting adoption.',
     correctAnswer: 'BUY',
     reasoning: 'Adoption fuels demand and optimism in crypto markets.',
-    impact: { positive: 0.20, negative: -0.05 }
+    impact: { positive: 0.20, negative: -0.05 },
+    affectedAssets: ['CRYPTO']
   },
   {
     id: '8',
@@ -120,7 +128,8 @@ const MARKET_EVENTS: MarketEvent[] = [
     description: 'Major oil producers reduce supply, driving prices higher.',
     correctAnswer: 'BUY',
     reasoning: 'Energy companies benefit from higher oil prices.',
-    impact: { positive: 0.14, negative: -0.04 }
+    impact: { positive: 0.14, negative: -0.04 },
+    affectedAssets: ['ENERGY']
   },
   {
     id: '9',
@@ -128,7 +137,8 @@ const MARKET_EVENTS: MarketEvent[] = [
     description: 'Financial institution fails, sparking sector-wide concerns.',
     correctAnswer: 'SELL',
     reasoning: 'Fear spreads in financial sector causing sell-offs.',
-    impact: { positive: -0.10, negative: -0.18 }
+    impact: { positive: -0.10, negative: -0.18 },
+    affectedAssets: ['STOCKS']
   },
   {
     id: '10',
@@ -136,7 +146,8 @@ const MARKET_EVENTS: MarketEvent[] = [
     description: 'Major technology company exceeds all profit expectations.',
     correctAnswer: 'BUY',
     reasoning: 'Strong earnings drive stock prices higher.',
-    impact: { positive: 0.11, negative: -0.03 }
+    impact: { positive: 0.11, negative: -0.03 },
+    affectedAssets: ['TECH', 'STOCKS']
   },
   {
     id: '11',
@@ -144,7 +155,8 @@ const MARKET_EVENTS: MarketEvent[] = [
     description: 'World Health Organization declares international health emergency.',
     correctAnswer: 'SELL',
     reasoning: 'Historically, stocks dip sharply at onset of crises.',
-    impact: { positive: -0.20, negative: -0.30 }
+    impact: { positive: -0.20, negative: -0.30 },
+    affectedAssets: ['STOCKS', 'TECH', 'ENERGY']
   },
   {
     id: '12',
@@ -152,7 +164,8 @@ const MARKET_EVENTS: MarketEvent[] = [
     description: 'Real estate sector shows signs of significant distress.',
     correctAnswer: 'SELL',
     reasoning: 'Decline in housing sector affects related stocks and REITs.',
-    impact: { positive: -0.08, negative: -0.16 }
+    impact: { positive: -0.08, negative: -0.16 },
+    affectedAssets: ['STOCKS']
   },
   {
     id: '13',
@@ -160,7 +173,8 @@ const MARKET_EVENTS: MarketEvent[] = [
     description: 'Multi-trillion dollar investment in roads, bridges, and green energy.',
     correctAnswer: 'BUY',
     reasoning: 'Stimulus boosts companies in infrastructure-related sectors.',
-    impact: { positive: 0.13, negative: -0.02 }
+    impact: { positive: 0.13, negative: -0.02 },
+    affectedAssets: ['STOCKS', 'ENERGY']
   },
   {
     id: '14',
@@ -168,7 +182,8 @@ const MARKET_EVENTS: MarketEvent[] = [
     description: 'Banking industry faces public backlash over privacy concerns.',
     correctAnswer: 'SELL',
     reasoning: 'Reputation damage leads to stock decline.',
-    impact: { positive: -0.07, negative: -0.14 }
+    impact: { positive: -0.07, negative: -0.14 },
+    affectedAssets: ['STOCKS']
   },
   {
     id: '15',
@@ -176,7 +191,8 @@ const MARKET_EVENTS: MarketEvent[] = [
     description: 'Revolutionary AI technology transforms industrial efficiency.',
     correctAnswer: 'BUY',
     reasoning: 'Lower costs equal higher profitability and higher stock prices.',
-    impact: { positive: 0.16, negative: -0.03 }
+    impact: { positive: 0.16, negative: -0.03 },
+    affectedAssets: ['TECH', 'STOCKS']
   }
 ];
 
@@ -197,7 +213,7 @@ export const LiveEventGame = () => {
 
   // Trigger first event when game starts
   useEffect(() => {
-    if (gameStarted && gameState && !gameState.currentEvent && !showResults && !gamePaused) {
+    if (gameStarted && gameState && !gameState.currentEvent && !showResults && !gamePaused && gameState.decisions.length === 0) {
       const timer = setTimeout(() => {
         triggerNextEvent();
       }, 1000);
@@ -205,18 +221,18 @@ export const LiveEventGame = () => {
     }
   }, [gameStarted, gameState, showResults, gamePaused]);
 
-  // Portfolio price movement over time
+  // Portfolio price movement over time - smaller movements when no event is active
   useEffect(() => {
-    if (!gameStarted || !gameState || gamePaused || showResults || gameState.currentEvent) return;
+    if (!gameStarted || !gameState || gamePaused || showResults || gameState.currentEvent || showImpactModal) return;
 
     const interval = setInterval(() => {
       setGameState(prev => {
         if (!prev) return prev;
         
-        // Small random price movements for each asset
+        // Very small random price movements for each asset when no event is active
         const updatedAssets = prev.assets.map(asset => ({
           ...asset,
-          currentPrice: asset.currentPrice * (1 + (Math.random() - 0.5) * 0.01) // ±0.5% random movement
+          currentPrice: asset.currentPrice * (1 + (Math.random() - 0.5) * 0.005) // ±0.25% random movement
         }));
 
         const newTotalValue = updatedAssets.reduce((sum, asset) => sum + (asset.currentPrice * asset.shares), 0) + prev.cash;
@@ -227,10 +243,10 @@ export const LiveEventGame = () => {
           totalValue: newTotalValue
         };
       });
-    }, 2000); // Update every 2 seconds
+    }, 3000); // Update every 3 seconds
 
     return () => clearInterval(interval);
-  }, [gameStarted, gameState?.currentEvent, gamePaused, showResults]);
+  }, [gameStarted, gameState?.currentEvent, gamePaused, showResults, showImpactModal]);
 
   const startGame = () => {
     const totalValue = INITIAL_ASSETS.reduce((sum, asset) => sum + (asset.currentPrice * asset.shares), 0);
@@ -283,9 +299,26 @@ export const LiveEventGame = () => {
     // Calculate price impact based on correctness
     const priceChange = wasCorrect ? event.impact.positive : event.impact.negative;
     
-    // Calculate portfolio impact (simplified for this demo)
-    const portfolioImpact = gameState.totalValue * Math.abs(priceChange);
-    const newTotalValue = gameState.totalValue * (1 + priceChange);
+    // Apply targeted price changes to affected assets
+    const updatedAssets = gameState.assets.map(asset => {
+      if (event.affectedAssets.includes(asset.id)) {
+        // Apply the event impact to affected assets
+        return {
+          ...asset,
+          currentPrice: asset.currentPrice * (1 + priceChange)
+        };
+      } else {
+        // Minor random movement for unaffected assets
+        return {
+          ...asset,
+          currentPrice: asset.currentPrice * (1 + (Math.random() - 0.5) * 0.01)
+        };
+      }
+    });
+
+    // Calculate new total value
+    const newTotalValue = updatedAssets.reduce((sum, asset) => sum + (asset.currentPrice * asset.shares), 0) + gameState.cash;
+    const portfolioImpact = newTotalValue - gameState.totalValue;
 
     // Record decision
     const newDecision = {
@@ -300,6 +333,7 @@ export const LiveEventGame = () => {
     // Update game state
     setGameState(prev => prev ? {
       ...prev,
+      assets: updatedAssets,
       totalValue: newTotalValue,
       roundsLeft: prev.roundsLeft - 1,
       decisions: [...prev.decisions, newDecision],
@@ -310,21 +344,15 @@ export const LiveEventGame = () => {
     setLastDecision({
       action,
       event,
-      impact: portfolioImpact * (wasCorrect ? 1 : -1),
+      impact: portfolioImpact,
       wasCorrect
     });
     
     setShowEventModal(false);
     setShowImpactModal(true);
 
-    // Get delay based on game speed
-    const getDelay = () => {
-      switch (gameState.gameSpeed) {
-        case 'slow': return 10000;
-        case 'fast': return 5000;
-        default: return 7000;
-      }
-    };
+    // Fixed delay of 5-10 seconds for user to see the impact
+    const delay = Math.random() * 5000 + 5000; // Random between 5-10 seconds
 
     // Continue game or end after showing impact
     setTimeout(() => {
@@ -334,7 +362,7 @@ export const LiveEventGame = () => {
       } else {
         triggerNextEvent();
       }
-    }, getDelay());
+    }, delay);
   };
 
   const stopGame = () => {
