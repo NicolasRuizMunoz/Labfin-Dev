@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CreditCard, Calculator, TrendingDown, Clock } from 'lucide-react';
 import { LoanSimulator } from '@/components/credit/LoanSimulator';
+import { DifficultyLevelIndicator } from '@/components/DifficultyLevelIndicator';
 
 const CreditPage = () => {
   return (
@@ -21,8 +22,10 @@ const CreditPage = () => {
         </p>
       </div>
 
+      <DifficultyLevelIndicator />
+
       {/* Feature Cards */}
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
+      <div className="grid md:grid-cols-3 gap-6 mb-8">{/* rest stays same */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">

@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrendingUp, Play, BarChart3, Zap } from 'lucide-react';
 import { MarketSimulator } from '@/components/markets/MarketSimulator';
 import { LiveEventGame } from '@/components/markets/LiveEventGame';
+import { DifficultyLevelIndicator } from '@/components/DifficultyLevelIndicator';
 
 const MarketsPage = () => {
   const [activeTab, setActiveTab] = useState('simulator');
@@ -26,6 +27,8 @@ const MarketsPage = () => {
           Practice investing in stocks, ETFs, mutual funds, and crypto with realistic market scenarios and live events
         </p>
       </div>
+
+      <DifficultyLevelIndicator />
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

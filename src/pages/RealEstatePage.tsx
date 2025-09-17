@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Home, Building2, Calculator } from 'lucide-react';
 import { MortgageSimulator } from '@/components/realestate/MortgageSimulator';
 import { RentalSimulator } from '@/components/realestate/RentalSimulator';
+import { DifficultyLevelIndicator } from '@/components/DifficultyLevelIndicator';
 
 const RealEstatePage = () => {
   const [activeTab, setActiveTab] = useState('mortgage');
@@ -25,6 +26,8 @@ const RealEstatePage = () => {
           Explore mortgage calculations for home buying and rental property investment scenarios
         </p>
       </div>
+
+      <DifficultyLevelIndicator />
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
