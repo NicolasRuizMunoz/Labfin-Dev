@@ -1,13 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { Home, DollarSign, Calendar, TrendingUp, Info, HelpCircle } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { getDifficultyLevel } from '@/lib/difficultyLevel';
+import { MortgageSimulatorBeginner } from './MortgageSimulatorBeginner';
+import { MortgageSimulatorAdvanced } from './MortgageSimulatorAdvanced';
 
 interface AmortizationEntry {
   month: number;
