@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Home, DollarSign, Calendar, TrendingUp, Info, HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface AmortizationEntry {
   month: number;
@@ -20,6 +21,7 @@ interface AmortizationEntry {
 }
 
 export const MortgageSimulatorAdvanced = () => {
+  const { t } = useLanguage();
   const [propertyPrice, setPropertyPrice] = useState(400000);
   const [downPaymentPercent, setDownPaymentPercent] = useState(20);
   const [interestRate, setInterestRate] = useState(6.5);
@@ -130,19 +132,19 @@ export const MortgageSimulatorAdvanced = () => {
         <div className="grid md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Property Details</CardTitle>
-            <CardDescription>Configure the property and loan terms</CardDescription>
+            <CardTitle className="text-lg">{t('propertyDetails')}</CardTitle>
+            <CardDescription>{t('propertyDetailsDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Label htmlFor="property-price">Property Price</Label>
+                <Label htmlFor="property-price">{t('propertyPrice')}</Label>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p className="max-w-xs">The total purchase price of the property. This determines your loan amount based on your down payment percentage.</p>
+                    <p className="max-w-xs">{t('propertyPriceTooltip')}</p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -158,13 +160,13 @@ export const MortgageSimulatorAdvanced = () => {
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Label htmlFor="down-payment">Down Payment (%)</Label>
+                <Label htmlFor="down-payment">{t('downPayment')}</Label>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p className="max-w-xs">The upfront payment you make when buying the home. Higher down payments reduce your loan amount and may help you avoid PMI (Private Mortgage Insurance).</p>
+                    <p className="max-w-xs">{t('downPaymentTooltip')}</p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -173,24 +175,24 @@ export const MortgageSimulatorAdvanced = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="5">5% - Minimum down payment</SelectItem>
-                  <SelectItem value="10">10% - Low down payment</SelectItem>
-                  <SelectItem value="20">20% - Avoid PMI</SelectItem>
-                  <SelectItem value="25">25% - Better rates</SelectItem>
-                  <SelectItem value="30">30% - Lower payments</SelectItem>
+                  <SelectItem value="5">{t('minimumDown')}</SelectItem>
+                  <SelectItem value="10">{t('lowDown')}</SelectItem>
+                  <SelectItem value="20">{t('avoidPMI')}</SelectItem>
+                  <SelectItem value="25">{t('betterRates')}</SelectItem>
+                  <SelectItem value="30">{t('lowerPayments')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Label htmlFor="interest-rate">Interest Rate (%)</Label>
+                <Label htmlFor="interest-rate">{t('interestRate')}</Label>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p className="max-w-xs">The annual percentage rate charged by the lender. Even small changes (0.5-1%) can significantly impact your monthly payment and total interest paid over the loan term.</p>
+                    <p className="max-w-xs">{t('interestRateTooltip')}</p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -206,15 +208,15 @@ export const MortgageSimulatorAdvanced = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="loan-term">Loan Term</Label>
+              <Label htmlFor="loan-term">{t('loanTerm')}</Label>
               <Select value={loanTermYears.toString()} onValueChange={(value) => setLoanTermYears(Number(value))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="15">15 years - Higher payments, less interest</SelectItem>
-                  <SelectItem value="20">20 years - Balanced approach</SelectItem>
-                  <SelectItem value="30">30 years - Lower payments, more interest</SelectItem>
+                  <SelectItem value="15">{t('fifteenYears')}</SelectItem>
+                  <SelectItem value="20">{t('twentyYears')}</SelectItem>
+                  <SelectItem value="30">{t('thirtyYears')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -223,12 +225,12 @@ export const MortgageSimulatorAdvanced = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Additional Costs</CardTitle>
-            <CardDescription>Annual property tax and insurance</CardDescription>
+            <CardTitle className="text-lg">{t('additionalCosts')}</CardTitle>
+            <CardDescription>{t('additionalCostsDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="property-tax">Annual Property Tax</Label>
+              <Label htmlFor="property-tax">{t('annualPropertyTax')}</Label>
               <Input
                 id="property-tax"
                 type="number"
@@ -240,7 +242,7 @@ export const MortgageSimulatorAdvanced = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="insurance">Annual Insurance</Label>
+              <Label htmlFor="insurance">{t('annualInsurance')}</Label>
               <Input
                 id="insurance"
                 type="number"
@@ -254,22 +256,22 @@ export const MortgageSimulatorAdvanced = () => {
             {/* Quick Stats */}
             {calculations && (
               <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-                <h4 className="font-semibold mb-2">Quick Overview</h4>
+                <h4 className="font-semibold mb-2">{t('quickOverview')}</h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span>Down Payment:</span>
+                    <span>{t('downPaymentLabel')}</span>
                     <span className="font-medium">{formatCurrency(calculations.downPayment)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Loan Amount:</span>
+                    <span>{t('loanAmount')}</span>
                     <span className="font-medium">{formatCurrency(calculations.loanAmount)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Monthly P&I:</span>
+                    <span>{t('monthlyPI')}</span>
                     <span className="font-medium">{formatCurrency(calculations.monthlyPayment)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Tax & Insurance:</span>
+                    <span>{t('taxInsurance')}</span>
                     <span className="font-medium">{formatCurrency(calculations.monthlyTaxInsurance)}</span>
                   </div>
                 </div>
@@ -288,7 +290,7 @@ export const MortgageSimulatorAdvanced = () => {
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
                   <Home className="w-4 h-4 text-financial" />
-                  <span className="text-sm text-muted-foreground">Total Monthly</span>
+                  <span className="text-sm text-muted-foreground">{t('totalMonthly')}</span>
                 </div>
                 <p className="text-2xl font-bold text-financial">
                   {formatCurrency(calculations.totalMonthlyPayment)}
@@ -300,7 +302,7 @@ export const MortgageSimulatorAdvanced = () => {
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
                   <DollarSign className="w-4 h-4 text-primary" />
-                  <span className="text-sm text-muted-foreground">P&I Payment</span>
+                  <span className="text-sm text-muted-foreground">{t('piPayment')}</span>
                 </div>
                 <p className="text-2xl font-bold text-primary">
                   {formatCurrency(calculations.monthlyPayment)}
@@ -312,7 +314,7 @@ export const MortgageSimulatorAdvanced = () => {
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
                   <TrendingUp className="w-4 h-4 text-risk-high" />
-                  <span className="text-sm text-muted-foreground">Total Interest</span>
+                  <span className="text-sm text-muted-foreground">{t('totalInterest')}</span>
                 </div>
                 <p className="text-2xl font-bold text-risk-high">
                   {formatCurrency(calculations.totalInterest)}
@@ -324,7 +326,7 @@ export const MortgageSimulatorAdvanced = () => {
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Total Paid</span>
+                  <span className="text-sm text-muted-foreground">{t('totalPaid')}</span>
                 </div>
                 <p className="text-2xl font-bold">
                   {formatCurrency(calculations.totalPayments)}
@@ -336,9 +338,9 @@ export const MortgageSimulatorAdvanced = () => {
           {/* Equity Growth Chart */}
           <Card>
             <CardHeader>
-              <CardTitle>Equity Building Over Time</CardTitle>
+              <CardTitle>{t('equityBuilding')}</CardTitle>
               <CardDescription>
-                How your home equity grows as you pay down the mortgage
+                {t('equityBuildingDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -349,10 +351,10 @@ export const MortgageSimulatorAdvanced = () => {
                     <XAxis dataKey="year" />
                     <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
                     <RechartsTooltip 
-                      formatter={(value: number, name: string) => [
-                        formatCurrency(value),
-                        name === 'equity' ? 'Home Equity' : 'Remaining Balance'
-                      ]}
+                     formatter={(value: number, name: string) => [
+                       formatCurrency(value),
+                       name === 'equity' ? t('homeEquity') : t('remainingBalance')
+                     ]}
                       labelFormatter={(year: number) => `Year ${year}`}
                     />
                     <Line 
@@ -381,33 +383,33 @@ export const MortgageSimulatorAdvanced = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Amortization Schedule</CardTitle>
+                  <CardTitle>{t('amortizationScheduleTable')}</CardTitle>
                   <CardDescription>
-                    Detailed month-by-month breakdown of your payments
+                    {t('amortizationScheduleTableDesc')}
                   </CardDescription>
                 </div>
                 <Button 
                   variant="outline" 
                   onClick={() => setShowAmortization(!showAmortization)}
                 >
-                  {showAmortization ? 'Hide' : 'Show'} Schedule
+                  {showAmortization ? t('hideSchedule') : t('showSchedule')}
                 </Button>
               </div>
             </CardHeader>
             {showAmortization && (
               <CardContent>
                 <div className="max-h-96 overflow-y-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Month</TableHead>
-                        <TableHead>Payment</TableHead>
-                        <TableHead>Principal</TableHead>
-                        <TableHead>Interest</TableHead>
-                        <TableHead>Balance</TableHead>
-                        <TableHead>Equity</TableHead>
-                      </TableRow>
-                    </TableHeader>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{t('month')}</TableHead>
+                          <TableHead>{t('payment')}</TableHead>
+                          <TableHead>{t('principal')}</TableHead>
+                          <TableHead>{t('interest')}</TableHead>
+                          <TableHead>{t('balance')}</TableHead>
+                          <TableHead>{t('equity')}</TableHead>
+                        </TableRow>
+                      </TableHeader>
                     <TableBody>
                       {calculations.amortizationSchedule.slice(0, 60).map((entry, index) => (
                         <TableRow key={index}>
@@ -429,7 +431,7 @@ export const MortgageSimulatorAdvanced = () => {
                   </Table>
                   {calculations.amortizationSchedule.length > 60 && (
                     <p className="text-sm text-muted-foreground text-center mt-4">
-                      Showing first 60 months of {calculations.amortizationSchedule.length} total payments
+                      {t('showingFirst')} {calculations.amortizationSchedule.length} {t('totalPaymentsText')}
                     </p>
                   )}
                 </div>

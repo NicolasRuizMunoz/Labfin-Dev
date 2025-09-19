@@ -236,6 +236,99 @@ const translations = {
     conceptsItems: ['Cómo se calcula y capitaliza el interés', 'El impacto de la duración del préstamo en el costo total', 'Asignación de pagos de capital vs interés', 'Estrategias para el pago anticipado del préstamo'],
     strategiesItems: ['Hacer pagos quincenales en lugar de mensuales', 'Aplicar ganancias inesperadas directamente al capital', 'Considerar refinanciar cuando las tasas bajen', 'Pagar primero la deuda de alto interés (método avalancha)'],
     
+    // Mortgage Simulator
+    propertyDetails: 'Detalles de la Propiedad',
+    propertyDetailsDesc: 'Configura la propiedad y términos del préstamo',
+    propertyPrice: 'Precio de la Propiedad',
+    propertyPriceTooltip: 'El precio total de compra de la propiedad. Esto determina el monto de tu préstamo basado en tu porcentaje de pago inicial.',
+    downPayment: 'Pago Inicial (%)',
+    downPaymentTooltip: 'El pago por adelantado que haces al comprar la casa. Pagos iniciales más altos reducen el monto de tu préstamo y pueden ayudarte a evitar PMI (Seguro Hipotecario Privado).',
+    interestRate: 'Tasa de Interés (%)',
+    interestRateTooltip: 'La tasa de porcentaje anual cobrada por el prestamista. Incluso pequeños cambios (0.5-1%) pueden impactar significativamente tu pago mensual y el interés total pagado durante el término del préstamo.',
+    loanTerm: 'Término del Préstamo',
+    additionalCosts: 'Costos Adicionales',
+    additionalCostsDesc: 'Impuesto anual de propiedad y seguro',
+    annualPropertyTax: 'Impuesto Anual de Propiedad',
+    annualInsurance: 'Seguro Anual',
+    quickOverview: 'Resumen Rápido',
+    downPaymentLabel: 'Pago Inicial:',
+    loanAmount: 'Monto del Préstamo:',
+    monthlyPI: 'P&I Mensual:',
+    taxInsurance: 'Impuesto y Seguro:',
+    totalMonthly: 'Total Mensual',
+    piPayment: 'Pago P&I',
+    totalInterest: 'Interés Total',
+    totalPaid: 'Total Pagado',
+    equityBuilding: 'Construcción de Capital a lo Largo del Tiempo',
+    equityBuildingDesc: 'Cómo crece tu capital inmobiliario mientras pagas la hipoteca',
+    amortizationScheduleTable: 'Tabla de Amortización',
+    amortizationScheduleTableDesc: 'Desglose detallado mes a mes de tus pagos',
+    showSchedule: 'Mostrar Tabla',
+    hideSchedule: 'Ocultar Tabla',
+    month: 'Mes',
+    payment: 'Pago',
+    principal: 'Capital',
+    interest: 'Interés',
+    balance: 'Saldo',
+    equity: 'Capital',
+    homeEquity: 'Capital Inmobiliario',
+    remainingBalance: 'Saldo Restante',
+    showingFirst: 'Mostrando los primeros 60 meses de',
+    totalPaymentsText: 'pagos totales',
+    
+    // Down Payment Options
+    minimumDown: '5% - Pago inicial mínimo',
+    lowDown: '10% - Pago inicial bajo',
+    avoidPMI: '20% - Evitar PMI',
+    betterRates: '25% - Mejores tasas',
+    lowerPayments: '30% - Pagos más bajos',
+    
+    // Loan Term Options
+    fifteenYears: '15 años - Pagos más altos, menos interés',
+    twentyYears: '20 años - Enfoque equilibrado',
+    thirtyYears: '30 años - Pagos más bajos, más interés',
+    
+    // Beginner Mortgage
+    dreamHome: 'Tu Casa de Ensueño',
+    dreamHomeDesc: 'Cuéntanos sobre la casa que quieres',
+    homePrice: 'Precio de la Casa',
+    homePriceTooltip: 'Este es el costo total de la casa',
+    downPaymentBeginner: 'Pago Inicial',
+    downPaymentTooltipBeginner: 'Dinero que pagas por adelantado al comprar la casa',
+    howLongToPay: 'Cuánto tiempo para pagarlo',
+    whatYouPay: 'Lo Que Pagarás',
+    whatYouPayDesc: 'Así es como se ve tu préstamo hipotecario',
+    monthlyPayment: 'Pago Mensual',
+    totalInterestPay: 'Interés Total que Pagarás',
+    borrowingCost: 'Este es dinero extra que pagas por pedir prestado',
+    whatYouLearned: '¡Lo Que Aprendiste Sobre Préstamos Hipotecarios! 🎓',
+    keyThings: '💡 Cosas Clave:',
+    tryThis: '🎯 Prueba Esto:',
+    
+    // Beginner Down Payment Options
+    smallDown: '10% - Pago inicial pequeño',
+    goodDown: '20% - Buen pago inicial (recomendado)',
+    largeDown: '30% - Pago inicial grande',
+    
+    // Beginner Loan Terms
+    payFaster: '15 años - Pagar más rápido, menos interés',
+    lowerPaymentsTerm: '30 años - Pagos más bajos, más interés',
+    
+    // Learning Tips - converted to strings for easier handling
+    learningTip1: 'Pago inicial más grande = pago mensual más pequeño',
+    learningTip2: 'Préstamo más largo = pago mensual más pequeño pero más interés',
+    learningTip3: '¡El interés se suma a mucho durante muchos años!',
+    learningTip4: 'El pago mensual permanece igual durante todo el préstamo',
+    
+    tryTip1: 'Cambia el precio de la casa y ve qué pasa',
+    tryTip2: 'Prueba diferentes montos de pago inicial',
+    tryTip3: 'Compara 15 años vs 30 años',
+    tryTip4: '¿Listo para más? ¡Toma la evaluación para niveles más difíciles!',
+    
+    // Beginner Intro
+    firstHomeLoan: '¡Tu Primera Calculadora de Préstamo Hipotecario! 🏠',
+    learnBasics: '¡Aprende los conceptos básicos de comprar una casa! Esta calculadora simple te muestra cuánto pagarás cada mes y cuánto interés pagarás con el tiempo. Usaremos una tasa de interés típica del 6.5% para mantenerlo simple.',
+    
     // Assessment
     assessmentTitle: 'Evaluación de Conocimiento Financiero',
     assessmentDescription: 'Descubre tu nivel actual de conocimiento financiero y obtén recomendaciones de aprendizaje personalizadas.',

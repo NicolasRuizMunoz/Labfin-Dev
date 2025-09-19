@@ -5,8 +5,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Home, DollarSign, Lightbulb } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const MortgageSimulatorBeginner = () => {
+  const { t } = useLanguage();
   const [propertyPrice, setPropertyPrice] = useState(300000);
   const [downPaymentPercent, setDownPaymentPercent] = useState(20);
   const [loanTermYears, setLoanTermYears] = useState(30);
@@ -57,10 +59,9 @@ export const MortgageSimulatorBeginner = () => {
           <div className="flex items-start gap-3">
             <Lightbulb className="w-6 h-6 text-primary mt-1" />
             <div>
-              <h3 className="font-semibold text-lg mb-2">Your First Home Loan Calculator! 🏠</h3>
+              <h3 className="font-semibold text-lg mb-2">{t('firstHomeLoan')}</h3>
               <p className="text-muted-foreground">
-                Learn the basics of buying a home! This simple calculator shows you how much you'll pay each month 
-                and how much interest you'll pay over time. We'll use a typical 6.5% interest rate to keep it simple.
+                {t('learnBasics')}
               </p>
             </div>
           </div>
@@ -72,13 +73,13 @@ export const MortgageSimulatorBeginner = () => {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Home className="w-5 h-5" />
-              Your Dream Home
+              {t('dreamHome')}
             </CardTitle>
-            <CardDescription>Tell us about the home you want</CardDescription>
+            <CardDescription>{t('dreamHomeDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="property-price">Home Price</Label>
+              <Label htmlFor="property-price">{t('homePrice')}</Label>
               <Input
                 id="property-price"
                 type="number"
@@ -88,36 +89,36 @@ export const MortgageSimulatorBeginner = () => {
                 step="10000"
               />
               <p className="text-xs text-muted-foreground">
-                💡 This is the total cost of the house
+                💡 {t('homePriceTooltip')}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label>Down Payment</Label>
+              <Label>{t('downPaymentBeginner')}</Label>
               <Select value={downPaymentPercent.toString()} onValueChange={(value) => setDownPaymentPercent(Number(value))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="10">10% - Small down payment</SelectItem>
-                  <SelectItem value="20">20% - Good down payment (recommended)</SelectItem>
-                  <SelectItem value="30">30% - Large down payment</SelectItem>
+                  <SelectItem value="10">{t('smallDown')}</SelectItem>
+                  <SelectItem value="20">{t('goodDown')}</SelectItem>
+                  <SelectItem value="30">{t('largeDown')}</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                💡 Money you pay upfront when buying the home
+                💡 {t('downPaymentTooltipBeginner')}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label>How long to pay it off</Label>
+              <Label>{t('howLongToPay')}</Label>
               <Select value={loanTermYears.toString()} onValueChange={(value) => setLoanTermYears(Number(value))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="15">15 years - Pay faster, less interest</SelectItem>
-                  <SelectItem value="30">30 years - Lower payments, more interest</SelectItem>
+                  <SelectItem value="15">{t('payFaster')}</SelectItem>
+                  <SelectItem value="30">{t('lowerPaymentsTerm')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
