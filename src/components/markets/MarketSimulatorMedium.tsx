@@ -8,6 +8,7 @@ import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, DollarSign, Calendar, AlertTriangle, Target } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Asset {
   id: string;
@@ -84,6 +85,7 @@ const MEDIUM_ASSETS: Asset[] = [
 ];
 
 export const MarketSimulatorMedium = () => {
+  const { t } = useLanguage();
   const [initialAmount, setInitialAmount] = useState(5000);
   const [monthlyContribution, setMonthlyContribution] = useState(300);
   const [years, setYears] = useState([10]);
@@ -189,10 +191,9 @@ export const MarketSimulatorMedium = () => {
           <div className="flex items-start gap-3">
             <Target className="w-5 h-5 text-primary mt-1" />
             <div>
-              <h3 className="font-semibold mb-1">Medium Level Investment Simulator</h3>
+              <h3 className="font-semibold mb-1">{t('mediumLevelInvestment')}</h3>
               <p className="text-sm text-muted-foreground">
-                Now you can choose from different types of investments! Mix conservative, balanced, and growth assets 
-                to create a portfolio that matches your comfort level. Learn about risk vs. reward.
+                {t('nowCanChoose')}
               </p>
             </div>
           </div>
@@ -203,12 +204,12 @@ export const MarketSimulatorMedium = () => {
       <div className="grid md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Investment Settings</CardTitle>
-            <CardDescription>Configure your investment plan</CardDescription>
+            <CardTitle className="text-lg">{t('investmentSettings')}</CardTitle>
+            <CardDescription>{t('configureInvestmentPlan')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="initial-amount">Starting Investment</Label>
+              <Label htmlFor="initial-amount">{t('startingInvestment')}</Label>
               <Input
                 id="initial-amount"
                 type="number"
@@ -220,7 +221,7 @@ export const MarketSimulatorMedium = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="monthly-contribution">Monthly Investment</Label>
+              <Label htmlFor="monthly-contribution">{t('monthlyInvestment')}</Label>
               <Input
                 id="monthly-contribution"
                 type="number"
@@ -232,7 +233,7 @@ export const MarketSimulatorMedium = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Investment Time: {years[0]} years</Label>
+              <Label>{t('investmentTime')}: {years[0]} {t('years')}</Label>
               <Slider
                 value={years}
                 onValueChange={setYears}
@@ -242,7 +243,7 @@ export const MarketSimulatorMedium = () => {
                 className="w-full"
               />
               <p className="text-xs text-muted-foreground">
-                💡 Longer time periods help smooth out market ups and downs
+                💡 {t('longerTimePeriods')}
               </p>
             </div>
           </CardContent>

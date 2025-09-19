@@ -5,8 +5,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { CreditCard, DollarSign, Lightbulb, Clock } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const LoanSimulatorBeginner = () => {
+  const { t } = useLanguage();
   const [loanAmount, setLoanAmount] = useState(10000);
   const [loanPurpose, setLoanPurpose] = useState<'car' | 'personal' | 'education'>('car');
   const [payoffTime, setPayoffTime] = useState(3);
@@ -67,10 +69,9 @@ export const LoanSimulatorBeginner = () => {
           <div className="flex items-start gap-3">
             <Lightbulb className="w-6 h-6 text-primary mt-1" />
             <div>
-              <h3 className="font-semibold text-lg mb-2">Your First Loan Calculator! 💳</h3>
+              <h3 className="font-semibold text-lg mb-2">{t('yourFirstLoanCalculator')}</h3>
               <p className="text-muted-foreground">
-                Learn how loans work! This simple calculator shows you how much you'll pay each month and how much 
-                extra money (interest) you'll pay for borrowing. Different types of loans have different rates.
+                {t('learnHowLoansWork')}
               </p>
             </div>
           </div>
@@ -82,13 +83,13 @@ export const LoanSimulatorBeginner = () => {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <CreditCard className="w-5 h-5" />
-              Your Loan
+              {t('yourLoan')}
             </CardTitle>
-            <CardDescription>Tell us about the money you want to borrow</CardDescription>
+            <CardDescription>Cuéntanos sobre el dinero que quieres pedir prestado</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="loan-amount">How much money do you need?</Label>
+              <Label htmlFor="loan-amount">{t('howMuchMoney')}</Label>
               <Input
                 id="loan-amount"
                 type="number"
@@ -98,37 +99,37 @@ export const LoanSimulatorBeginner = () => {
                 step="1000"
               />
               <p className="text-xs text-muted-foreground">
-                💡 This is the total amount you want to borrow
+                💡 {t('totalAmountBorrow')}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label>What's the loan for?</Label>
+              <Label>{t('whatsLoanFor')}</Label>
               <Select value={loanPurpose} onValueChange={(value: any) => setLoanPurpose(value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="car">🚗 Car Loan (Lower interest)</SelectItem>
-                  <SelectItem value="education">🎓 Education Loan (Lowest interest)</SelectItem>
-                  <SelectItem value="personal">💼 Personal Loan (Higher interest)</SelectItem>
+                  <SelectItem value="car">{t('carLoan')}</SelectItem>
+                  <SelectItem value="education">{t('educationLoan')}</SelectItem>
+                  <SelectItem value="personal">{t('personalLoan')}</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                💡 Different purposes have different interest rates
+                💡 {t('differentPurposes')}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label>How long to pay it back?</Label>
+              <Label>{t('howLongPayBack')}</Label>
               <Select value={payoffTime.toString()} onValueChange={(value) => setPayoffTime(Number(value))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="2">2 years - Pay faster, less interest</SelectItem>
-                  <SelectItem value="3">3 years - Balanced payments</SelectItem>
-                  <SelectItem value="5">5 years - Lower payments, more interest</SelectItem>
+                  <SelectItem value="2">2 {t('payFasterLessInterest')}</SelectItem>
+                  <SelectItem value="3">3 {t('balancedPayments')}</SelectItem>
+                  <SelectItem value="5">5 {t('lowerPaymentsMoreInterest')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -138,50 +139,50 @@ export const LoanSimulatorBeginner = () => {
         {calculations && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <DollarSign className="w-5 h-5" />
-                What You'll Pay
-              </CardTitle>
-              <CardDescription>Here's what your {settings.name.toLowerCase()} looks like</CardDescription>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <DollarSign className="w-5 h-5" />
+              {t('whatYouPayCredit')}
+            </CardTitle>
+            <CardDescription>{t('hereWhatLooksLike')} {settings.name.toLowerCase()}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="p-4 bg-primary/10 rounded-lg">
                   <div className="text-center">
-                    <p className="text-sm text-muted-foreground">Monthly Payment</p>
+                    <p className="text-sm text-muted-foreground">{t('monthlyPayment')}</p>
                     <p className="text-3xl font-bold text-primary">
                       {formatCurrency(calculations.monthlyPayment)}
                     </p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 bg-muted/50 rounded-lg text-center">
-                    <p className="text-xs text-muted-foreground">You Borrowed</p>
-                    <p className="text-lg font-semibold">
-                      {formatCurrency(loanAmount)}
-                    </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-muted/50 rounded-lg text-center">
+                      <p className="text-xs text-muted-foreground">{t('youBorrowed')}</p>
+                      <p className="text-lg font-semibold">
+                        {formatCurrency(loanAmount)}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-muted/50 rounded-lg text-center">
+                      <p className="text-xs text-muted-foreground">{t('interestRate')}</p>
+                      <p className="text-lg font-semibold">
+                        {(settings.rate * 100).toFixed(1)}%
+                      </p>
+                    </div>
                   </div>
-                  <div className="p-3 bg-muted/50 rounded-lg text-center">
-                    <p className="text-xs text-muted-foreground">Interest Rate</p>
-                    <p className="text-lg font-semibold">
-                      {(settings.rate * 100).toFixed(1)}%
-                    </p>
-                  </div>
-                </div>
 
                 <div className="p-3 bg-risk-high/10 rounded-lg text-center">
-                  <p className="text-sm text-muted-foreground">Extra Money You'll Pay (Interest)</p>
+                  <p className="text-sm text-muted-foreground">{t('extraMoneyPay')}</p>
                   <p className="text-xl font-bold text-risk-high">
                     {formatCurrency(calculations.totalInterest)}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    💡 This is the cost of borrowing money
+                    💡 {t('costOfBorrowing')}
                   </p>
                 </div>
 
                 <div className="p-3 bg-financial/10 rounded-lg text-center">
-                  <p className="text-sm text-muted-foreground">Total You'll Pay Back</p>
+                  <p className="text-sm text-muted-foreground">{t('totalPayBack')}</p>
                   <p className="text-xl font-bold text-financial">
                     {formatCurrency(calculations.totalPayments)}
                   </p>
@@ -197,24 +198,24 @@ export const LoanSimulatorBeginner = () => {
           <div className="flex items-start gap-3">
             <Lightbulb className="w-5 h-5 text-financial" />
             <div>
-              <h3 className="font-semibold mb-2">What You Learned About Loans! 🎓</h3>
+              <h3 className="font-semibold mb-2">{t('whatLearnedLoans')}</h3>
               <div className="grid md:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <h4 className="font-medium mb-2">💡 Key Things:</h4>
+                  <h4 className="font-medium mb-2">{t('keyThingsCredit')}</h4>
                   <ul className="space-y-1 text-muted-foreground">
-                    <li>• Interest is the cost of borrowing money</li>
-                    <li>• Different loan types have different rates</li>
-                    <li>• Longer loans = lower payments but more interest</li>
-                    <li>• Shorter loans = higher payments but less interest</li>
+                    <li>• {t('interestCostBorrowing')}</li>
+                    <li>• {t('differentLoanTypes')}</li>
+                    <li>• {t('longerLoans')}</li>
+                    <li>• {t('shorterLoans')}</li>
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-medium mb-2">🎯 Try This:</h4>
+                  <h4 className="font-medium mb-2">{t('tryThisCredit')}</h4>
                   <ul className="space-y-1 text-muted-foreground">
-                    <li>• Change the loan amount and see what happens</li>
-                    <li>• Try different loan types</li>
-                    <li>• Compare 2 years vs 5 years payoff time</li>
-                    <li>• Ready for more? Take the assessment for harder levels!</li>
+                    <li>• {t('changeLoanAmount')}</li>
+                    <li>• {t('tryDifferentTypes')}</li>
+                    <li>• {t('compareYearsVs')}</li>
+                    <li>• {t('readyMoreAssessment')}</li>
                   </ul>
                 </div>
               </div>

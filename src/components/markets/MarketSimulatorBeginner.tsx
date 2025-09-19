@@ -8,6 +8,7 @@ import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, DollarSign, Calendar, Info, Lightbulb } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SimulationResult {
   month: number;
@@ -17,6 +18,7 @@ interface SimulationResult {
 }
 
 export const MarketSimulatorBeginner = () => {
+  const { t } = useLanguage();
   const [initialAmount, setInitialAmount] = useState(1000);
   const [monthlyContribution, setMonthlyContribution] = useState(100);
   const [years, setYears] = useState([5]);
@@ -99,10 +101,9 @@ export const MarketSimulatorBeginner = () => {
           <div className="flex items-start gap-3">
             <Lightbulb className="w-6 h-6 text-primary mt-1" />
             <div>
-              <h3 className="font-semibold text-lg mb-2">Welcome to Your First Investment Simulator!</h3>
+              <h3 className="font-semibold text-lg mb-2">{t('welcomeFirstInvestment')}</h3>
               <p className="text-muted-foreground">
-                This simplified version shows you the basics of investing. You'll learn how your money can grow over time 
-                through the power of compound growth - where your money earns money, and then that money earns money too!
+                {t('simplifiedVersion')}
               </p>
             </div>
           </div>
@@ -115,13 +116,13 @@ export const MarketSimulatorBeginner = () => {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <DollarSign className="w-5 h-5" />
-              Your Money
+              {t('yourMoney')}
             </CardTitle>
-            <CardDescription>How much can you invest?</CardDescription>
+            <CardDescription>{t('howMuchInvest')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="initial-amount">Starting Amount</Label>
+              <Label htmlFor="initial-amount">{t('startingAmount')}</Label>
               <Input
                 id="initial-amount"
                 type="number"
@@ -131,12 +132,12 @@ export const MarketSimulatorBeginner = () => {
                 step="100"
               />
               <p className="text-xs text-muted-foreground">
-                💡 Even small amounts can grow over time!
+                💡 {t('evenSmallAmounts')}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="monthly-contribution">Monthly Savings</Label>
+              <Label htmlFor="monthly-contribution">{t('monthlySavings')}</Label>
               <Input
                 id="monthly-contribution"
                 type="number"
@@ -146,12 +147,12 @@ export const MarketSimulatorBeginner = () => {
                 step="10"
               />
               <p className="text-xs text-muted-foreground">
-                💡 Regular saving is more important than the amount!
+                💡 {t('regularSaving')}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label>Time to Let Money Grow: {years[0]} years</Label>
+              <Label>{t('timeLetMoneyGrow')} {years[0]} {t('years')}</Label>
               <Slider
                 value={years}
                 onValueChange={setYears}
@@ -161,7 +162,7 @@ export const MarketSimulatorBeginner = () => {
                 className="w-full"
               />
               <p className="text-xs text-muted-foreground">
-                💡 Time is your best friend in investing!
+                💡 {t('timeYourBestFriend')}
               </p>
             </div>
           </CardContent>
@@ -171,9 +172,9 @@ export const MarketSimulatorBeginner = () => {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <TrendingUp className="w-5 h-5" />
-              Investment Style
+              {t('investmentStyle')}
             </CardTitle>
-            <CardDescription>Choose your comfort level</CardDescription>
+            <CardDescription>{t('chooseComfortLevel')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3">
@@ -192,7 +193,7 @@ export const MarketSimulatorBeginner = () => {
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-medium">{setting.name}</h4>
                       <Badge variant="outline">
-                        {(setting.return * 100).toFixed(0)}% yearly
+                        {(setting.return * 100).toFixed(0)}% {t('yearlyReturn')}
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">{setting.description}</p>
@@ -204,7 +205,7 @@ export const MarketSimulatorBeginner = () => {
             <div className="p-3 bg-muted/50 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Info className="w-4 h-4 text-primary" />
-                <span className="font-medium text-sm">Current Choice</span>
+                <span className="font-medium text-sm">{t('currentChoice')}</span>
               </div>
               <p className="text-sm text-muted-foreground">
                 <strong>{settings.name}:</strong> {settings.description}
@@ -222,7 +223,7 @@ export const MarketSimulatorBeginner = () => {
             <Card className="border-financial/20">
               <CardContent className="p-6 text-center">
                 <DollarSign className="w-8 h-8 text-financial mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground mb-1">Your Money Grows To</p>
+                <p className="text-sm text-muted-foreground mb-1">{t('yourMoneyGrowsTo')}</p>
                 <p className="text-3xl font-bold text-financial">
                   {formatCurrency(finalStats.finalValue)}
                 </p>
@@ -232,7 +233,7 @@ export const MarketSimulatorBeginner = () => {
             <Card className="border-primary/20">
               <CardContent className="p-6 text-center">
                 <TrendingUp className="w-8 h-8 text-primary mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground mb-1">Money You Earned</p>
+                <p className="text-sm text-muted-foreground mb-1">{t('moneyYouEarned')}</p>
                 <p className="text-3xl font-bold text-primary">
                   {formatCurrency(finalStats.totalReturn)}
                 </p>
@@ -242,7 +243,7 @@ export const MarketSimulatorBeginner = () => {
             <Card className="border-muted-foreground/20">
               <CardContent className="p-6 text-center">
                 <Calendar className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground mb-1">Money You Put In</p>
+                <p className="text-sm text-muted-foreground mb-1">{t('moneyYouPutIn')}</p>
                 <p className="text-3xl font-bold">
                   {formatCurrency(finalStats.totalContributions)}
                 </p>
@@ -253,9 +254,9 @@ export const MarketSimulatorBeginner = () => {
           {/* Simple Growth Chart */}
           <Card>
             <CardHeader>
-              <CardTitle>Watch Your Money Grow! 📈</CardTitle>
+              <CardTitle>{t('watchMoneyGrow')}</CardTitle>
               <CardDescription>
-                The blue line shows how your money grows over {years[0]} years
+                {t('blueLineShows')} {years[0]} años
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -271,7 +272,7 @@ export const MarketSimulatorBeginner = () => {
                     <Tooltip 
                       formatter={(value: number, name: string) => [
                         formatCurrency(value),
-                        name === 'value' ? 'Total Value' : 'Money You Put In'
+                        name === 'value' ? t('totalValue') : t('moneyYouPutIn')
                       ]}
                       labelFormatter={(month: number) => `Month ${month}`}
                     />
@@ -301,51 +302,27 @@ export const MarketSimulatorBeginner = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Lightbulb className="w-5 h-5 text-financial" />
-                What You Learned! 
+                {t('whatYouLearned')} 
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <h4 className="font-semibold mb-2">💡 Key Discoveries:</h4>
-                  <ul className="text-sm text-muted-foreground space-y-2">
-                    <li className="flex items-start gap-2">
-                      <span>🚀</span>
-                      <span>Your money grows faster over longer time periods</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span>💰</span>
-                      <span>Regular saving is more powerful than you think</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span>⏰</span>
-                      <span>Starting early gives you a huge advantage</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span>📊</span>
-                      <span>Different investment types offer different returns</span>
-                    </li>
+                  <h4 className="font-medium mb-2">{t('keyDiscoveries')}</h4>
+                  <ul className="space-y-1 text-muted-foreground">
+                    <li>• {t('moneyGrowsFaster')}</li>
+                    <li>• {t('regularSavingPowerful')}</li>
+                    <li>• {t('startingEarlyAdvantage')}</li>
+                    <li>• {t('differentInvestmentTypes')}</li>
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">🎯 Next Steps:</h4>
-                  <ul className="text-sm text-muted-foreground space-y-2">
-                    <li className="flex items-start gap-2">
-                      <span>🔄</span>
-                      <span>Try different amounts and time periods</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span>📈</span>
-                      <span>Compare the three investment styles</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span>🎮</span>
-                      <span>Play the Live Event Game to learn about market changes</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span>📚</span>
-                      <span>Ready for more? Take the assessment again for harder levels!</span>
-                    </li>
+                  <h4 className="font-medium mb-2">{t('nextStepsMarkets')}</h4>
+                  <ul className="space-y-1 text-muted-foreground">
+                    <li>• {t('tryDifferentAmounts')}</li>
+                    <li>• {t('compareThreeStyles')}</li>
+                    <li>• {t('playLiveEventGame')}</li>
+                    <li>• {t('readyMoreTakeAssessment')}</li>
                   </ul>
                 </div>
               </div>
