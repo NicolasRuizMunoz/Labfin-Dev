@@ -12,7 +12,9 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
+  console.log('useLanguage hook called, context:', context);
   if (!context) {
+    console.error('useLanguage called outside of LanguageProvider');
     throw new Error('useLanguage must be used within a LanguageProvider');
   }
   return context;
@@ -252,7 +254,7 @@ const translations = {
     annualInsurance: 'Seguro Anual',
     quickOverview: 'Resumen Rápido',
     downPaymentLabel: 'Pago Inicial:',
-    loanAmount: 'Monto del Préstamo:',
+    loanAmountMortgage: 'Monto del Préstamo:',
     monthlyPI: 'P&I Mensual:',
     taxInsurance: 'Impuesto y Seguro:',
     totalMonthly: 'Total Mensual',
@@ -435,7 +437,7 @@ const translations = {
     companiesExpected: 'Empresas que se espera crezcan más rápido que el promedio',
     technologyETF: 'ETF de Tecnología',
     techCompaniesHigh: 'Empresas tecnológicas con alto potencial de crecimiento',
-    conservative: 'conservador',
+    conservativeOption: 'conservador',
     balanced: 'equilibrado',
     growth: 'crecimiento',
     diversificationTip: 'Consejo de diversificación:',
@@ -475,7 +477,7 @@ const translations = {
     totalReturn: 'Retorno Total',
     annualReturn: 'Retorno Anual',
     maxDrawdown: 'Máxima Caída',
-    conservativeOption: 'Conservador',
+    // Removed duplicate conservativeOption
     moderateBalanced: 'Moderado (Enfoque equilibrado)',
     aggressiveOption: 'Agresivo',
     
@@ -509,6 +511,7 @@ interface LanguageProviderProps {
 }
 
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
+  console.log('LanguageProvider rendering');
   const [language, setLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem('language');
     return (saved as Language) || 'en';
