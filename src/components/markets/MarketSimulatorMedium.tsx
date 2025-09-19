@@ -85,7 +85,7 @@ const MEDIUM_ASSETS: Asset[] = [
 ];
 
 export const MarketSimulatorMedium = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [initialAmount, setInitialAmount] = useState(5000);
   const [monthlyContribution, setMonthlyContribution] = useState(300);
   const [years, setYears] = useState([10]);
@@ -183,6 +183,14 @@ export const MarketSimulatorMedium = () => {
     }
   };
 
+  const riskLabel = (risk: string) => {
+    if (language === 'es') {
+      if (risk === 'High') return 'Alto';
+      if (risk === 'Medium') return 'Medio';
+      if (risk === 'Low') return 'Bajo';
+    }
+    return risk;
+  };
   return (
     <div className="space-y-6">
       {/* Educational Header */}
@@ -309,7 +317,7 @@ export const MarketSimulatorMedium = () => {
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
                   <DollarSign className="w-4 h-4 text-financial" />
-                  <span className="text-sm text-muted-foreground">Final Value</span>
+                  <span className="text-sm text-muted-foreground">{t('finalValue')}</span>
                 </div>
                 <p className="text-2xl font-bold text-financial">
                   {formatCurrency(finalStats.finalValue)}
@@ -321,7 +329,7 @@ export const MarketSimulatorMedium = () => {
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
                   <TrendingUp className="w-4 h-4 text-primary" />
-                  <span className="text-sm text-muted-foreground">Profit Made</span>
+                  <span className="text-sm text-muted-foreground">{t('profitMade')}</span>
                 </div>
                 <p className="text-2xl font-bold text-primary">
                   {formatCurrency(finalStats.totalReturn)}
@@ -333,7 +341,7 @@ export const MarketSimulatorMedium = () => {
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Yearly Return</span>
+                  <span className="text-sm text-muted-foreground">{t('yearlyReturnRate')}</span>
                 </div>
                 <p className="text-2xl font-bold">
                   {formatPercentage(finalStats.annualizedReturn)}
@@ -345,10 +353,10 @@ export const MarketSimulatorMedium = () => {
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
                   <AlertTriangle className="w-4 h-4 text-risk-medium" />
-                  <span className="text-sm text-muted-foreground">Risk Level</span>
+                  <span className="text-sm text-muted-foreground">{t('riskLevel')}</span>
                 </div>
                 <p className="text-2xl font-bold text-risk-medium">
-                  {finalStats.riskLevel}
+                  {riskLabel(finalStats.riskLevel)}
                 </p>
               </CardContent>
             </Card>
