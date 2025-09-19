@@ -6,12 +6,14 @@ import { Badge } from '@/components/ui/badge';
 import { AlertCircle, Settings } from 'lucide-react';
 import { getDifficultyLevel, getDifficultyDisplayName, getDifficultyDescription } from '@/lib/difficultyLevel';
 import type { DifficultyLevel } from '@/lib/difficultyLevel';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface DifficultyLevelIndicatorProps {
   onLevelChange?: () => void;
 }
 
 export const DifficultyLevelIndicator = ({ onLevelChange }: DifficultyLevelIndicatorProps) => {
+  const { t } = useLanguage();
   const [currentLevel, setCurrentLevel] = useState<DifficultyLevel>(getDifficultyLevel());
   const [showSettings, setShowSettings] = useState(false);
 
@@ -45,15 +47,15 @@ export const DifficultyLevelIndicator = ({ onLevelChange }: DifficultyLevelIndic
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium">Learning Level:</span>
+              <span className="text-sm font-medium">{t('learningLevel')}:</span>
               <Badge variant="outline" className="border-primary text-primary">
-                {getDifficultyDisplayName(currentLevel)}
+                {t(currentLevel)}
               </Badge>
             </div>
             
             {!hasAssessment && (
               <div className="text-xs text-muted-foreground">
-                (Default - Take assessment for personalized level)
+                ({t('defaultLevel')} - {t('takeAssessmentPersonalized')})
               </div>
             )}
           </div>
@@ -67,7 +69,7 @@ export const DifficultyLevelIndicator = ({ onLevelChange }: DifficultyLevelIndic
                 className="h-8"
               >
                 <Settings className="w-3 h-3 mr-1" />
-                Change Level
+                {t('changeLevel')}
               </Button>
             ) : (
               <div className="flex items-center gap-2">
@@ -76,9 +78,9 @@ export const DifficultyLevelIndicator = ({ onLevelChange }: DifficultyLevelIndic
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="beginner">Beginner</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="advanced">Advanced</SelectItem>
+                    <SelectItem value="beginner">{t('beginner')}</SelectItem>
+                    <SelectItem value="medium">{t('medium')}</SelectItem>
+                    <SelectItem value="advanced">{t('advanced')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button
@@ -87,7 +89,7 @@ export const DifficultyLevelIndicator = ({ onLevelChange }: DifficultyLevelIndic
                   onClick={() => setShowSettings(false)}
                   className="h-8 px-2"
                 >
-                  Cancel
+                  {t('cancel')}
                 </Button>
               </div>
             )}

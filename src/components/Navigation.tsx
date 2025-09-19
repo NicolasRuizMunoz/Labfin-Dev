@@ -2,20 +2,23 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { TrendingUp, Home, CreditCard, PiggyBank, Menu, Brain, CheckCircle2 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { TrendingUp, Home, CreditCard, PiggyBank, Menu, Brain, CheckCircle2, Globe } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 const labfinLogo = '/lovable-uploads/12094485-6192-4e4a-89bc-352de1dd8110.png';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { language, setLanguage, t } = useLanguage();
 
   const navItems = [
-    { name: 'Home', href: '/', icon: Brain },
-    { name: 'Markets', href: '/markets', icon: TrendingUp },
-    { name: 'Real Estate', href: '/real-estate', icon: Home },
-    { name: 'Credit', href: '/credit', icon: CreditCard },
-    { name: 'Self-Assessment Test', href: '/assessment', icon: CheckCircle2 },
-    { name: 'Retirement', href: '/retirement', icon: PiggyBank, disabled: true },
+    { name: t('home'), href: '/', icon: Brain },
+    { name: t('markets'), href: '/markets', icon: TrendingUp },
+    { name: t('realEstate'), href: '/real-estate', icon: Home },
+    { name: t('credit'), href: '/credit', icon: CreditCard },
+    { name: t('selfAssessment'), href: '/assessment', icon: CheckCircle2 },
+    { name: t('retirement'), href: '/retirement', icon: PiggyBank, disabled: true },
   ];
 
   const isActive = (href: string) => {
@@ -39,7 +42,30 @@ const Navigation = () => {
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex ml-auto space-x-1">
+        <div className="hidden md:flex ml-auto items-center space-x-1">
+          {/* Language Switcher */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                <Globe className="w-4 h-4" />
+                <span className="text-sm font-medium">{language.toUpperCase()}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem 
+                onClick={() => setLanguage('en')}
+                className={language === 'en' ? 'bg-accent' : ''}
+              >
+                English
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setLanguage('es')}
+                className={language === 'es' ? 'bg-accent' : ''}
+              >
+                Español
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -71,7 +97,29 @@ const Navigation = () => {
         </div>
 
         {/* Mobile Navigation */}
-        <div className="md:hidden ml-auto">
+        <div className="md:hidden ml-auto flex items-center space-x-2">
+          {/* Mobile Language Switcher */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Globe className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem 
+                onClick={() => setLanguage('en')}
+                className={language === 'en' ? 'bg-accent' : ''}
+              >
+                English
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setLanguage('es')}
+                className={language === 'es' ? 'bg-accent' : ''}
+              >
+                Español
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">

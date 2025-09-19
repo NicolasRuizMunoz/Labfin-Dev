@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { getDifficultyLevel, getDifficultyDisplayName } from '@/lib/difficultyLevel';
 import { CheckCircle2, AlertTriangle, Target } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface RecommendedDifficultyBadgeProps {
   module?: string;
@@ -8,6 +9,7 @@ interface RecommendedDifficultyBadgeProps {
 }
 
 export const RecommendedDifficultyBadge = ({ module, showIcon = true }: RecommendedDifficultyBadgeProps) => {
+  const { t } = useLanguage();
   const recommendedLevel = getDifficultyLevel();
   const hasAssessment = localStorage.getItem('userAssessment') !== null;
   
@@ -16,7 +18,7 @@ export const RecommendedDifficultyBadge = ({ module, showIcon = true }: Recommen
     return (
       <Badge variant="outline" className="border-muted-foreground/50 text-muted-foreground">
         {showIcon && <AlertTriangle className="w-3 h-3 mr-1" />}
-        Take Assessment
+        {t('takeAssessment')}
       </Badge>
     );
   }
@@ -51,7 +53,7 @@ export const RecommendedDifficultyBadge = ({ module, showIcon = true }: Recommen
   return (
     <Badge className={getBadgeVariant()}>
       {getIcon()}
-      Recommended: {getDifficultyDisplayName(recommendedLevel)}
+      {t('recommended')}: {t(recommendedLevel)}
     </Badge>
   );
 };
