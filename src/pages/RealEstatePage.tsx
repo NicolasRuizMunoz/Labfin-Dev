@@ -7,8 +7,10 @@ import { MortgageSimulator } from '@/components/realestate/MortgageSimulator';
 import { RentalSimulator } from '@/components/realestate/RentalSimulator';
 import { DifficultyLevelIndicator } from '@/components/DifficultyLevelIndicator';
 import { RecommendedDifficultyBadge } from '@/components/RecommendedDifficultyBadge';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const RealEstatePage = () => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('mortgage');
 
   return (
@@ -20,11 +22,11 @@ const RealEstatePage = () => {
             <Home className="w-8 h-8 text-financial" />
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-            Real Estate Simulator
+            {t('realEstateTitle')}
           </h1>
         </div>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Explore mortgage calculations for home buying and rental property investment scenarios
+          {t('realEstateDescription')}
         </p>
         <div className="flex justify-center mt-4">
           <RecommendedDifficultyBadge module="Real Estate" />
@@ -38,11 +40,11 @@ const RealEstatePage = () => {
         <TabsList className="grid w-full grid-cols-2 mb-8">
           <TabsTrigger value="mortgage" className="flex items-center gap-2">
             <Home className="w-4 h-4" />
-            Primary Home Mortgage
+            {t('primaryHomeMortgage')}
           </TabsTrigger>
           <TabsTrigger value="rental" className="flex items-center gap-2">
             <Building2 className="w-4 h-4" />
-            Rental Investment
+            {t('rentalInvestment')}
           </TabsTrigger>
         </TabsList>
 
@@ -52,12 +54,12 @@ const RealEstatePage = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Calculator className="w-5 h-5 text-primary" />
-                  Monthly Payments
+                  {t('monthlyPayments')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Calculate exact monthly payments based on price, down payment, and interest rate
+                  {t('monthlyPaymentsDesc')}
                 </p>
               </CardContent>
             </Card>
@@ -66,12 +68,12 @@ const RealEstatePage = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-financial"></div>
-                  Amortization Schedule
+                  {t('amortizationSchedule')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  See how much goes to principal vs interest over time and track equity building
+                  {t('amortizationScheduleDesc')}
                 </p>
               </CardContent>
             </Card>
@@ -80,12 +82,12 @@ const RealEstatePage = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-risk-medium"></div>
-                  Total Cost Analysis
+                  {t('totalCostAnalysis')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Understand the total interest paid and how different terms affect overall cost
+                  {t('totalCostAnalysisDesc')}
                 </p>
               </CardContent>
             </Card>
@@ -101,10 +103,10 @@ const RealEstatePage = () => {
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     <Building2 className="w-5 h-5 text-financial" />
-                    Rental Property Investment
+                    {t('rentalPropertyInvestment')}
                   </CardTitle>
                   <CardDescription className="mt-2">
-                    Analyze rental property investments with cap rates, cash flow, and appreciation scenarios
+                    {t('rentalPropertyDesc')}
                   </CardDescription>
                 </div>
               </div>
@@ -112,16 +114,16 @@ const RealEstatePage = () => {
             <CardContent>
               <div className="grid md:grid-cols-3 gap-4 mb-6">
                 <div className="text-center">
-                  <h4 className="font-semibold text-financial mb-1">Cash Flow Analysis</h4>
-                  <p className="text-sm text-muted-foreground">Monthly rent vs expenses</p>
+                  <h4 className="font-semibold text-financial mb-1">{t('cashFlowAnalysis')}</h4>
+                  <p className="text-sm text-muted-foreground">{t('cashFlowAnalysisDesc')}</p>
                 </div>
                 <div className="text-center">
-                  <h4 className="font-semibold text-risk-medium mb-1">Market Events</h4>
-                  <p className="text-sm text-muted-foreground">Economic factors affecting returns</p>
+                  <h4 className="font-semibold text-risk-medium mb-1">{t('marketEvents')}</h4>
+                  <p className="text-sm text-muted-foreground">{t('marketEventsDesc')}</p>
                 </div>
                 <div className="text-center">
-                  <h4 className="font-semibold text-primary mb-1">ROI Metrics</h4>
-                  <p className="text-sm text-muted-foreground">Cap rate, IRR, and total returns</p>
+                  <h4 className="font-semibold text-primary mb-1">{t('roiMetrics')}</h4>
+                  <p className="text-sm text-muted-foreground">{t('roiMetricsDesc')}</p>
                 </div>
               </div>
             </CardContent>

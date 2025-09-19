@@ -9,8 +9,10 @@ import { TrendingUp, Home, CreditCard, PiggyBank, MessageCircle, BookOpen, Check
 import { AICoach } from '@/components/AICoach';
 import { RecommendedDifficultyBadge } from '@/components/RecommendedDifficultyBadge';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const HomePage = () => {
+  const { t } = useLanguage();
   const [showAICoach, setShowAICoach] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [currentTutorial, setCurrentTutorial] = useState<string | null>(null);
@@ -289,35 +291,35 @@ const HomePage = () => {
 
   const features = [
     {
-      title: "Markets Simulator",
-      description: "Practice investing in stocks, ETFs, mutual funds, and crypto with realistic market scenarios",
+      title: t('marketsTitle'),
+      description: t('marketsFeatureDesc'),
       icon: TrendingUp,
       href: "/markets",
-      risk: "Variable",
+      risk: t('variable'),
       riskColor: "risk-medium"
     },
     {
-      title: "Real Estate",
-      description: "Explore mortgage calculations and rental property investment scenarios",
+      title: t('realEstateTitle'),
+      description: t('realEstateFeatureDesc'),
       icon: Home,
       href: "/real-estate",
-      risk: "Medium",
+      risk: t('medium'),
       riskColor: "risk-medium"
     },
     {
-      title: "Credit & Loans",
-      description: "Understand loan amortization, interest calculations, and payment strategies",
+      title: t('creditTitle'),
+      description: t('creditFeatureDesc'),
       icon: CreditCard,
       href: "/credit",
-      risk: "Low",
+      risk: t('low'),
       riskColor: "risk-low"
     },
     {
-      title: "Retirement Planning",
-      description: "Comprehensive retirement planning tools and calculators",
+      title: t('retirement'),
+      description: t('retirementFeatureDesc'),
       icon: PiggyBank,
       href: "/retirement",
-      risk: "Coming Soon",
+      risk: t('comingSoon'),
       riskColor: "muted",
       disabled: true
     }
@@ -329,13 +331,13 @@ const HomePage = () => {
       <section className="relative overflow-hidden bg-gradient-hero py-20 px-6">
         <div className="container max-w-6xl mx-auto text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-primary-foreground mb-6">
-            Master Finance with 
+            {t('welcomeTitle')} 
             <span className="block bg-gradient-to-r from-green-400 to-purple-400 bg-clip-text text-transparent">
-              LabFin Simulations
+              {t('welcomeTitleHighlight')}
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-primary-foreground/90 mb-8 max-w-3xl mx-auto">
-            Master personal finance through interactive simulations. Practice investing, real estate, credit management, and retirement planning in a risk-free environment.
+            {t('welcomeSubtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
@@ -345,7 +347,7 @@ const HomePage = () => {
               onClick={() => setShowAICoach(true)}
             >
               <MessageCircle className="w-5 h-5 mr-2" />
-              Start with AI Coach
+              {t('startAICoach')}
             </Button>
             <Button 
               size="lg" 
@@ -353,7 +355,7 @@ const HomePage = () => {
               className="border-white/30 text-white hover:bg-white/10"
               asChild
             >
-              <Link to="/markets">Explore Markets</Link>
+              <Link to="/markets">{t('exploreMarkets')}</Link>
             </Button>
           </div>
         </div>
@@ -364,10 +366,10 @@ const HomePage = () => {
         <div className="container max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Four Learning Modules
+              {t('fourModules')}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Each module provides hands-on experience with real financial scenarios and educational feedback
+              {t('modulesDescription')}
             </p>
           </div>
 
@@ -410,25 +412,25 @@ const HomePage = () => {
                       variant="outline" 
                       className="w-full group-hover:border-primary group-hover:text-primary transition-colors"
                       asChild={!feature.disabled}
-                      disabled={feature.disabled}
-                    >
-                      {feature.disabled ? (
-                        <span>Coming Soon</span>
-                      ) : (
-                        <Link to={feature.href}>
-                          Get Started
-                        </Link>
-                      )}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full text-muted-foreground hover:text-primary"
-                      onClick={() => openTutorial(getTutorialKey(feature.title) || '')}
-                    >
-                      <BookOpen className="w-4 h-4 mr-2" />
-                      Tutorial
-                    </Button>
+                     disabled={feature.disabled}
+                   >
+                     {feature.disabled ? (
+                       <span>{t('comingSoon')}</span>
+                     ) : (
+                       <Link to={feature.href}>
+                         {t('getStarted')}
+                       </Link>
+                     )}
+                   </Button>
+                   <Button
+                     variant="ghost"
+                     size="sm"
+                     className="w-full text-muted-foreground hover:text-primary"
+                     onClick={() => openTutorial(getTutorialKey(feature.title) || '')}
+                   >
+                     <BookOpen className="w-4 h-4 mr-2" />
+                     {t('tutorial')}
+                   </Button>
                   </CardContent>
                 </Card>
               );

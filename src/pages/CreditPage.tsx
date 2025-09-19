@@ -4,8 +4,11 @@ import { CreditCard, Calculator, TrendingDown, Clock } from 'lucide-react';
 import { LoanSimulator } from '@/components/credit/LoanSimulator';
 import { DifficultyLevelIndicator } from '@/components/DifficultyLevelIndicator';
 import { RecommendedDifficultyBadge } from '@/components/RecommendedDifficultyBadge';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const CreditPage = () => {
+  const { t } = useLanguage();
+  
   return (
     <div className="container max-w-6xl mx-auto py-8 px-6">
       {/* Header */}
@@ -15,11 +18,11 @@ const CreditPage = () => {
             <CreditCard className="w-8 h-8 text-risk-medium" />
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-            Credit & Loan Simulator
+            {t('creditTitle')}
           </h1>
         </div>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Understand loan amortization, interest calculations, and payment optimization strategies
+          {t('creditDescription')}
         </p>
         <div className="flex justify-center mt-4">
           <RecommendedDifficultyBadge module="Credit & Loans" />
@@ -34,12 +37,12 @@ const CreditPage = () => {
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
               <Calculator className="w-5 h-5 text-primary" />
-              Loan Calculator
+              {t('loanCalculator')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Calculate monthly payments, total interest, and see how different terms affect your loan
+              {t('loanCalculatorDesc')}
             </p>
           </CardContent>
         </Card>
@@ -48,12 +51,12 @@ const CreditPage = () => {
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
               <TrendingDown className="w-5 h-5 text-financial" />
-              Extra Payment Impact
+              {t('extraPaymentImpact')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              See how extra monthly payments can save thousands in interest and shorten loan terms
+              {t('extraPaymentImpactDesc')}
             </p>
           </CardContent>
         </Card>
@@ -62,12 +65,12 @@ const CreditPage = () => {
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
               <Clock className="w-5 h-5 text-risk-medium" />
-              Amortization Schedule
+              {t('amortizationScheduleCredit')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Detailed month-by-month breakdown of principal vs interest payments over time
+              {t('amortizationScheduleCreditDesc')}
             </p>
           </CardContent>
         </Card>
@@ -78,30 +81,30 @@ const CreditPage = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CreditCard className="w-5 h-5 text-primary" />
-            Credit Management Learning
+            {t('creditManagementLearning')}
           </CardTitle>
           <CardDescription>
-            Master the fundamentals of loan management and interest optimization
+            {t('creditManagementDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h4 className="font-semibold mb-2 text-financial">Key Concepts You'll Learn:</h4>
+              <h4 className="font-semibold mb-2 text-financial">{t('keyConcepts')}</h4>
               <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• How interest is calculated and compounded</li>
-                <li>• The impact of loan term length on total cost</li>
-                <li>• Principal vs interest payment allocation</li>
-                <li>• Strategies for early loan payoff</li>
+                <li>• {t('conceptsItems').split(', ')[0]}</li>
+                <li>• {t('conceptsItems').split(', ')[1]}</li>
+                <li>• {t('conceptsItems').split(', ')[2]}</li>
+                <li>• {t('conceptsItems').split(', ')[3]}</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-2 text-risk-medium">Smart Payment Strategies:</h4>
+              <h4 className="font-semibold mb-2 text-risk-medium">{t('smartPaymentStrategies')}</h4>
               <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• Make bi-weekly payments instead of monthly</li>
-                <li>• Apply windfalls directly to principal</li>
-                <li>• Consider refinancing when rates drop</li>
-                <li>• Pay high-interest debt first (avalanche method)</li>
+                <li>• {t('strategiesItems').split(', ')[0]}</li>
+                <li>• {t('strategiesItems').split(', ')[1]}</li>
+                <li>• {t('strategiesItems').split(', ')[2]}</li>
+                <li>• {t('strategiesItems').split(', ')[3]}</li>
               </ul>
             </div>
           </div>

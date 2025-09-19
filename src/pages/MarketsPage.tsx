@@ -8,8 +8,10 @@ import { MarketSimulator } from '@/components/markets/MarketSimulator';
 import { LiveEventGame } from '@/components/markets/LiveEventGame';
 import { DifficultyLevelIndicator } from '@/components/DifficultyLevelIndicator';
 import { RecommendedDifficultyBadge } from '@/components/RecommendedDifficultyBadge';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const MarketsPage = () => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('simulator');
 
   return (
@@ -21,11 +23,11 @@ const MarketsPage = () => {
             <TrendingUp className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-            Markets Simulator
+            {t('marketsTitle')}
           </h1>
         </div>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Practice investing in stocks, ETFs, mutual funds, and crypto with realistic market scenarios and live events
+          {t('marketsDescription')}
         </p>
         <div className="flex justify-center mt-4">
           <RecommendedDifficultyBadge module="Markets" />
@@ -39,11 +41,11 @@ const MarketsPage = () => {
         <TabsList className="grid w-full grid-cols-2 mb-8">
           <TabsTrigger value="simulator" className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4" />
-            Market Simulator
+            {t('marketSimulator')}
           </TabsTrigger>
           <TabsTrigger value="live-events" className="flex items-center gap-2">
             <Zap className="w-4 h-4" />
-            Live Event Game
+            {t('liveEventGame')}
           </TabsTrigger>
         </TabsList>
 
@@ -53,12 +55,12 @@ const MarketsPage = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-financial"></div>
-                  Portfolio Growth
+                  {t('portfolioGrowth')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  See how your investments could grow over time with different asset allocations and risk levels
+                  {t('portfolioGrowthDesc')}
                 </p>
               </CardContent>
             </Card>
@@ -67,12 +69,12 @@ const MarketsPage = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-risk-medium"></div>
-                  Risk Analysis
+                  {t('riskAnalysis')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Understand volatility, maximum drawdown, and risk-adjusted returns for different strategies
+                  {t('riskAnalysisDesc')}
                 </p>
               </CardContent>
             </Card>
@@ -81,12 +83,12 @@ const MarketsPage = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-primary"></div>
-                  Educational Insights
+                  {t('educationalInsights')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Get personalized feedback and learn key investing principles based on your choices
+                  {t('educationalInsightsDesc')}
                 </p>
               </CardContent>
             </Card>
@@ -102,30 +104,30 @@ const MarketsPage = () => {
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     <Zap className="w-5 h-5 text-primary" />
-                    Live Event Portfolio Game
+                    {t('liveEventPortfolioGame')}
                   </CardTitle>
                   <CardDescription className="mt-2">
-                    Build a portfolio and respond to real market events. Make buy/hold/sell decisions and see how they impact your returns.
+                    {t('liveEventDescription')}
                   </CardDescription>
                 </div>
                 <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/30">
-                  Interactive
+                  {t('interactive')}
                 </Badge>
               </div>
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-3 gap-4 mb-6">
                 <div className="text-center">
-                  <h4 className="font-semibold text-financial mb-1">Real Events</h4>
-                  <p className="text-sm text-muted-foreground">Market news, earnings, policy changes</p>
+                  <h4 className="font-semibold text-financial mb-1">{t('realEvents')}</h4>
+                  <p className="text-sm text-muted-foreground">{t('realEventsDesc')}</p>
                 </div>
                 <div className="text-center">
-                  <h4 className="font-semibold text-risk-medium mb-1">Quick Decisions</h4>
-                  <p className="text-sm text-muted-foreground">Buy, Hold, or Sell in real-time</p>
+                  <h4 className="font-semibold text-risk-medium mb-1">{t('quickDecisions')}</h4>
+                  <p className="text-sm text-muted-foreground">{t('quickDecisionsDesc')}</p>
                 </div>
                 <div className="text-center">
-                  <h4 className="font-semibold text-primary mb-1">Learn & Improve</h4>
-                  <p className="text-sm text-muted-foreground">Get feedback on your choices</p>
+                  <h4 className="font-semibold text-primary mb-1">{t('learnImprove')}</h4>
+                  <p className="text-sm text-muted-foreground">{t('learnImproveDesc')}</p>
                 </div>
               </div>
             </CardContent>
