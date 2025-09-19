@@ -35,6 +35,17 @@ const SelfAssessmentPage = () => {
 
   const questions: Question[] = [
     {
+      id: 'financialGoal',
+      question: 'What is your main financial objective?',
+      icon: Target,
+      options: [
+        { text: 'Preserving capital and steady income', value: 1, category: 'conservative' },
+        { text: 'Buying a home or major purchase', value: 2, category: 'moderate' },
+        { text: 'Building long-term wealth for retirement', value: 3, category: 'aggressive' },
+        { text: 'Generating passive income', value: 2, category: 'moderate' }
+      ]
+    },
+    {
       id: 'timeHorizon',
       question: 'How long are you planning to keep your investments?',
       icon: Clock,
@@ -73,17 +84,6 @@ const SelfAssessmentPage = () => {
         { text: 'Real estate (rental properties, REITs)', value: 2, category: 'moderate' },
         { text: 'Stocks and ETFs', value: 3, category: 'aggressive' },
         { text: 'Alternative investments (crypto, commodities)', value: 3, category: 'aggressive' }
-      ]
-    },
-    {
-      id: 'financialGoal',
-      question: 'What is your main financial objective?',
-      icon: Target,
-      options: [
-        { text: 'Preserving capital and steady income', value: 1, category: 'conservative' },
-        { text: 'Buying a home or major purchase', value: 2, category: 'moderate' },
-        { text: 'Building long-term wealth for retirement', value: 3, category: 'aggressive' },
-        { text: 'Generating passive income', value: 2, category: 'moderate' }
       ]
     },
     {
@@ -132,10 +132,10 @@ const SelfAssessmentPage = () => {
     }
 
     // Extract specific answers for personalization
-    const timeHorizonAnswer = questions[0].options[answers[0] - 1]?.text || 'Not specified';
-    const goalAnswer = questions[4].options[answers[4] - 1]?.text || 'Not specified';
-    const assetAnswer = questions[3].options[answers[3] - 1]?.text || 'Not specified';
-    const incomeAnswer = questions[2].options[answers[2] - 1]?.text || 'Not specified';
+    const goalAnswer = questions[0].options[answers[0] - 1]?.text || 'Not specified';
+    const timeHorizonAnswer = questions[1].options[answers[1] - 1]?.text || 'Not specified';
+    const assetAnswer = questions[4].options[answers[4] - 1]?.text || 'Not specified';
+    const incomeAnswer = questions[3].options[answers[3] - 1]?.text || 'Not specified';
 
     return {
       riskProfile,
