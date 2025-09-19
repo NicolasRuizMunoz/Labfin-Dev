@@ -8,6 +8,7 @@ import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, DollarSign, Calendar, AlertTriangle } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Asset {
   id: string;
@@ -38,6 +39,7 @@ const ASSETS: Asset[] = [
 ];
 
 export const MarketSimulatorAdvanced = () => {
+  const { t } = useLanguage();
   const [initialAmount, setInitialAmount] = useState(10000);
   const [monthlyContribution, setMonthlyContribution] = useState(500);
   const [years, setYears] = useState([10]);
@@ -162,7 +164,7 @@ export const MarketSimulatorAdvanced = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="initial-amount">Initial Investment</Label>
+              <Label htmlFor="initial-amount">{t('initialInvestment')}</Label>
               <Input
                 id="initial-amount"
                 type="number"
@@ -174,7 +176,7 @@ export const MarketSimulatorAdvanced = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="monthly-contribution">Monthly Contribution</Label>
+              <Label htmlFor="monthly-contribution">{t('monthlyContribution')}</Label>
               <Input
                 id="monthly-contribution"
                 type="number"
@@ -186,7 +188,7 @@ export const MarketSimulatorAdvanced = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Investment Timeline: {years[0]} years</Label>
+              <Label>{t('investmentTimeline')}: {years[0]} {t('years')}</Label>
               <Slider
                 value={years}
                 onValueChange={setYears}
@@ -270,7 +272,7 @@ export const MarketSimulatorAdvanced = () => {
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
                   <DollarSign className="w-4 h-4 text-financial" />
-                  <span className="text-sm text-muted-foreground">Final Value</span>
+                  <span className="text-sm text-muted-foreground">{t('finalValueAdvanced')}</span>
                 </div>
                 <p className="text-2xl font-bold text-financial">
                   {formatCurrency(finalStats.finalValue)}
@@ -282,7 +284,7 @@ export const MarketSimulatorAdvanced = () => {
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
                   <TrendingUp className="w-4 h-4 text-primary" />
-                  <span className="text-sm text-muted-foreground">Total Return</span>
+                  <span className="text-sm text-muted-foreground">{t('totalReturn')}</span>
                 </div>
                 <p className="text-2xl font-bold text-primary">
                   {formatCurrency(finalStats.totalReturn)}
@@ -294,7 +296,7 @@ export const MarketSimulatorAdvanced = () => {
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Annual Return</span>
+                  <span className="text-sm text-muted-foreground">{t('annualReturn')}</span>
                 </div>
                 <p className="text-2xl font-bold">
                   {formatPercentage(finalStats.annualizedReturn)}
@@ -306,7 +308,7 @@ export const MarketSimulatorAdvanced = () => {
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
                   <AlertTriangle className="w-4 h-4 text-risk-high" />
-                  <span className="text-sm text-muted-foreground">Max Drawdown</span>
+                  <span className="text-sm text-muted-foreground">{t('maxDrawdown')}</span>
                 </div>
                 <p className="text-2xl font-bold text-risk-high">
                   -{formatPercentage(finalStats.maxDrawdown)}

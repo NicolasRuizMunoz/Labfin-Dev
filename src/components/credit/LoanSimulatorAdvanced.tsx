@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { CreditCard, DollarSign, Calendar, TrendingDown, Clock, Calculator } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface PaymentEntry {
   month: number;
@@ -18,6 +19,7 @@ interface PaymentEntry {
 }
 
 export const LoanSimulatorAdvanced = () => {
+  const { t } = useLanguage();
   const [loanAmount, setLoanAmount] = useState(25000);
   const [annualRate, setAnnualRate] = useState(8.5);
   const [termMonths, setTermMonths] = useState(60);
@@ -179,7 +181,7 @@ export const LoanSimulatorAdvanced = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="loan-amount">Loan Amount</Label>
+              <Label htmlFor="loan-amount">{t('loanAmountField')}</Label>
               <Input
                 id="loan-amount"
                 type="number"
@@ -191,7 +193,7 @@ export const LoanSimulatorAdvanced = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="annual-rate">Annual Interest Rate (%)</Label>
+              <Label htmlFor="annual-rate">{t('annualInterestRate')}</Label>
               <Input
                 id="annual-rate"
                 type="number"
@@ -224,7 +226,7 @@ export const LoanSimulatorAdvanced = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="extra-payment">Extra Monthly Payment (Optional)</Label>
+              <Label htmlFor="extra-payment">{t('extraMonthlyPayment')}</Label>
               <Input
                 id="extra-payment"
                 type="number"
@@ -315,7 +317,7 @@ export const LoanSimulatorAdvanced = () => {
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
                   <DollarSign className="w-4 h-4 text-primary" />
-                  <span className="text-sm text-muted-foreground">Monthly Payment</span>
+                  <span className="text-sm text-muted-foreground">{t('monthlyPaymentStat')}</span>
                 </div>
                 <p className="text-2xl font-bold text-primary">
                   {formatCurrency(calculations.monthlyPayment)}
@@ -327,7 +329,7 @@ export const LoanSimulatorAdvanced = () => {
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
                   <TrendingDown className="w-4 h-4 text-risk-high" />
-                  <span className="text-sm text-muted-foreground">Total Interest</span>
+                  <span className="text-sm text-muted-foreground">{t('totalInterestStat')}</span>
                 </div>
                 <p className="text-2xl font-bold text-risk-high">
                   {formatCurrencySimple(calculations.totalInterest)}
@@ -339,7 +341,7 @@ export const LoanSimulatorAdvanced = () => {
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Loan Term</span>
+                  <span className="text-sm text-muted-foreground">{t('loanTermStat')}</span>
                 </div>
                 <p className="text-2xl font-bold">
                   {Math.floor(termMonths / 12)}y {termMonths % 12}m
