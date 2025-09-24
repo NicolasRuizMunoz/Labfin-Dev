@@ -366,10 +366,10 @@ export const MarketSimulatorAdvanced = () => {
           {/* Educational Insights */}
           <Card className="border-financial/20 bg-gradient-success/5">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-financial" />
-                Educational Insights
-              </CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-financial" />
+                  {t('educationalInsightsAdvanced')}
+                </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="grid md:grid-cols-2 gap-4">

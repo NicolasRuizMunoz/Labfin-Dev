@@ -442,29 +442,29 @@ export const MortgageSimulatorAdvanced = () => {
           {/* Educational Insights */}
           <Card className="border-financial/20 bg-gradient-success/5">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-financial" />
-                Educational Insights
-              </CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-financial" />
+                  {t('educationalInsights')}
+                </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <h4 className="font-semibold mb-2">Key Learnings:</h4>
+                  <h4 className="font-semibold mb-2">{t('keyLearnings')}:</h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Early payments are mostly interest, later payments are mostly principal</li>
-                    <li>• Interest rate changes have significant impact on total cost</li>
-                    <li>• Larger down payments reduce PMI and monthly payments</li>
-                    <li>• Property taxes and insurance add to your monthly housing cost</li>
+                    <li>{t('realEstateKeyLearnings1')}</li>
+                    <li>{t('realEstateKeyLearnings2')}</li>
+                    <li>{t('realEstateKeyLearnings3')}</li>
+                    <li>{t('realEstateKeyLearnings4')}</li>
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Advanced Strategies:</h4>
+                  <h4 className="font-semibold mb-2">{t('advancedStrategies')}</h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Extra principal payments can save years and thousands in interest</li>
-                    <li>• Bi-weekly payments result in 13 monthly payments per year</li>
-                    <li>• Refinancing when rates drop can reduce total costs</li>
-                    <li>• Consider the opportunity cost of large down payments</li>
+                    <li>{t('realEstateAdvanced1')}</li>
+                    <li>{t('realEstateAdvanced2')}</li>
+                    <li>{t('realEstateAdvanced3')}</li>
+                    <li>{t('realEstateAdvanced4')}</li>
                   </ul>
                 </div>
               </div>

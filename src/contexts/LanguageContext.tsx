@@ -220,6 +220,56 @@ const translations = {
     appreciationFocus: 'Real estate (appreciation focus)',
     alternativeInvestments: 'Alternative investments',
     
+    // Educational Insights - Markets Medium
+    whatYouLearning: 'What You\'re Learning',
+    portfolioConcepts: '📊 Portfolio Concepts:',
+    diversificationConcept: '• **Diversification:** Spreading risk across different investments',
+    assetClassesConcept: '• **Asset Classes:** Different types have different risk/return profiles',
+    riskReturnConcept: '• **Risk vs. Return:** Higher potential returns usually mean higher risk',
+    timeHorizonConcept: '• **Time Horizon:** Longer investing periods can handle more volatility',
+    tryTheseExperiments: '🎯 Try These Experiments:',
+    compareConservativeGrowth: '• Compare all-conservative vs. all-growth portfolios',
+    seeTimePeriods: '• See how different time periods affect your results',
+    tryLiveEvent: '• Try the Live Event Game to experience market volatility',
+    readyForAdvanced: '• Ready for more complexity? Take the assessment for advanced mode!',
+    
+    // Educational Insights - Markets Advanced
+    educationalInsightsAdvanced: 'Educational Insights',
+    keyLearningsAdvanced: 'Key Learnings:',
+    compoundGrowthAccelerates: '• Compound growth accelerates over longer time periods',
+    regularContributionsSmooth: '• Regular contributions help smooth out market volatility',
+    higherRiskPotential: '• Higher risk assets have potential for greater returns but larger drawdowns',
+    diversificationReduces: '• Diversification across asset classes can reduce overall portfolio risk',
+    nextSteps: 'Next Steps:',
+    tryDifferentAssets: '• Try different asset combinations to see impact on returns',
+    experimentRiskProfiles: '• Experiment with various risk profiles',
+    testContributionAmounts: '• Test how changing contribution amounts affects outcomes',
+    
+    // Educational Insights - Credit Advanced
+    creditKeyLearnings1: '• Extra payments are applied directly to principal',
+    creditKeyLearnings2: '• Small extra payments can save significant interest over time',
+    creditKeyLearnings3: '• Higher interest rates make extra payments more valuable',
+    creditKeyLearnings4: '• Pay off highest-rate debts first for maximum impact',
+    advancedStrategies: 'Advanced Strategies:',
+    debtAvalancheSnowball: '• Consider debt avalanche vs debt snowball methods',
+    roundUpPayments: '• Round up payments to accelerate payoff',
+    useWindfalls: '• Use windfalls (bonuses, tax refunds) for extra payments',
+    balanceDebtEmergency: '• Balance debt payoff with emergency fund building',
+    
+    // Educational Insights - Real Estate Advanced
+    realEstateKeyLearnings1: '• Early payments are mostly interest, later payments are mostly principal',
+    realEstateKeyLearnings2: '• Interest rate changes have significant impact on total cost',
+    realEstateKeyLearnings3: '• Larger down payments reduce PMI and monthly payments',
+    realEstateKeyLearnings4: '• Property taxes and insurance add to your monthly housing cost',
+    realEstateAdvanced1: '• Extra principal payments can save years and thousands in interest',
+    realEstateAdvanced2: '• Bi-weekly payments result in 13 monthly payments per year',
+    realEstateAdvanced3: '• Refinancing when rates drop can reduce total costs',
+    realEstateAdvanced4: '• Consider the opportunity cost of large down payments',
+    
+    // Educational Insights - Live Event Game
+    learningInsightsGame: 'Learning Insights',
+    learningOpportunity: '📚 Learning opportunity! You achieved {{actual}}% return vs optimal {{optimal}}%. Focus on the optimal actions shown above.',
+    
     assessmentTitle: 'Financial Knowledge Assessment',
     assessmentDesc: 'Discover your current financial knowledge level and get personalized learning recommendations.',
     
@@ -669,6 +719,56 @@ const translations = {
     technologyETFs: 'ETFs de tecnología',
     appreciationFocus: 'Bienes raíces (enfoque en apreciación)',
     alternativeInvestments: 'Inversiones alternativas',
+    
+    // Educational Insights - Markets Medium  
+    whatYouLearningMedium: 'Lo Que Estás Aprendiendo',
+    portfolioConceptsMedium: '📊 Conceptos de Portafolio:',
+    diversificationConcept: '• **Diversificación:** Distribuir el riesgo entre diferentes inversiones',
+    assetClassesConcept: '• **Clases de Activos:** Diferentes tipos tienen diferentes perfiles de riesgo/retorno',
+    riskReturnConcept: '• **Riesgo vs. Retorno:** Mayores retornos potenciales generalmente significan mayor riesgo',
+    timeHorizonConcept: '• **Horizonte Temporal:** Períodos de inversión más largos pueden manejar más volatilidad',
+    tryTheseExperiments: '🎯 Prueba Estos Experimentos:',
+    compareConservativeGrowth: '• Compara portafolios completamente conservadores vs. completamente de crecimiento',
+    seeTimePeriods: '• Ve cómo diferentes períodos de tiempo afectan tus resultados',
+    tryLiveEvent: '• Prueba el Juego de Eventos en Vivo para experimentar la volatilidad del mercado',
+    readyForAdvanced: '• ¿Listo para más complejidad? ¡Toma la evaluación para el modo avanzado!',
+    
+    // Educational Insights - Markets Advanced
+    educationalInsightsAdvanced: 'Perspectivas Educativas',
+    keyLearningsAdvanced: 'Aprendizajes Clave:',
+    compoundGrowthAccelerates: '• El crecimiento compuesto se acelera durante períodos de tiempo más largos',
+    regularContributionsSmooth: '• Las contribuciones regulares ayudan a suavizar la volatilidad del mercado',
+    higherRiskPotential: '• Los activos de mayor riesgo tienen potencial para mayores retornos pero mayores caídas',
+    diversificationReduces: '• La diversificación entre clases de activos puede reducir el riesgo general del portafolio',
+    nextSteps: 'Próximos Pasos:',
+    tryDifferentAssets: '• Prueba diferentes combinaciones de activos para ver el impacto en los retornos',
+    experimentRiskProfiles: '• Experimenta con varios perfiles de riesgo',
+    testContributionAmounts: '• Prueba cómo cambiar las cantidades de contribución afecta los resultados',
+    
+    // Educational Insights - Credit Advanced
+    creditKeyLearnings1: '• Los pagos extra se aplican directamente al capital',
+    creditKeyLearnings2: '• Los pagos extra pequeños pueden ahorrar interés significativo con el tiempo',
+    creditKeyLearnings3: '• Las tasas de interés más altas hacen que los pagos extra sean más valiosos',
+    creditKeyLearnings4: '• Pagar primero las deudas de mayor tasa para máximo impacto',
+    advancedStrategies: 'Estrategias Avanzadas:',
+    debtAvalancheSnowball: '• Considera métodos de avalancha de deuda vs bola de nieve de deuda',
+    roundUpPayments: '• Redondea los pagos para acelerar la liquidación',
+    useWindfalls: '• Usa ingresos inesperados (bonos, reembolsos de impuestos) para pagos extra',
+    balanceDebtEmergency: '• Equilibra la liquidación de deudas con la construcción del fondo de emergencia',
+    
+    // Educational Insights - Real Estate Advanced
+    realEstateKeyLearnings1: '• Los pagos tempranos son principalmente interés, los pagos posteriores son principalmente capital',
+    realEstateKeyLearnings2: '• Los cambios en la tasa de interés tienen un impacto significativo en el costo total',
+    realEstateKeyLearnings3: '• Los pagos iniciales más grandes reducen el PMI y los pagos mensuales',
+    realEstateKeyLearnings4: '• Los impuestos sobre la propiedad y el seguro se suman a tu costo mensual de vivienda',
+    realEstateAdvanced1: '• Los pagos extra de capital pueden ahorrar años y miles en intereses',
+    realEstateAdvanced2: '• Los pagos quincenales resultan en 13 pagos mensuales por año',
+    realEstateAdvanced3: '• Refinanciar cuando las tasas bajan puede reducir los costos totales',
+    realEstateAdvanced4: '• Considera el costo de oportunidad de pagos iniciales grandes',
+    
+    // Educational Insights - Live Event Game
+    learningInsightsGame: 'Perspectivas de Aprendizaje',
+    learningOpportunity: '📚 ¡Oportunidad de aprendizaje! Lograste {{actual}}% de retorno vs óptimo {{optimal}}%. Enfócate en las acciones óptimas mostradas arriba.',
     
     // Common translations
     years: 'años',

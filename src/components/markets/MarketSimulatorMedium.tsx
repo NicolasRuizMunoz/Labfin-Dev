@@ -413,27 +413,27 @@ export const MarketSimulatorMedium = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-financial" />
-                What You're Learning
+                {t('whatYouLearningMedium')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <h4 className="font-semibold mb-2">📊 Portfolio Concepts:</h4>
+                  <h4 className="font-semibold mb-2">{t('portfolioConceptsMedium')}</h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• <strong>Diversification:</strong> Spreading risk across different investments</li>
-                    <li>• <strong>Asset Classes:</strong> Different types have different risk/return profiles</li>
-                    <li>• <strong>Risk vs. Return:</strong> Higher potential returns usually mean higher risk</li>
-                    <li>• <strong>Time Horizon:</strong> Longer investing periods can handle more volatility</li>
+                    <li>{t('diversificationConcept')}</li>
+                    <li>{t('assetClassesConcept')}</li>
+                    <li>{t('riskReturnConcept')}</li>
+                    <li>{t('timeHorizonConcept')}</li>
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">🎯 Try These Experiments:</h4>
+                  <h4 className="font-semibold mb-2">{t('tryTheseExperiments')}</h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Compare all-conservative vs. all-growth portfolios</li>
-                    <li>• See how different time periods affect your results</li>
-                    <li>• Try the Live Event Game to experience market volatility</li>
-                    <li>• Ready for more complexity? Take the assessment for advanced mode!</li>
+                    <li>{t('compareConservativeGrowth')}</li>
+                    <li>{t('seeTimePeriods')}</li>
+                    <li>{t('tryLiveEvent')}</li>
+                    <li>{t('readyForAdvanced')}</li>
                   </ul>
                 </div>
               </div>

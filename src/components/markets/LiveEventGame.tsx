@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Play, TrendingUp, TrendingDown, Minus, Zap, Clock, Trophy, Square, Gauge, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Asset {
   id: string;
@@ -197,6 +198,7 @@ const MARKET_EVENTS: MarketEvent[] = [
 ];
 
 export const LiveEventGame = () => {
+  const { t } = useLanguage();
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
   const [showEventModal, setShowEventModal] = useState(false);
@@ -557,7 +559,7 @@ export const LiveEventGame = () => {
           {/* Feedback */}
           <Card className="border-primary/20 bg-primary/5">
             <CardHeader>
-              <CardTitle className="text-lg">Learning Insights</CardTitle>
+              <CardTitle className="text-lg">{t('learningInsightsGame')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2 text-sm">
@@ -573,7 +575,7 @@ export const LiveEventGame = () => {
                 )}
                 {actualReturn < optimalReturn * 0.5 && (
                   <p className="text-risk-high">
-                    📚 Learning opportunity! You achieved {actualReturn.toFixed(1)}% return vs optimal {optimalReturn.toFixed(1)}%. Focus on the optimal actions shown above.
+                    {t('learningOpportunity').replace('{{actual}}', actualReturn.toFixed(1)).replace('{{optimal}}', optimalReturn.toFixed(1))}
                   </p>
                 )}
                 <Separator className="my-3" />

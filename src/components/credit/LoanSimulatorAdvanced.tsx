@@ -421,29 +421,29 @@ export const LoanSimulatorAdvanced = () => {
           {/* Educational Insights */}
           <Card className="border-financial/20 bg-gradient-success/5">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingDown className="w-5 h-5 text-financial" />
-                Educational Insights
-              </CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingDown className="w-5 h-5 text-financial" />
+                  {t('educationalInsights')}
+                </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <h4 className="font-semibold mb-2">Key Learnings:</h4>
+                  <h4 className="font-semibold mb-2">{t('keyLearnings')}:</h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Extra payments are applied directly to principal</li>
-                    <li>• Small extra payments can save significant interest over time</li>
-                    <li>• Higher interest rates make extra payments more valuable</li>
-                    <li>• Pay off highest-rate debts first for maximum impact</li>
+                    <li>{t('creditKeyLearnings1')}</li>
+                    <li>{t('creditKeyLearnings2')}</li>
+                    <li>{t('creditKeyLearnings3')}</li>
+                    <li>{t('creditKeyLearnings4')}</li>
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Advanced Strategies:</h4>
+                  <h4 className="font-semibold mb-2">{t('advancedStrategies')}</h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Consider debt avalanche vs debt snowball methods</li>
-                    <li>• Round up payments to accelerate payoff</li>
-                    <li>• Use windfalls (bonuses, tax refunds) for extra payments</li>
-                    <li>• Balance debt payoff with emergency fund building</li>
+                    <li>{t('debtAvalancheSnowball')}</li>
+                    <li>{t('roundUpPayments')}</li>
+                    <li>{t('useWindfalls')}</li>
+                    <li>{t('balanceDebtEmergency')}</li>
                   </ul>
                 </div>
               </div>
