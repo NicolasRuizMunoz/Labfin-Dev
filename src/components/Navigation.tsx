@@ -30,30 +30,30 @@ const Navigation = () => {
 
   return (
     <nav className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 max-w-6xl mx-auto items-center px-6">
+      <div className="container flex h-14 max-w-7xl mx-auto items-center px-4">
         {/* Logo */}
-        <Link to="/" className="flex items-center space-x-2">
+        <Link to="/" className="flex items-center space-x-2 mr-4">
           <img 
             src={labfinLogo} 
             alt="LabFin Logo" 
-            className="w-8 h-8 object-contain"
+            className="w-7 h-7 object-contain"
           />
-          <span className="hidden sm:inline-block font-bold text-xl text-primary">
+          <span className="hidden lg:inline-block font-bold text-lg text-primary">
             LabFin
           </span>
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex ml-auto items-center space-x-1">
+        <div className="hidden lg:flex ml-auto items-center space-x-0.5">
           {/* Language Switcher */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-                <Globe className="w-4 h-4" />
-                <span className="text-sm font-medium">{language.toUpperCase()}</span>
+              <Button variant="ghost" size="sm" className="flex items-center space-x-1 px-2 text-xs">
+                <Globe className="w-3 h-3" />
+                <span className="font-medium">{language.toUpperCase()}</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="z-50">
               <DropdownMenuItem 
                 onClick={() => setLanguage('en')}
                 className={language === 'en' ? 'bg-accent' : ''}
@@ -76,6 +76,7 @@ const Navigation = () => {
                 variant={isActive(item.href) ? "default" : "ghost"}
                 size="sm"
                 className={`
+                  px-2 py-1 text-xs h-8
                   ${isActive(item.href) ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'}
                   ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}
                 `}
@@ -83,14 +84,14 @@ const Navigation = () => {
                 disabled={item.disabled}
               >
                 {item.disabled ? (
-                  <span className="flex items-center space-x-2">
-                    <Icon className="w-4 h-4" />
-                    <span>{item.name}</span>
+                  <span className="flex items-center space-x-1">
+                    <Icon className="w-3 h-3" />
+                    <span className="hidden xl:inline whitespace-nowrap">{item.name}</span>
                   </span>
                 ) : (
-                  <Link to={item.href} className="flex items-center space-x-2">
-                    <Icon className="w-4 h-4" />
-                    <span>{item.name}</span>
+                  <Link to={item.href} className="flex items-center space-x-1">
+                    <Icon className="w-3 h-3" />
+                    <span className="hidden xl:inline whitespace-nowrap">{item.name}</span>
                   </Link>
                 )}
               </Button>
@@ -98,16 +99,16 @@ const Navigation = () => {
           })}
         </div>
 
-        {/* Mobile Navigation */}
-        <div className="md:hidden ml-auto flex items-center space-x-2">
+        {/* Mobile/Tablet Navigation */}
+        <div className="lg:hidden ml-auto flex items-center space-x-2">
           {/* Mobile Language Switcher */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="h-8 w-8">
                 <Globe className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="z-50">
               <DropdownMenuItem 
                 onClick={() => setLanguage('en')}
                 className={language === 'en' ? 'bg-accent' : ''}
@@ -124,11 +125,11 @@ const Navigation = () => {
           </DropdownMenu>
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Menu className="h-4 w-4" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-64">
+            <SheetContent side="right" className="w-64 z-50">
               <div className="flex flex-col space-y-2 mt-6">
                 {navItems.map((item) => {
                   const Icon = item.icon;
