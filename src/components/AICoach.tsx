@@ -183,15 +183,40 @@ export const AICoach = ({ isOpen, onClose, webhookUrl = 'https://n8n.srv1004834.
       });
 
       // Try to read the response
-      try {
-        const responseData = await response.json();
-        if (responseData.output) {
-          addMessage(responseData.output, 'ai');
-        } else {
-          generateLocalResponse(userMessage);
+      if (response.ok) {
+        try {
+          const responseData = await response.json();
+          console.log('AI Coach Response:', responseData);
+          
+          // Handle different possible response formats
+          if (responseData.output) {
+            addMessage(responseData.output, 'ai');
+          } else if (responseData.response) {
+            addMessage(responseData.response, 'ai');
+          } else if (responseData.message) {
+            addMessage(responseData.message, 'ai');
+          } else if (typeof responseData === 'string') {
+            addMessage(responseData, 'ai');
+          } else {
+            console.warn('Unexpected response format:', responseData);
+            generateLocalResponse(userMessage);
+          }
+        } catch (parseError) {
+          console.error('Error parsing response:', parseError);
+          // Try to get response as text if JSON parsing fails
+          try {
+            const textResponse = await response.text();
+            if (textResponse) {
+              addMessage(textResponse, 'ai');
+            } else {
+              generateLocalResponse(userMessage);
+            }
+          } catch {
+            generateLocalResponse(userMessage);
+          }
         }
-      } catch {
-        // If we can't read response (due to CORS), use local fallback
+      } else {
+        console.error('HTTP error:', response.status, response.statusText);
         generateLocalResponse(userMessage);
       }
 
