@@ -126,8 +126,102 @@ const translations = {
     strategiesItems: ['Make bi-weekly payments instead of monthly', 'Apply windfalls directly to principal', 'Consider refinancing when rates drop', 'Pay high-interest debt first (avalanche method)'],
     
     // Assessment
+    selfAssessmentTitle: 'Self-Assessment Test',
+    assessmentDescription: 'This quick self-assessment will help us understand your goals and risk profile so your simulations fit you better.',
+    startAssessment: 'Start Assessment',
+    questionProgress: 'Question {{current}} of {{total}}',
+    assessmentComplete: 'Assessment Complete!',
+    assessmentCompleteDescription: 'Great! Now your simulations will be personalized based on your preferences and tolerance for risk.',
+    yourRiskProfile: 'Your Risk Profile',
+    recommendedAssets: 'Recommended Assets',
+    score: 'Score:',
+    timeHorizon: 'Time Horizon:',
+    primaryGoal: 'Primary Goal:',
+    assetPreference: 'Asset Preference:',
+    basedOnProfile: 'Based on your {{profile}} profile:',
+    resultsLaved: 'Your results have been saved. The AI Finance Coach will use this profile to provide personalized advice.',
+    retakeAssessment: 'Retake Assessment',
+    backButton: 'Back',
+    nextQuestion: 'Next Question',
+    completeAssessment: 'Complete Assessment',
+    
+    // Risk Profiles
+    conservative: 'Conservative',
+    moderate: 'Moderate',
+    aggressive: 'Aggressive',
+    
+    // Questions
+    financialGoalQuestion: 'What is your main financial objective?',
+    timeHorizonQuestion: 'How long are you planning to keep your investments?',
+    riskToleranceQuestion: 'How would you react if your portfolio dropped 15% in one month?',
+    incomeStabilityQuestion: 'How stable is your current income?',
+    assetPreferenceQuestion: 'Which asset type do you feel most comfortable with?',
+    marketExperienceQuestion: 'How much experience do you have with investing?',
+    volatilityComfortQuestion: 'How comfortable are you with market volatility?',
+    emergencyFundQuestion: 'Do you have an emergency fund covering 3-6 months of expenses?',
+    
+    // Answer Options - Financial Goal
+    preservingCapital: 'Preserving capital and steady income',
+    buyingHome: 'Buying a home or major purchase',
+    buildingWealth: 'Building long-term wealth for retirement',
+    passiveIncome: 'Generating passive income',
+    
+    // Answer Options - Time Horizon
+    shortTerm: '1-3 years (Short-term)',
+    mediumTerm: '4-7 years (Medium-term)',
+    longTerm: '8+ years (Long-term)',
+    
+    // Answer Options - Risk Tolerance
+    sellImmediately: 'Sell immediately to avoid further losses',
+    holdAndWait: 'Hold and wait for recovery',
+    buyMore: 'Buy more at the lower price',
+    
+    // Answer Options - Income Stability
+    veryStable: 'Very stable (steady job, predictable income)',
+    somewhatStable: 'Somewhat stable (occasional fluctuations)',
+    unstable: 'Unstable (freelance, commission-based)',
+    
+    // Answer Options - Asset Preference
+    assetFixedIncome: 'Fixed income (bonds, CDs, savings)',
+    assetRealEstate: 'Real estate (rental properties, REITs)',
+    assetStocksETFs: 'Stocks and ETFs',
+    assetAlternative: 'Alternative investments (crypto, commodities)',
+    
+    // Answer Options - Market Experience
+    experienceBeginner: 'Beginner (little to no experience)',
+    experienceIntermediate: 'Intermediate (some experience, basic knowledge)',
+    experienceAdvanced: 'Advanced (significant experience and knowledge)',
+    
+    // Answer Options - Volatility Comfort
+    preferStability: 'I prefer stability over potential high returns',
+    acceptFluctuations: 'I can accept some fluctuations for better returns',
+    embraceVolatility: 'I embrace volatility for maximum growth potential',
+    
+    // Answer Options - Emergency Fund
+    solidFund: 'Yes, I have a solid emergency fund',
+    partiallyBuilding: 'Partially, working on building it',
+    needToBuild: 'No, I need to build one first',
+    
+    // Asset Recommendations - Conservative
+    fixedIncomeBonds: 'Fixed income bonds',
+    highYieldSavings: 'High-yield savings',
+    conservativeMutualFunds: 'Conservative mutual funds',
+    rentalIncomeFocus: 'Real estate (rental income focus)',
+    
+    // Asset Recommendations - Moderate
+    diversifiedETFs: 'Diversified ETFs',
+    realEstateInvestment: 'Real estate investment',
+    balancedMutualFunds: 'Balanced mutual funds',
+    blueChipStocks: 'Blue-chip stocks',
+    
+    // Asset Recommendations - Aggressive
+    growthStocks: 'Growth stocks',
+    technologyETFs: 'Technology ETFs',
+    appreciationFocus: 'Real estate (appreciation focus)',
+    alternativeInvestments: 'Alternative investments',
+    
     assessmentTitle: 'Financial Knowledge Assessment',
-    assessmentDescription: 'Discover your current financial knowledge level and get personalized learning recommendations.',
+    assessmentDesc: 'Discover your current financial knowledge level and get personalized learning recommendations.',
     
     // Difficulty levels
     beginnerLevel: 'Perfect for those new to finance and investing',
@@ -331,8 +425,7 @@ const translations = {
     firstHomeLoan: '¡Tu Primera Calculadora de Préstamo Hipotecario! 🏠',
     learnBasics: '¡Aprende los conceptos básicos de comprar una casa! Esta calculadora simple te muestra cuánto pagarás cada mes y cuánto interés pagarás con el tiempo. Usaremos una tasa de interés típica del 6.5% para mantenerlo simple.',
     
-    // Assessment
-    assessmentTitle: 'Evaluación de Conocimiento Financiero',
+    // Assessment 
     assessmentDescription: 'Descubre tu nivel actual de conocimiento financiero y obtén recomendaciones de aprendizaje personalizadas.',
     
     // Difficulty levels
@@ -500,6 +593,82 @@ const translations = {
     totalInterestStat: 'Interés Total',
     loanTermStat: 'Plazo del Préstamo',
     totalPaidStat: 'Total Pagado',
+    
+    
+    // Assessment
+    selfAssessmentTitle: 'Prueba de Autoevaluación',
+    startAssessment: 'Comenzar Evaluación',
+    questionProgress: 'Pregunta {{current}} de {{total}}',
+    assessmentComplete: '¡Evaluación Completada!',
+    assessmentCompleteDescription: '¡Excelente! Ahora tus simulaciones serán personalizadas según tus preferencias y tolerancia al riesgo.',
+    yourRiskProfile: 'Tu Perfil de Riesgo',
+    recommendedAssets: 'Activos Recomendados',
+    score: 'Puntuación:',
+    primaryGoal: 'Objetivo Principal:',
+    assetPreference: 'Preferencia de Activos:',
+    basedOnProfile: 'Basado en tu perfil {{profile}}:',
+    resultsLaved: 'Tus resultados han sido guardados. El Coach Financiero de IA utilizará este perfil para proporcionar asesoramiento personalizado.',
+    retakeAssessment: 'Repetir Evaluación',
+    backButton: 'Atrás',
+    nextQuestion: 'Siguiente Pregunta',
+    completeAssessment: 'Completar Evaluación',
+    
+    // Risk Profiles
+    conservative: 'Conservador',
+    moderate: 'Moderado',
+    aggressive: 'Agresivo',
+    
+    // Questions
+    financialGoalQuestion: '¿Cuál es tu objetivo financiero principal?',
+    timeHorizonQuestion: '¿Por cuánto tiempo planeas mantener tus inversiones?',
+    riskToleranceQuestion: '¿Cómo reaccionarías si tu cartera bajara un 15% en un mes?',
+    incomeStabilityQuestion: '¿Qué tan estables son tus ingresos actuales?',
+    assetPreferenceQuestion: '¿Con qué tipo de activo te sientes más cómodo?',
+    marketExperienceQuestion: '¿Cuánta experiencia tienes invirtiendo?',
+    volatilityComfortQuestion: '¿Qué tan cómodo te sientes con la volatilidad del mercado?',
+    emergencyFundQuestion: '¿Tienes un fondo de emergencia que cubra 3-6 meses de gastos?',
+    
+    // Answer Options
+    preservingCapital: 'Preservar capital e ingreso estable',
+    buyingHome: 'Comprar una casa o una compra importante',
+    buildingWealth: 'Construir riqueza a largo plazo para el retiro',
+    passiveIncome: 'Generar ingresos pasivos',
+    shortTerm: '1-3 años (Corto plazo)',
+    mediumTerm: '4-7 años (Mediano plazo)',
+    longTerm: '8+ años (Largo plazo)',
+    sellImmediately: 'Vender inmediatamente para evitar más pérdidas',
+    holdAndWait: 'Mantener y esperar la recuperación',
+    buyMore: 'Comprar más a precio más bajo',
+    veryStable: 'Muy estables (trabajo fijo, ingresos predecibles)',
+    somewhatStable: 'Algo estables (fluctuaciones ocasionales)',
+    unstable: 'Inestables (freelance, basado en comisiones)',
+    assetFixedIncome: 'Renta fija (bonos, CDs, ahorros)',
+    assetRealEstate: 'Bienes raíces (propiedades de alquiler, REITs)',
+    assetStocksETFs: 'Acciones y ETFs',
+    assetAlternative: 'Inversiones alternativas (cripto, materias primas)',
+    experienceBeginner: 'Principiante (poca o ninguna experiencia)',
+    experienceIntermediate: 'Intermedio (algo de experiencia, conocimiento básico)',
+    experienceAdvanced: 'Avanzado (experiencia significativa y conocimiento)',
+    preferStability: 'Prefiero estabilidad sobre posibles altos retornos',
+    acceptFluctuations: 'Puedo aceptar algunas fluctuaciones por mejores retornos',
+    embraceVolatility: 'Abrazo la volatilidad por máximo potencial de crecimiento',
+    solidFund: 'Sí, tengo un fondo de emergencia sólido',
+    partiallyBuilding: 'Parcialmente, trabajando en construirlo',
+    needToBuild: 'No, necesito construir uno primero',
+    
+    // Asset Recommendations
+    fixedIncomeBonds: 'Bonos de renta fija',
+    highYieldSavings: 'Ahorros de alto rendimiento',
+    conservativeMutualFunds: 'Fondos mutuos conservadores',
+    rentalIncomeFocus: 'Bienes raíces (enfoque en ingresos de alquiler)',
+    diversifiedETFs: 'ETFs diversificados',
+    realEstateInvestment: 'Inversión en bienes raíces',
+    balancedMutualFunds: 'Fondos mutuos balanceados',
+    blueChipStocks: 'Acciones blue-chip',
+    growthStocks: 'Acciones de crecimiento',
+    technologyETFs: 'ETFs de tecnología',
+    appreciationFocus: 'Bienes raíces (enfoque en apreciación)',
+    alternativeInvestments: 'Inversiones alternativas',
     
     // Common translations
     years: 'años',
