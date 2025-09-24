@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
+import { z } from 'zod';
 
 interface Profile {
   id: string;
@@ -27,6 +28,15 @@ interface Friendship {
   requester: Profile;
   addressee: Profile;
 }
+
+// Validation schema for username search
+const usernameSearchSchema = z.object({
+  username: z.string()
+    .trim()
+    .min(1, 'Username cannot be empty')
+    .max(20, 'Username must be less than 20 characters')
+    .regex(/^[a-zA-Z0-9_-]*$/, 'Username can only contain letters, numbers, hyphens, and underscores')
+});
 
 const FriendsPanel = () => {
   const { t } = useLanguage();
@@ -148,44 +158,77 @@ const FriendsPanel = () => {
   };
 
   const searchUsers = async () => {
-    if (!searchUsername.trim() || !user) return;
+    if (!user) return;
+
+    // Validate search input
+    const validationResult = usernameSearchSchema.safeParse({ username: searchUsername });
+    if (!validationResult.success) {
+      const errorMessage = validationResult.error.errors[0]?.message || 'Invalid username format';
+      toast.error(errorMessage);
+      return;
+    }
+
+    const trimmedUsername = validationResult.data.username;
+    if (!trimmedUsername) return;
 
     setLoading(true);
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, user_id, username, display_name, avatar_url')
-      .ilike('username', `%${searchUsername}%`)
-      .neq('user_id', user.id)
-      .limit(10);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, user_id, username, display_name, avatar_url')
+        .ilike('username', `%${trimmedUsername}%`)
+        .neq('user_id', user.id)
+        .limit(10);
 
-    if (error) {
-      console.error('Error searching users:', error);
+      if (error) {
+        console.error('Error searching users:', error);
+        toast.error(t('errorSearchingUsers'));
+      } else {
+        setSearchResults(data || []);
+      }
+    } catch (err) {
+      console.error('Unexpected error during search:', err);
       toast.error(t('errorSearchingUsers'));
-    } else {
-      setSearchResults(data || []);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const sendFriendRequest = async (targetUserId: string) => {
     if (!user) return;
 
-    const { error } = await supabase
-      .from('friendships')
-      .insert({
-        requester_id: user.id,
-        addressee_id: targetUserId,
-        status: 'pending'
-      });
+    // Validate target user ID (basic UUID format check)
+    if (!targetUserId || typeof targetUserId !== 'string' || targetUserId.length < 10) {
+      toast.error('Invalid user selection');
+      return;
+    }
 
-    if (error) {
-      console.error('Error sending friend request:', error);
+    try {
+      const { error } = await supabase
+        .from('friendships')
+        .insert({
+          requester_id: user.id,
+          addressee_id: targetUserId,
+          status: 'pending'
+        });
+
+      if (error) {
+        console.error('Error sending friend request:', error);
+        // Check if it's a duplicate request error
+        if (error.code === '23505') {
+          toast.error('Friend request already exists');
+        } else {
+          toast.error(t('errorSendingRequest'));
+        }
+      } else {
+        toast.success(t('friendRequestSent'));
+        loadPendingRequests();
+        setSearchResults([]);
+        setSearchUsername('');
+      }
+    } catch (err) {
+      console.error('Unexpected error sending friend request:', err);
       toast.error(t('errorSendingRequest'));
-    } else {
-      toast.success(t('friendRequestSent'));
-      loadPendingRequests();
-      setSearchResults([]);
-      setSearchUsername('');
     }
   };
 

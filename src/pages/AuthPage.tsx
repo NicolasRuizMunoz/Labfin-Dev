@@ -8,6 +8,27 @@ import { Brain, Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate } from 'react-router-dom';
+import { z } from 'zod';
+
+// Validation schemas
+const loginSchema = z.object({
+  email: z.string()
+    .trim()
+    .min(1, 'Email is required')
+    .email('Invalid email address')
+    .max(255, 'Email must be less than 255 characters'),
+  password: z.string()
+    .min(6, 'Password must be at least 6 characters')
+    .max(128, 'Password must be less than 128 characters')
+});
+
+const signupSchema = loginSchema.extend({
+  username: z.string()
+    .trim()
+    .min(3, 'Username must be at least 3 characters')
+    .max(20, 'Username must be less than 20 characters')
+    .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, hyphens, and underscores')
+});
 
 const AuthPage = () => {
   const { t } = useLanguage();
@@ -19,6 +40,7 @@ const AuthPage = () => {
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   // Redirect if user is already authenticated
   useEffect(() => {
@@ -30,21 +52,48 @@ const AuthPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setValidationErrors({});
     setLoading(true);
 
     try {
+      // Validate input data
       if (isLogin) {
-        const { error } = await signIn(email, password);
+        const validationResult = loginSchema.safeParse({ email: email.trim(), password });
+        if (!validationResult.success) {
+          const errors: Record<string, string> = {};
+          validationResult.error.errors.forEach((error) => {
+            errors[error.path[0] as string] = error.message;
+          });
+          setValidationErrors(errors);
+          setLoading(false);
+          return;
+        }
+        
+        const { error } = await signIn(validationResult.data.email, validationResult.data.password);
         if (error) {
           setError(error.message);
         }
       } else {
-        if (!username.trim()) {
-          setError(t('usernameRequired'));
+        const validationResult = signupSchema.safeParse({ 
+          email: email.trim(), 
+          password, 
+          username: username.trim() 
+        });
+        if (!validationResult.success) {
+          const errors: Record<string, string> = {};
+          validationResult.error.errors.forEach((error) => {
+            errors[error.path[0] as string] = error.message;
+          });
+          setValidationErrors(errors);
           setLoading(false);
           return;
         }
-        const { error } = await signUp(email, password, username);
+        
+        const { error } = await signUp(
+          validationResult.data.email, 
+          validationResult.data.password, 
+          validationResult.data.username
+        );
         if (error) {
           setError(error.message);
         } else {
@@ -92,13 +141,19 @@ const AuthPage = () => {
                       type="text"
                       placeholder={t('enterUsername')}
                       value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      className="pl-10"
+                      onChange={(e) => {
+                        setUsername(e.target.value);
+                        if (validationErrors.username) {
+                          setValidationErrors(prev => ({ ...prev, username: '' }));
+                        }
+                      }}
+                      className={`pl-10 ${validationErrors.username ? 'border-destructive' : ''}`}
                       required={!isLogin}
-                      minLength={3}
-                      maxLength={20}
                     />
                   </div>
+                  {validationErrors.username && (
+                    <p className="text-sm text-destructive mt-1">{validationErrors.username}</p>
+                  )}
                 </div>
               )}
 
@@ -111,11 +166,19 @@ const AuthPage = () => {
                     type="email"
                     placeholder={t('enterEmail')}
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10"
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (validationErrors.email) {
+                        setValidationErrors(prev => ({ ...prev, email: '' }));
+                      }
+                    }}
+                    className={`pl-10 ${validationErrors.email ? 'border-destructive' : ''}`}
                     required
                   />
                 </div>
+                {validationErrors.email && (
+                  <p className="text-sm text-destructive mt-1">{validationErrors.email}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -127,12 +190,19 @@ const AuthPage = () => {
                     type="password"
                     placeholder={t('enterPassword')}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10"
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (validationErrors.password) {
+                        setValidationErrors(prev => ({ ...prev, password: '' }));
+                      }
+                    }}
+                    className={`pl-10 ${validationErrors.password ? 'border-destructive' : ''}`}
                     required
-                    minLength={6}
                   />
                 </div>
+                {validationErrors.password && (
+                  <p className="text-sm text-destructive mt-1">{validationErrors.password}</p>
+                )}
               </div>
 
               {error && (
