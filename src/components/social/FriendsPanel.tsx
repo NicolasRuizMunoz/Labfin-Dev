@@ -50,14 +50,7 @@ const FriendsPanel = () => {
 
     const { data, error } = await supabase
       .from('friendships')
-      .select(`
-        id,
-        requester_id,
-        addressee_id,
-        status,
-        requester:profiles!friendships_requester_id_fkey(id, user_id, username, display_name, avatar_url),
-        addressee:profiles!friendships_addressee_id_fkey(id, user_id, username, display_name, avatar_url)
-      `)
+      .select('id, requester_id, addressee_id, status')
       .eq('status', 'accepted')
       .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
 
@@ -66,13 +59,30 @@ const FriendsPanel = () => {
       return;
     }
 
-    const friendProfiles = data.map((friendship: any) => {
+    // Get friend user IDs
+    const friendUserIds = data.map((friendship: any) => {
       return friendship.requester_id === user.id 
-        ? friendship.addressee 
-        : friendship.requester;
+        ? friendship.addressee_id 
+        : friendship.requester_id;
     });
 
-    setFriends(friendProfiles);
+    if (friendUserIds.length === 0) {
+      setFriends([]);
+      return;
+    }
+
+    // Get friend profiles
+    const { data: profilesData, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, user_id, username, display_name, avatar_url')
+      .in('user_id', friendUserIds);
+
+    if (profilesError) {
+      console.error('Error loading friend profiles:', error);
+      return;
+    }
+
+    setFriends(profilesData || []);
   };
 
   const loadPendingRequests = async () => {
@@ -81,38 +91,59 @@ const FriendsPanel = () => {
     // Get incoming requests
     const { data: incoming, error: incomingError } = await supabase
       .from('friendships')
-      .select(`
-        id,
-        requester_id,
-        addressee_id,
-        status,
-        created_at,
-        requester:profiles!friendships_requester_id_fkey(id, user_id, username, display_name, avatar_url),
-        addressee:profiles!friendships_addressee_id_fkey(id, user_id, username, display_name, avatar_url)
-      `)
+      .select('id, requester_id, addressee_id, status, created_at')
       .eq('addressee_id', user.id)
       .eq('status', 'pending');
 
     // Get outgoing requests
     const { data: outgoing, error: outgoingError } = await supabase
       .from('friendships')
-      .select(`
-        id,
-        requester_id,
-        addressee_id,
-        status,
-        created_at,
-        requester:profiles!friendships_requester_id_fkey(id, user_id, username, display_name, avatar_url),
-        addressee:profiles!friendships_addressee_id_fkey(id, user_id, username, display_name, avatar_url)
-      `)
+      .select('id, requester_id, addressee_id, status, created_at')
       .eq('requester_id', user.id)
       .eq('status', 'pending');
 
-    if (!incomingError && incoming) {
-      setPendingRequests(incoming);
+    if (!incomingError && incoming && incoming.length > 0) {
+      // Get requester profiles for incoming requests
+      const requesterIds = incoming.map((req: any) => req.requester_id);
+      const { data: requesterProfiles } = await supabase
+        .from('profiles')
+        .select('id, user_id, username, display_name, avatar_url')
+        .in('user_id', requesterIds);
+
+      const enrichedIncoming = incoming.map((req: any) => {
+        const requesterProfile = requesterProfiles?.find(p => p.user_id === req.requester_id);
+        return {
+          ...req,
+          status: req.status as 'pending' | 'accepted' | 'declined',
+          requester: requesterProfile || { username: 'Unknown', display_name: 'Unknown User' },
+          addressee: { username: '', display_name: '' }
+        };
+      });
+      setPendingRequests(enrichedIncoming);
+    } else {
+      setPendingRequests([]);
     }
-    if (!outgoingError && outgoing) {
-      setSentRequests(outgoing);
+
+    if (!outgoingError && outgoing && outgoing.length > 0) {
+      // Get addressee profiles for outgoing requests
+      const addresseeIds = outgoing.map((req: any) => req.addressee_id);
+      const { data: addresseeProfiles } = await supabase
+        .from('profiles')
+        .select('id, user_id, username, display_name, avatar_url')
+        .in('user_id', addresseeIds);
+
+      const enrichedOutgoing = outgoing.map((req: any) => {
+        const addresseeProfile = addresseeProfiles?.find(p => p.user_id === req.addressee_id);
+        return {
+          ...req,
+          status: req.status as 'pending' | 'accepted' | 'declined',
+          requester: { username: '', display_name: '' },
+          addressee: addresseeProfile || { username: 'Unknown', display_name: 'Unknown User' }
+        };
+      });
+      setSentRequests(enrichedOutgoing);
+    } else {
+      setSentRequests([]);
     }
   };
 

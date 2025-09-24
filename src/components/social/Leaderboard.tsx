@@ -69,12 +69,17 @@ const Leaderboard = () => {
     }
 
     // Get friends leaderboard
-    const { data: friendsData, error: friendsError } = await supabase.rpc('get_friends_leaderboard', {
-      current_user_id: user.id
-    });
+    try {
+      const { data: friendsData, error: friendsError } = await supabase.rpc('get_friends_leaderboard', {
+        current_user_id: user.id
+      });
 
-    if (!friendsError && friendsData) {
-      setFriendsLeaderboard(friendsData);
+      if (!friendsError && friendsData) {
+        setFriendsLeaderboard(friendsData);
+      }
+    } catch (error) {
+      console.error('Error loading friends leaderboard:', error);
+      setFriendsLeaderboard([]);
     }
 
     setLoading(false);

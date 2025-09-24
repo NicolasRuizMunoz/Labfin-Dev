@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Navigation from "@/components/Navigation";
 import SelfAssessmentPage from "./pages/SelfAssessmentPage";
 import DailyTestPage from "./pages/DailyTestPage";
+import SocialDailyTest from "./components/social/SocialDailyTest";
 import AuthPage from "./pages/AuthPage";
 import HomePage from "./pages/HomePage";
 import MarketsPage from "./pages/MarketsPage";
@@ -26,19 +27,19 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Navigation />
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="/markets" element={<MarketsPage />} />
-              <Route path="/real-estate" element={<RealEstatePage />} />
-              <Route path="/credit" element={<CreditPage />} />
-              <Route path="/assessment" element={<SelfAssessmentPage />} />
-              <Route path="/daily-test" element={<DailyTestPage />} />
-              <Route path="/retirement" element={<RetirementPage />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+          <Navigation />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/markets" element={<MarketsPage />} />
+            <Route path="/real-estate" element={<RealEstatePage />} />
+            <Route path="/credit" element={<CreditPage />} />
+            <Route path="/assessment" element={<SelfAssessmentPage />} />
+            <Route path="/daily-test" element={<SocialDailyTest />} />
+            <Route path="/retirement" element={<RetirementPage />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
           </BrowserRouter>
         </AuthProvider>
       </LanguageProvider>
