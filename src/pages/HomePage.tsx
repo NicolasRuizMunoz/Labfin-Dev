@@ -439,6 +439,42 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* Real Money Investing Section */}
+      <section className="py-20 px-6 bg-gradient-subtle">
+        <div className="container max-w-4xl mx-auto text-center">
+          <div className="relative">
+            <Badge 
+              variant="outline" 
+              className="absolute -top-3 right-4 bg-muted text-muted-foreground border-muted-foreground/30"
+            >
+              {t('realMoneyComingSoon')}
+            </Badge>
+            <Card className="bg-gradient-card border-0 shadow-elevated">
+              <CardContent className="py-12 px-8">
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                  {t('feelingReady')}
+                </h2>
+                <p className="text-xl text-primary mb-6 font-semibold">
+                  {t('startInvestingRealMoney')}
+                </p>
+                <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
+                  {t('realMoneyDescription')}
+                </p>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  disabled
+                  className="bg-muted/50 text-muted-foreground border-muted-foreground/30 cursor-not-allowed"
+                >
+                  <ArrowRight className="w-5 h-5 mr-2" />
+                  {t('realMoneyComingSoon')}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* Tutorial Modal */}
       <Dialog open={tutorialOpen} onOpenChange={closeTutorial}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">

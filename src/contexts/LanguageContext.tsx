@@ -327,6 +327,12 @@ const translations = {
     checkEmailConfirmation: 'Please check your email for confirmation',
     unexpectedError: 'An unexpected error occurred',
 
+    // Real Money Investing
+    feelingReady: 'Feeling ready?',
+    startInvestingRealMoney: 'Start investing with us using real money',
+    realMoneyComingSoon: 'Coming Soon',
+    realMoneyDescription: 'Soon you\'ll be able to apply your skills with real investments through our partner platforms',
+
     // Social Features
     addFriends: 'Add Friends',
     searchForFriends: 'Search for friends to compete with',
@@ -1042,6 +1048,12 @@ const translations = {
     usernameRequired: 'El nombre de usuario es requerido',
     checkEmailConfirmation: 'Por favor revisa tu correo para confirmar',
     unexpectedError: 'Ocurrió un error inesperado',
+
+    // Real Money Investing
+    feelingReady: '¿Te sientes listo?',
+    startInvestingRealMoney: 'Comienza a invertir con nosotros usando dinero real',
+    realMoneyComingSoon: 'Próximamente',
+    realMoneyDescription: 'Pronto podrás aplicar tus habilidades con inversiones reales a través de nuestras plataformas asociadas',
 
     // Social Features
     addFriends: 'Agregar Amigos',
