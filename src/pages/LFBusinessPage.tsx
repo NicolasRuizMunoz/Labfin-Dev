@@ -184,6 +184,7 @@ const LFBusinessPage = () => {
         <AICoach 
           isOpen={showAICoach}
           onClose={() => setShowAICoach(false)}
+          webhookUrl="https://n8n.srv1004834.hstgr.cloud/webhook/ceff8144-41db-4f93-a17b-dd578fb92383"
         />
       )}
 

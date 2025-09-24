@@ -33,9 +33,10 @@ interface Message {
 interface AICoachProps {
   isOpen: boolean;
   onClose: () => void;
+  webhookUrl?: string;
 }
 
-export const AICoach = ({ isOpen, onClose }: AICoachProps) => {
+export const AICoach = ({ isOpen, onClose, webhookUrl = 'https://n8n.srv1004834.hstgr.cloud/webhook/a7721317-edd1-4ffe-bcb7-3fa1e6845f82' }: AICoachProps) => {
   const [profile, setProfile] = useState<UserProfile>({
     goal: null,
     horizon: null,
@@ -173,7 +174,7 @@ export const AICoach = ({ isOpen, onClose }: AICoachProps) => {
         timestamp: new Date().toISOString()
       };
 
-      const response = await fetch('https://n8n.srv1004834.hstgr.cloud/webhook/a7721317-edd1-4ffe-bcb7-3fa1e6845f82', {
+      const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
