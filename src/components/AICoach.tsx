@@ -34,9 +34,10 @@ interface AICoachProps {
   isOpen: boolean;
   onClose: () => void;
   webhookUrl?: string;
+  disableAssessment?: boolean;
 }
 
-export const AICoach = ({ isOpen, onClose, webhookUrl = 'https://n8n.srv1004834.hstgr.cloud/webhook/a7721317-edd1-4ffe-bcb7-3fa1e6845f82' }: AICoachProps) => {
+export const AICoach = ({ isOpen, onClose, webhookUrl = 'https://n8n.srv1004834.hstgr.cloud/webhook/a7721317-edd1-4ffe-bcb7-3fa1e6845f82', disableAssessment = false }: AICoachProps) => {
   const [profile, setProfile] = useState<UserProfile>({
     goal: null,
     horizon: null,
@@ -44,8 +45,10 @@ export const AICoach = ({ isOpen, onClose, webhookUrl = 'https://n8n.srv1004834.
   });
   const [assessmentResult, setAssessmentResult] = useState<AssessmentResult | null>(null);
   
-  // Load assessment results on mount
+  // Load assessment results on mount (only if assessment is enabled)
   useEffect(() => {
+    if (disableAssessment) return;
+    
     const storedAssessment = localStorage.getItem('userAssessment');
     if (storedAssessment) {
       try {
@@ -66,12 +69,23 @@ export const AICoach = ({ isOpen, onClose, webhookUrl = 'https://n8n.srv1004834.
         console.error('Error loading assessment:', error);
       }
     }
-  }, []);
+  }, [disableAssessment]);
 
   const [messages, setMessages] = useState<Message[]>([]);
 
-  // Set initial message based on assessment
+  // Set initial message based on assessment (only if assessment is enabled)
   useEffect(() => {
+    if (disableAssessment) {
+      const businessMessage = {
+        id: '1',
+        content: "Hi! I'm your AI Business Coach. I'm here to help you with small business tax questions, financial planning, and compliance requirements. What would you like to know about managing your business finances?",
+        sender: 'ai' as const,
+        timestamp: new Date()
+      };
+      setMessages([businessMessage]);
+      return;
+    }
+
     const initialMessage = assessmentResult
       ? {
           id: '1',
@@ -87,7 +101,7 @@ export const AICoach = ({ isOpen, onClose, webhookUrl = 'https://n8n.srv1004834.
         };
     
     setMessages([initialMessage]);
-  }, [assessmentResult]);
+  }, [assessmentResult, disableAssessment]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -162,7 +176,11 @@ export const AICoach = ({ isOpen, onClose, webhookUrl = 'https://n8n.srv1004834.
 
     try {
       // Send to n8n webhook
-      const payload = {
+      const payload = disableAssessment ? {
+        userId: 'demo-user-' + Date.now(),
+        message: userMessage,
+        timestamp: new Date().toISOString()
+      } : {
         userId: 'demo-user-' + Date.now(),
         message: userMessage,
         context: {
@@ -270,29 +288,31 @@ export const AICoach = ({ isOpen, onClose, webhookUrl = 'https://n8n.srv1004834.
         </DialogHeader>
 
         {/* Profile Status */}
-        <div className="flex flex-wrap gap-2 p-3 bg-muted/50 rounded-lg">
-          {assessmentResult && (
-            <Badge variant="default" className="flex items-center gap-1 bg-green-100 text-green-800">
-              <CheckCircle2 className="w-3 h-3" />
-              Assessment Complete
+        {!disableAssessment && (
+          <div className="flex flex-wrap gap-2 p-3 bg-muted/50 rounded-lg">
+            {assessmentResult && (
+              <Badge variant="default" className="flex items-center gap-1 bg-green-100 text-green-800">
+                <CheckCircle2 className="w-3 h-3" />
+                Assessment Complete
+              </Badge>
+            )}
+            <Badge variant={profile.goal ? "default" : "outline"} className="flex items-center gap-1">
+              <Target className="w-3 h-3" />
+              Goal: {profile.goal?.replace('_', ' ') || 'Not set'}
             </Badge>
-          )}
-          <Badge variant={profile.goal ? "default" : "outline"} className="flex items-center gap-1">
-            <Target className="w-3 h-3" />
-            Goal: {profile.goal?.replace('_', ' ') || 'Not set'}
-          </Badge>
-          <Badge variant={profile.horizon ? "default" : "outline"} className="flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            Horizon: {profile.horizon || 'Not set'}
-          </Badge>
-          <Badge variant={profile.riskProfile ? "default" : "outline"} className="flex items-center gap-1">
-            <TrendingUp className="w-3 h-3" />
-            Risk: {profile.riskProfile || 'Not set'}
-          </Badge>
-        </div>
+            <Badge variant={profile.horizon ? "default" : "outline"} className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              Horizon: {profile.horizon || 'Not set'}
+            </Badge>
+            <Badge variant={profile.riskProfile ? "default" : "outline"} className="flex items-center gap-1">
+              <TrendingUp className="w-3 h-3" />
+              Risk: {profile.riskProfile || 'Not set'}
+            </Badge>
+          </div>
+        )}
 
         {/* Quick Selection Buttons */}
-        {!isProfileComplete && (
+        {!disableAssessment && !isProfileComplete && (
           <div className="space-y-3">
             {!profile.goal && (
               <div className="space-y-2">
