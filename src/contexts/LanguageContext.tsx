@@ -270,6 +270,32 @@ const translations = {
     learningInsightsGame: 'Learning Insights',
     learningOpportunity: '📚 Learning opportunity! You achieved {{actual}}% return vs optimal {{optimal}}%. Focus on the optimal actions shown above.',
     
+    // Educational Insights - Real Estate Beginner
+    whatLearnedHomeLoans: 'What You Learned About Home Loans! 🎓',
+    keyThingsRealEstate: '💡 Key Things:',
+    biggerDownPayment: '• Bigger down payment = smaller monthly payment',
+    longerLoanSmaller: '• Longer loan = smaller monthly payment but more interest',
+    interestAddsUp: '• Interest adds up to a lot over many years!',
+    monthlyPaymentStays: '• Monthly payment stays the same for the whole loan',
+    tryThisRealEstate: '🎯 Try This:',
+    changeHomePriceSee: '• Change the home price and see what happens',
+    tryDifferentDownPayments: '• Try different down payment amounts',
+    compare15vs30: '• Compare 15 years vs 30 years',
+    readyMoreTakeAssessment: '• Ready for more? Take the assessment for harder levels!',
+    
+    // Educational Insights - Rental Investment
+    realEstateInvestmentInsights: 'Real Estate Investment Insights',
+    keyMetricsExplained: 'Key Metrics Explained:',
+    capRateExplained: '• **Cap Rate:** Annual NOI ÷ Property Value',
+    noiExplained: '• **NOI:** Net Operating Income (rent - expenses)',
+    irrExplained: '• **IRR:** Internal Rate of Return (simplified estimate)',
+    goodCapRates: '• Good cap rates vary by market (typically 4-10%)',
+    investmentStrategy: 'Investment Strategy:',
+    lookForProperties: '• Look for properties with positive cash flow',
+    considerAppreciation: '• Consider both cash flow and appreciation potential',
+    factorVacancy: '• Factor in vacancy rates and unexpected repairs',
+    locationMatters: '• Location and neighborhood trends matter significantly',
+    
     assessmentTitle: 'Financial Knowledge Assessment',
     assessmentDesc: 'Discover your current financial knowledge level and get personalized learning recommendations.',
     
@@ -555,7 +581,7 @@ const translations = {
     tryDifferentAmounts: 'Prueba diferentes montos y períodos de tiempo',
     compareThreeStyles: 'Compara los tres estilos de inversión',
     playLiveEventGame: 'Juega el Juego de Eventos en Vivo para aprender sobre cambios del mercado',
-    readyMoreTakeAssessment: 'Listo para más? ¡Toma la evaluación otra vez para niveles más difíciles!',
+    readyMoreTakeAssessmentMarkets: 'Listo para más? ¡Toma la evaluación otra vez para niveles más difíciles!',
     
     // Medium Market Simulator
     mediumLevelInvestment: 'Simulador de Inversión Nivel Intermedio',
@@ -770,8 +796,34 @@ const translations = {
     learningInsightsGame: 'Perspectivas de Aprendizaje',
     learningOpportunity: '📚 ¡Oportunidad de aprendizaje! Lograste {{actual}}% de retorno vs óptimo {{optimal}}%. Enfócate en las acciones óptimas mostradas arriba.',
     
+    // Educational Insights - Real Estate Beginner
+    whatLearnedHomeLoans: '¡Lo Que Aprendiste Sobre Préstamos Hipotecarios! 🎓',
+    keyThingsRealEstate: '💡 Cosas Clave:',
+    biggerDownPayment: '• Pago inicial más grande = pago mensual más pequeño',
+    longerLoanSmaller: '• Préstamo más largo = pago mensual más pequeño pero más interés',
+    interestAddsUp: '• ¡El interés se acumula mucho durante muchos años!',
+    monthlyPaymentStays: '• El pago mensual se mantiene igual durante todo el préstamo',
+    tryThisRealEstate: '🎯 Prueba Esto:',
+    changeHomePriceSee: '• Cambia el precio de la casa y ve qué pasa',
+    tryDifferentDownPayments: '• Prueba diferentes cantidades de pago inicial',
+    compare15vs30: '• Compara 15 años vs 30 años',
+    readyMoreTakeAssessmentRealEstate: '• ¿Listo para más? ¡Toma la evaluación para niveles más difíciles!',
+    
+    // Educational Insights - Rental Investment
+    realEstateInvestmentInsights: 'Perspectivas de Inversión en Bienes Raíces',
+    keyMetricsExplained: 'Métricas Clave Explicadas:',
+    capRateExplained: '• **Tasa Cap:** NOI Anual ÷ Valor de la Propiedad',
+    noiExplained: '• **NOI:** Ingreso Operativo Neto (alquiler - gastos)',
+    irrExplained: '• **IRR:** Tasa Interna de Retorno (estimación simplificada)',
+    goodCapRates: '• Las buenas tasas cap varían por mercado (típicamente 4-10%)',
+    investmentStrategy: 'Estrategia de Inversión:',
+    lookForProperties: '• Busca propiedades con flujo de efectivo positivo',
+    considerAppreciation: '• Considera tanto el flujo de efectivo como el potencial de apreciación',
+    factorVacancy: '• Incluye tasas de vacantes y reparaciones inesperadas',
+    locationMatters: '• La ubicación y las tendencias del vecindario importan significativamente',
+    
     // Common translations
-    years: 'años',
+    yearsLabel: 'años',
   }
 };
 

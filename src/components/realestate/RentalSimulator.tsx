@@ -7,6 +7,7 @@ import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Building2, DollarSign, TrendingUp, Zap, Calendar, Target } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface RentalEvent {
   id: string;
@@ -70,6 +71,7 @@ const RENTAL_EVENTS: RentalEvent[] = [
 ];
 
 export const RentalSimulator = () => {
+  const { t } = useLanguage();
   const [propertyPrice, setPropertyPrice] = useState(300000);
   const [monthlyRent, setMonthlyRent] = useState(2500);
   const [monthlyExpenses, setMonthlyExpenses] = useState(800);
@@ -466,10 +468,10 @@ export const RentalSimulator = () => {
           {/* Educational Insights */}
           <Card className="border-financial/20 bg-gradient-success/5">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-financial" />
-                Real Estate Investment Insights
-              </CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-financial" />
+                  {t('realEstateInvestmentInsights')}
+                </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="grid md:grid-cols-2 gap-4">

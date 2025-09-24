@@ -180,24 +180,24 @@ export const MortgageSimulatorBeginner = () => {
           <div className="flex items-start gap-3">
             <Lightbulb className="w-5 h-5 text-financial" />
             <div>
-              <h3 className="font-semibold mb-2">What You Learned About Home Loans! 🎓</h3>
+              <h3 className="font-semibold mb-2">{t('whatLearnedHomeLoans')}</h3>
               <div className="grid md:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <h4 className="font-medium mb-2">💡 Key Things:</h4>
+                  <h4 className="font-medium mb-2">{t('keyThingsRealEstate')}</h4>
                   <ul className="space-y-1 text-muted-foreground">
-                    <li>• Bigger down payment = smaller monthly payment</li>
-                    <li>• Longer loan = smaller monthly payment but more interest</li>
-                    <li>• Interest adds up to a lot over many years!</li>
-                    <li>• Monthly payment stays the same for the whole loan</li>
+                    <li>{t('biggerDownPayment')}</li>
+                    <li>{t('longerLoanSmaller')}</li>
+                    <li>{t('interestAddsUp')}</li>
+                    <li>{t('monthlyPaymentStays')}</li>
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-medium mb-2">🎯 Try This:</h4>
+                  <h4 className="font-medium mb-2">{t('tryThisRealEstate')}</h4>
                   <ul className="space-y-1 text-muted-foreground">
-                    <li>• Change the home price and see what happens</li>
-                    <li>• Try different down payment amounts</li>
-                    <li>• Compare 15 years vs 30 years</li>
-                    <li>• Ready for more? Take the assessment for harder levels!</li>
+                    <li>{t('changeHomePriceSee')}</li>
+                    <li>{t('tryDifferentDownPayments')}</li>
+                    <li>{t('compare15vs30')}</li>
+                    <li>{t('readyMoreTakeAssessmentRealEstate')}</li>
                   </ul>
                 </div>
               </div>

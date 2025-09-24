@@ -322,7 +322,7 @@ export const MarketSimulatorBeginner = () => {
                     <li>• {t('tryDifferentAmounts')}</li>
                     <li>• {t('compareThreeStyles')}</li>
                     <li>• {t('playLiveEventGame')}</li>
-                    <li>• {t('readyMoreTakeAssessment')}</li>
+                    <li>• {t('readyMoreTakeAssessmentMarkets')}</li>
                   </ul>
                 </div>
               </div>
