@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { TrendingUp, Home, CreditCard, PiggyBank, Menu, Brain, CheckCircle2, Globe } from 'lucide-react';
+import { TrendingUp, Home, CreditCard, PiggyBank, Menu, Brain, CheckCircle2, Globe, Calendar } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 const labfinLogo = '/lovable-uploads/12094485-6192-4e4a-89bc-352de1dd8110.png';
 
@@ -18,6 +18,7 @@ const Navigation = () => {
     { name: t('realEstate'), href: '/real-estate', icon: Home },
     { name: t('credit'), href: '/credit', icon: CreditCard },
     { name: t('selfAssessment'), href: '/assessment', icon: CheckCircle2 },
+    { name: t('dailyTest'), href: '/daily-test', icon: Calendar },
     { name: t('retirement'), href: '/retirement', icon: PiggyBank, disabled: true },
   ];
 

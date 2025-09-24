@@ -826,6 +826,113 @@ const translations = {
     // Additional missing translation
     playLiveEventVolatility: '• Juega el Juego de Eventos en Vivo para experimentar la volatilidad del mercado',
     
+    // Daily Test
+    dailyTest: 'Prueba Diaria',
+    dailyFinanceTest: 'Prueba Diaria de Finanzas',
+    dailyTestDescription: 'Prueba tu conocimiento financiero con preguntas adaptadas a tu nivel de dificultad. Cubre todos los módulos: Mercados, Bienes Raíces, Crédito y Planificación de jubilación.',
+    startDailyTest: 'Comenzar Prueba Diaria',
+    testCompleted: '¡Prueba Completada!',
+    yourScore: 'Tu Puntuación',
+    wrongAnswers: 'respuestas incorrectas',
+    overallPerformance: 'Rendimiento General',
+    moduleBreakdown: 'Desglose por Módulo',
+    retakeTest: 'Repetir Prueba',
+    backToHome: 'Volver al Inicio',
+    question: 'Pregunta',
+    of: 'de',
+    correct: 'correctas',
+    previous: 'Anterior',
+    next: 'Siguiente',
+    finishTest: 'Finalizar Prueba',
+    
+    // Test Questions - Markets
+    whatIsCompoundInterest: '¿Qué es el interés compuesto?',
+    compoundOption1: 'Interés ganado solo sobre el monto original',
+    compoundOption2: 'Interés ganado tanto sobre el capital como sobre los intereses previamente ganados',
+    compoundOption3: 'Un tipo de cuenta bancaria',
+    compoundOption4: 'Tarifas mensuales cobradas por los bancos',
+    compoundExplanation: 'El interés compuesto es el interés calculado tanto sobre el capital inicial como sobre los intereses acumulados de períodos anteriores.',
+    
+    whatIsDiversification: '¿Qué es la diversificación en inversiones?',
+    diversificationOption1: 'Poner todo el dinero en una sola acción',
+    diversificationOption2: 'Comprar solo bonos del gobierno',
+    diversificationOption3: 'Distribuir las inversiones entre diferentes activos para reducir el riesgo',
+    diversificationOption4: 'Solo invertir en tu país de origen',
+    diversificationExplanation: 'La diversificación reduce el riesgo distribuyendo las inversiones entre diferentes activos, sectores y regiones geográficas.',
+    
+    whatIsRiskReturn: '¿Cuál es la relación entre riesgo y retorno en las inversiones?',
+    riskReturnOption1: 'Las inversiones de mayor riesgo típicamente ofrecen mayores retornos potenciales',
+    riskReturnOption2: 'El riesgo y el retorno no están relacionados',
+    riskReturnOption3: 'Menor riesgo siempre significa mayores retornos',
+    riskReturnOption4: 'Todas las inversiones tienen el mismo nivel de riesgo',
+    riskReturnExplanation: 'Generalmente, las inversiones con mayor potencial de riesgo ofrecen mayores retornos para compensar a los inversores por asumir riesgo adicional.',
+    
+    whatIsAssetAllocation: '¿Qué es la asignación de activos?',
+    assetAllocationOption1: 'Comprar solo un tipo de inversión',
+    assetAllocationOption2: 'Dividir las inversiones entre diferentes clases de activos (acciones, bonos, bienes raíces)',
+    assetAllocationOption3: 'Mantener todo el dinero en efectivo',
+    assetAllocationOption4: 'Solo invertir en acciones de tecnología',
+    assetAllocationExplanation: 'La asignación de activos implica dividir las inversiones entre diferentes clases de activos para equilibrar el riesgo y la recompensa según tus objetivos y tolerancia al riesgo.',
+    
+    whatIsBetaVolatility: '¿Qué mide Beta en finanzas?',
+    betaOption1: 'El retorno total de una inversión',
+    betaOption2: 'El rendimiento de dividendos de una acción',
+    betaOption3: 'La volatilidad de una acción relativa al mercado general',
+    betaOption4: 'La relación precio-ganancia',
+    betaExplanation: 'Beta mide cuánto se mueve el precio de una acción en relación al mercado general. Un beta de 1 significa que se mueve con el mercado, arriba de 1 es más volátil, abajo de 1 es menos volátil.',
+    
+    // Test Questions - Real Estate
+    whatIsDownPayment: '¿Qué es un pago inicial en bienes raíces?',
+    downPaymentOption1: 'Dinero pagado por adelantado al comprar una casa',
+    downPaymentOption2: 'Pago mensual de la hipoteca',
+    downPaymentOption3: 'Impuestos sobre la propiedad',
+    downPaymentOption4: 'Prima de seguro del hogar',
+    downPaymentExplanation: 'Un pago inicial es el pago en efectivo por adelantado hecho al comprar una casa, típicamente expresado como un porcentaje del precio de compra.',
+    
+    whatIsPMI: '¿Qué es PMI (Seguro Hipotecario Privado)?',
+    pmiOption1: 'Seguro para la estructura de la propiedad',
+    pmiOption2: 'Seguro que protege al prestamista si no pagas tu préstamo',
+    pmiOption3: 'Seguro para pertenencias personales',
+    pmiOption4: 'Seguro de vida para tenedores de hipotecas',
+    pmiExplanation: 'PMI protege al prestamista en caso de que no pagues tu hipoteca. Típicamente se requiere cuando tu pago inicial es menor al 20%.',
+    
+    whatIsCapRate: '¿Qué es una tasa de capitalización (tasa cap) en bienes raíces?',
+    capRateOption1: 'La tasa de interés de una hipoteca',
+    capRateOption2: 'Tasa de impuesto sobre la propiedad',
+    capRateOption3: 'Ingreso anual de alquiler dividido por el valor de la propiedad',
+    capRateOption4: 'El porcentaje del pago inicial',
+    capRateExplanation: 'La tasa cap se calcula dividiendo el ingreso operativo neto anual por el valor de mercado actual de la propiedad. Ayuda a evaluar los retornos de propiedades de inversión.',
+    
+    // Test Questions - Credit
+    whatIsInterestRate: '¿Qué es una tasa de interés?',
+    interestRateOption1: 'El costo de pedir dinero prestado, expresado como porcentaje',
+    interestRateOption2: 'Una tarifa mensual por tener una cuenta bancaria',
+    interestRateOption3: 'La cantidad de dinero que puedes pedir prestado',
+    interestRateOption4: 'Seguro para tu préstamo',
+    interestRateExplanation: 'La tasa de interés es el porcentaje cobrado sobre el monto principal del dinero prestado, representando el costo del préstamo.',
+    
+    whatIsAmortization: '¿Qué es la amortización de un préstamo?',
+    amortizationOption1: 'Pagar solo interés en un préstamo',
+    amortizationOption2: 'El proceso de pagar gradualmente un préstamo a través de pagos regulares',
+    amortizationOption3: 'Aumentar el monto del préstamo con el tiempo',
+    amortizationOption4: 'Pagar el monto total del préstamo de una vez',
+    amortizationExplanation: 'La amortización es el proceso de reducir gradualmente una deuda a través de pagos regulares que cubren tanto el capital como los intereses.',
+    
+    whatIsDebtToIncomeRatio: '¿Qué es la relación deuda-ingreso?',
+    dtiOption1: 'Tus pagos mensuales totales de deuda divididos por tu ingreso mensual bruto',
+    dtiOption2: 'Tus activos totales divididos por las deudas totales',
+    dtiOption3: 'Tu patrimonio neto dividido por el ingreso anual',
+    dtiOption4: 'Tu puntaje crediticio dividido por el ingreso',
+    dtiExplanation: 'La relación DTI compara tus pagos mensuales totales de deuda con tu ingreso mensual bruto. Los prestamistas la usan para evaluar tu capacidad de pagar préstamos.',
+    
+    // Test Questions - Retirement
+    whatIs401k: '¿Qué es un 401(k)?',
+    '401kOption1': 'Un tipo de cuenta de ahorros',
+    '401kOption2': 'Un programa gubernamental de pensiones',
+    '401kOption3': 'Un plan de ahorros para el retiro patrocinado por el empleador',
+    '401kOption4': 'Un tipo de fondo de inversión',
+    '401kExplanation': 'Un 401(k) es un plan de ahorros para el retiro patrocinado por el empleador que permite a los empleados ahorrar e invertir para el retiro con ventajas fiscales.',
+    
     // Common translations
     yearsLabel: 'años',
   }
