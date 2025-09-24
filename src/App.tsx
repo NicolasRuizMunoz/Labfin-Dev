@@ -15,6 +15,7 @@ import MarketsPage from "./pages/MarketsPage";
 import RealEstatePage from "./pages/RealEstatePage";
 import CreditPage from "./pages/CreditPage";
 import RetirementPage from "./pages/RetirementPage";
+import LFBusinessPage from "./pages/LFBusinessPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/business" element={<LFBusinessPage />} />
             <Route path="/markets" element={<MarketsPage />} />
             <Route path="/real-estate" element={<RealEstatePage />} />
             <Route path="/credit" element={<CreditPage />} />
