@@ -374,21 +374,21 @@ export const MarketSimulatorAdvanced = () => {
             <CardContent className="space-y-3">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <h4 className="font-semibold mb-2">Key Learnings:</h4>
+                  <h4 className="font-semibold mb-2">{t('keyLearningsAdvanced')}</h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Compound growth accelerates over longer time periods</li>
-                    <li>• Regular contributions help smooth out market volatility</li>
-                    <li>• Higher risk assets have potential for greater returns but larger drawdowns</li>
-                    <li>• Diversification across asset classes can reduce overall portfolio risk</li>
+                    <li>{t('compoundGrowthAccelerates')}</li>
+                    <li>{t('regularContributionsSmooth')}</li>
+                    <li>{t('higherRiskPotential')}</li>
+                    <li>{t('diversificationReduces')}</li>
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Next Steps:</h4>
+                  <h4 className="font-semibold mb-2">{t('nextSteps')}</h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Try different asset combinations to see impact on returns</li>
-                    <li>• Experiment with various risk profiles</li>
-                    <li>• Test how changing contribution amounts affects outcomes</li>
-                    <li>• Play the Live Event Game to experience market volatility</li>
+                    <li>{t('tryDifferentAssets')}</li>
+                    <li>{t('experimentRiskProfiles')}</li>
+                    <li>{t('testContributionAmounts')}</li>
+                    <li>{t('playLiveEventVolatility')}</li>
                   </ul>
                 </div>
               </div>

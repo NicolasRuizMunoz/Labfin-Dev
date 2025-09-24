@@ -296,7 +296,8 @@ const translations = {
     factorVacancy: '• Factor in vacancy rates and unexpected repairs',
     locationMatters: '• Location and neighborhood trends matter significantly',
     
-    assessmentTitle: 'Financial Knowledge Assessment',
+    // Additional missing translation
+    playLiveEventVolatility: '• Play the Live Event Game to experience market volatility',
     assessmentDesc: 'Discover your current financial knowledge level and get personalized learning recommendations.',
     
     // Difficulty levels
@@ -821,6 +822,9 @@ const translations = {
     considerAppreciation: '• Considera tanto el flujo de efectivo como el potencial de apreciación',
     factorVacancy: '• Incluye tasas de vacantes y reparaciones inesperadas',
     locationMatters: '• La ubicación y las tendencias del vecindario importan significativamente',
+    
+    // Additional missing translation
+    playLiveEventVolatility: '• Juega el Juego de Eventos en Vivo para experimentar la volatilidad del mercado',
     
     // Common translations
     yearsLabel: 'años',
