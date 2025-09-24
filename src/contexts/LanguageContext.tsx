@@ -384,6 +384,34 @@ const translations = {
     next: 'Next',
     finishTest: 'Finish Test',
     
+    // LF Business
+    lfBusiness: 'LF Business',
+    lfBusinessBadge: 'Small Business Tax Education',
+    lfBusinessTitle: 'LF Business',
+    lfBusinessSubtitle: 'Simplified tax guidance for small business owners. Learn about tax forms, deductions, compliance requirements, and financial planning - all without the complexity of accounting software.',
+    lfBusinessTagline: 'Focus on growing your business, we\'ll help you understand the tax side.',
+    essentialBusinessTopics: 'Essential Business Tax Topics',
+    essentialBusinessTopicsDesc: 'Get practical guidance on the most important tax and financial topics for small businesses',
+    
+    // Business Topics
+    taxFormsDeadlines: 'Tax Forms & Deadlines',
+    taxFormsDeadlinesDesc: 'Learn about essential business tax forms, filing deadlines, and requirements for small businesses.',
+    taxDeductionsCredits: 'Tax Deductions & Credits',
+    taxDeductionsCreditsDesc: 'Discover business expenses you can deduct and tax credits available to small businesses.',
+    businessStructureTax: 'Business Structure Tax Implications',
+    businessStructureTaxDesc: 'Understand how different business structures affect your tax obligations and benefits.',
+    payrollEmployeeTaxes: 'Payroll & Employee Taxes',
+    payrollEmployeeTaxesDesc: 'Navigate payroll taxes, employee classifications, and compliance requirements.',
+    recordKeepingCompliance: 'Record Keeping & Compliance',
+    recordKeepingComplianceDesc: 'Essential bookkeeping practices and compliance requirements for small businesses.',
+    cashFlowFinancialPlanning: 'Cash Flow & Financial Planning',
+    cashFlowFinancialPlanningDesc: 'Basic financial planning concepts to help manage business cash flow and growth.',
+    
+    // CTA Section
+    needPersonalizedTaxGuidance: 'Need Personalized Tax Guidance?',
+    personalizedTaxGuidanceDesc: 'Our AI coach can help answer specific questions about your business tax situation and provide personalized recommendations based on your business type and needs.',
+    askBusinessTaxCoach: 'Ask Our Business Tax AI Coach',
+    
     // Additional translations
     dailyTest: 'Daily Test',
     loading: 'Loading',
@@ -1097,7 +1125,35 @@ const translations = {
     completedToday: 'Completado Hoy',
     comeBackTomorrow: '¡Vuelve mañana para un nuevo test!',
     viewFriends: 'Ver Amigos',
-    viewRankings: 'Ver Rankings'
+    viewRankings: 'Ver Rankings',
+    
+    // LF Business
+    lfBusiness: 'LF Business',
+    lfBusinessBadge: 'Educación Tributaria para Pequeñas Empresas',
+    lfBusinessTitle: 'LF Business',
+    lfBusinessSubtitle: 'Guía tributaria simplificada para propietarios de pequeñas empresas. Aprende sobre formularios fiscales, deducciones, requisitos de cumplimiento y planificación financiera - todo sin la complejidad del software de contabilidad.',
+    lfBusinessTagline: 'Enfócate en hacer crecer tu negocio, nosotros te ayudamos a entender el lado tributario.',
+    essentialBusinessTopics: 'Temas Tributarios Esenciales para Empresas',
+    essentialBusinessTopicsDesc: 'Obtén orientación práctica sobre los temas fiscales y financieros más importantes para pequeñas empresas',
+    
+    // Business Topics
+    taxFormsDeadlines: 'Formularios y Fechas Límite de Impuestos',
+    taxFormsDeadlinesDesc: 'Aprende sobre formularios fiscales esenciales para empresas, fechas límite de presentación y requisitos para pequeñas empresas.',
+    taxDeductionsCredits: 'Deducciones y Créditos Fiscales',
+    taxDeductionsCreditsDesc: 'Descubre gastos comerciales que puedes deducir y créditos fiscales disponibles para pequeñas empresas.',
+    businessStructureTax: 'Implicaciones Fiscales de la Estructura Empresarial',
+    businessStructureTaxDesc: 'Comprende cómo diferentes estructuras empresariales afectan tus obligaciones y beneficios fiscales.',
+    payrollEmployeeTaxes: 'Nómina e Impuestos de Empleados',
+    payrollEmployeeTaxesDesc: 'Navega los impuestos de nómina, clasificaciones de empleados y requisitos de cumplimiento.',
+    recordKeepingCompliance: 'Mantenimiento de Registros y Cumplimiento',
+    recordKeepingComplianceDesc: 'Prácticas esenciales de contabilidad y requisitos de cumplimiento para pequeñas empresas.',
+    cashFlowFinancialPlanning: 'Flujo de Efectivo y Planificación Financiera',
+    cashFlowFinancialPlanningDesc: 'Conceptos básicos de planificación financiera para ayudar a gestionar el flujo de efectivo y crecimiento empresarial.',
+    
+    // CTA Section
+    needPersonalizedTaxGuidance: '¿Necesitas Orientación Fiscal Personalizada?',
+    personalizedTaxGuidanceDesc: 'Nuestro coach de IA puede ayudar a responder preguntas específicas sobre tu situación fiscal empresarial y proporcionar recomendaciones personalizadas basadas en tu tipo de negocio y necesidades.',
+    askBusinessTaxCoach: 'Pregunta a Nuestro Coach Fiscal Empresarial de IA'
   }
 };
 

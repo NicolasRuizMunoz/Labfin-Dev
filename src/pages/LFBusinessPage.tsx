@@ -12,8 +12,8 @@ const LFBusinessPage = () => {
 
   const businessTopics = [
     {
-      title: "Tax Forms & Deadlines",
-      description: "Learn about essential business tax forms, filing deadlines, and requirements for small businesses.",
+      title: t('taxFormsDeadlines'),
+      description: t('taxFormsDeadlinesDesc'),
       icon: FileText,
       color: "bg-blue-500/10 text-blue-600 border-blue-200",
       content: [
@@ -25,8 +25,8 @@ const LFBusinessPage = () => {
       ]
     },
     {
-      title: "Tax Deductions & Credits",
-      description: "Discover business expenses you can deduct and tax credits available to small businesses.",
+      title: t('taxDeductionsCredits'),
+      description: t('taxDeductionsCreditsDesc'),
       icon: Calculator,
       color: "bg-green-500/10 text-green-600 border-green-200",
       content: [
@@ -38,8 +38,8 @@ const LFBusinessPage = () => {
       ]
     },
     {
-      title: "Business Structure Tax Implications",
-      description: "Understand how different business structures affect your tax obligations and benefits.",
+      title: t('businessStructureTax'),
+      description: t('businessStructureTaxDesc'),
       icon: Building,
       color: "bg-purple-500/10 text-purple-600 border-purple-200",
       content: [
@@ -51,8 +51,8 @@ const LFBusinessPage = () => {
       ]
     },
     {
-      title: "Payroll & Employee Taxes",
-      description: "Navigate payroll taxes, employee classifications, and compliance requirements.",
+      title: t('payrollEmployeeTaxes'),
+      description: t('payrollEmployeeTaxesDesc'),
       icon: Users,
       color: "bg-orange-500/10 text-orange-600 border-orange-200",
       content: [
@@ -64,8 +64,8 @@ const LFBusinessPage = () => {
       ]
     },
     {
-      title: "Record Keeping & Compliance",
-      description: "Essential bookkeeping practices and compliance requirements for small businesses.",
+      title: t('recordKeepingCompliance'),
+      description: t('recordKeepingComplianceDesc'),
       icon: AlertTriangle,
       color: "bg-red-500/10 text-red-600 border-red-200",
       content: [
@@ -77,8 +77,8 @@ const LFBusinessPage = () => {
       ]
     },
     {
-      title: "Cash Flow & Financial Planning",
-      description: "Basic financial planning concepts to help manage business cash flow and growth.",
+      title: t('cashFlowFinancialPlanning'),
+      description: t('cashFlowFinancialPlanningDesc'),
       icon: DollarSign,
       color: "bg-teal-500/10 text-teal-600 border-teal-200",
       content: [
@@ -97,18 +97,16 @@ const LFBusinessPage = () => {
       <section className="py-20 px-6 text-center">
         <div className="container max-w-4xl mx-auto">
           <Badge variant="outline" className="mb-4 text-primary border-primary/30">
-            Small Business Tax Education
+            {t('lfBusinessBadge')}
           </Badge>
           <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
-            LF Business
+            {t('lfBusinessTitle')}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            Simplified tax guidance for small business owners. Learn about tax forms, deductions, 
-            compliance requirements, and financial planning - all without the complexity of 
-            accounting software.
+            {t('lfBusinessSubtitle')}
           </p>
           <p className="text-lg text-primary font-semibold">
-            Focus on growing your business, we'll help you understand the tax side.
+            {t('lfBusinessTagline')}
           </p>
         </div>
       </section>
@@ -118,10 +116,10 @@ const LFBusinessPage = () => {
         <div className="container max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Essential Business Tax Topics
+              {t('essentialBusinessTopics')}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Get practical guidance on the most important tax and financial topics for small businesses
+              {t('essentialBusinessTopicsDesc')}
             </p>
           </div>
 
@@ -160,11 +158,10 @@ const LFBusinessPage = () => {
           <Card className="bg-background/80 backdrop-blur-sm border-0 shadow-elevated">
             <CardContent className="py-12 px-8">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Need Personalized Tax Guidance?
+                {t('needPersonalizedTaxGuidance')}
               </h2>
               <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Our AI coach can help answer specific questions about your business tax situation 
-                and provide personalized recommendations based on your business type and needs.
+                {t('personalizedTaxGuidanceDesc')}
               </p>
               <Button 
                 size="lg"
@@ -172,7 +169,7 @@ const LFBusinessPage = () => {
                 className="bg-gradient-hero hover:shadow-glow transition-all duration-300"
               >
                 <MessageCircle className="w-5 h-5 mr-2" />
-                Ask Our Business Tax AI Coach
+                {t('askBusinessTaxCoach')}
               </Button>
             </CardContent>
           </Card>
