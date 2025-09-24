@@ -7,7 +7,7 @@ import { AICoach } from '@/components/AICoach';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const LFBusinessPage = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [showAICoach, setShowAICoach] = useState(false);
 
   const businessTopics = [
@@ -16,7 +16,13 @@ const LFBusinessPage = () => {
       description: t('taxFormsDeadlinesDesc'),
       icon: FileText,
       color: "bg-blue-500/10 text-blue-600 border-blue-200",
-      content: [
+      content: language === 'es' ? [
+        "Formulario 1040 Anexo C para propietarios únicos",
+        "Formulario 1120S para S-Corporations", 
+        "Formulario 1065 para sociedades",
+        "Pagos de impuestos estimados trimestrales (Formulario 1040ES)",
+        "Fechas límite de presentación anual y extensiones"
+      ] : [
         "Form 1040 Schedule C for sole proprietorships",
         "Form 1120S for S-Corporations", 
         "Form 1065 for partnerships",
@@ -29,7 +35,13 @@ const LFBusinessPage = () => {
       description: t('taxDeductionsCreditsDesc'),
       icon: Calculator,
       color: "bg-green-500/10 text-green-600 border-green-200",
-      content: [
+      content: language === 'es' ? [
+        "Gastos de oficina y deducción de oficina en casa",
+        "Equipo comercial y depreciación",
+        "Gastos de viaje y comidas",
+        "Desarrollo profesional y capacitación",
+        "Créditos fiscales para pequeñas empresas (I+D, Oportunidad de Trabajo, etc.)"
+      ] : [
         "Office expenses and home office deduction",
         "Business equipment and depreciation",
         "Travel and meal expenses",
@@ -42,7 +54,13 @@ const LFBusinessPage = () => {
       description: t('businessStructureTaxDesc'),
       icon: Building,
       color: "bg-purple-500/10 text-purple-600 border-purple-200",
-      content: [
+      content: language === 'es' ? [
+        "Propietario único vs LLC vs Corporación",
+        "Consideraciones de impuestos de trabajo por cuenta propia",
+        "Impuestos directos vs doble tributación",
+        "Requisitos de impuestos estatales por tipo de negocio",
+        "Cuándo considerar cambiar la estructura empresarial"
+      ] : [
         "Sole Proprietorship vs LLC vs Corporation",
         "Self-employment tax considerations",
         "Pass-through vs double taxation",
@@ -55,7 +73,13 @@ const LFBusinessPage = () => {
       description: t('payrollEmployeeTaxesDesc'),
       icon: Users,
       color: "bg-orange-500/10 text-orange-600 border-orange-200",
-      content: [
+      content: language === 'es' ? [
+        "Clasificación de empleado vs contratista independiente",
+        "Cálculos de impuestos de nómina (FICA, FUTA, SUTA)",
+        "Requisitos de Formulario W-2 y 1099",
+        "Horarios de depósito de impuestos de nómina",
+        "Requisitos de seguro de desempleo estatal"
+      ] : [
         "Employee vs independent contractor classification",
         "Payroll tax calculations (FICA, FUTA, SUTA)",
         "Form W-2 and 1099 requirements",
@@ -68,7 +92,13 @@ const LFBusinessPage = () => {
       description: t('recordKeepingComplianceDesc'),
       icon: AlertTriangle,
       color: "bg-red-500/10 text-red-600 border-red-200",
-      content: [
+      content: language === 'es' ? [
+        "Registros comerciales requeridos y períodos de retención",
+        "Seguimiento de gastos y gestión de recibos",
+        "Mejores prácticas de separación de cuentas bancarias",
+        "Recolección y remisión de impuestos sobre ventas",
+        "Preparación de auditorías y documentación"
+      ] : [
         "Required business records and retention periods",
         "Expense tracking and receipt management",
         "Bank account separation best practices",
@@ -81,7 +111,13 @@ const LFBusinessPage = () => {
       description: t('cashFlowFinancialPlanningDesc'),
       icon: DollarSign,
       color: "bg-teal-500/10 text-teal-600 border-teal-200",
-      content: [
+      content: language === 'es' ? [
+        "Conceptos básicos de pronóstico de flujo de efectivo",
+        "Apartar dinero para pagos de impuestos",
+        "Planificación de fondo de emergencia empresarial",
+        "Entender ganancia vs flujo de efectivo",
+        "Resumen básico de estados financieros"
+      ] : [
         "Cash flow forecasting basics",
         "Setting aside money for tax payments",
         "Business emergency fund planning",
