@@ -44,6 +44,13 @@ const SocialDailyTest = () => {
   const [hasStarted, setHasStarted] = useState(false);
   const [activeTab, setActiveTab] = useState('test');
   const [hasAlreadyTakenTest, setHasAlreadyTakenTest] = useState(false);
+  const [isPracticeMode, setIsPracticeMode] = useState(false);
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [currentQuestionResult, setCurrentQuestionResult] = useState<{
+    isCorrect: boolean;
+    userAnswer: number;
+    correctAnswer: number;
+  } | null>(null);
 
   // Question bank based on difficulty
   const questionBank: Question[] = [
@@ -248,18 +255,21 @@ const SocialDailyTest = () => {
     }
   };
 
-  const handleStartTest = () => {
+  const handleStartTest = (practiceMode = false) => {
     if (!user) {
       navigate('/auth');
       return;
     }
     
+    setIsPracticeMode(practiceMode);
     setHasStarted(true);
     setCurrentQuestion(0);
     setSelectedAnswers([]);
     setSelectedAnswer(null);
     setIsCompleted(false);
     setResult(null);
+    setShowExplanation(false);
+    setCurrentQuestionResult(null);
   };
 
   const handleAnswerSelect = (answerIndex: number) => {
@@ -269,13 +279,34 @@ const SocialDailyTest = () => {
   const handleNext = () => {
     if (selectedAnswer === null) return;
 
+    const currentQ = testQuestions[currentQuestion];
+    const isCorrect = selectedAnswer === currentQ.correctAnswer;
+
+    if (isPracticeMode) {
+      // In practice mode, show explanation immediately
+      setCurrentQuestionResult({
+        isCorrect,
+        userAnswer: selectedAnswer,
+        correctAnswer: currentQ.correctAnswer
+      });
+      setShowExplanation(true);
+      return;
+    }
+
+    // Regular test mode - proceed directly
+    proceedToNextQuestion();
+  };
+
+  const proceedToNextQuestion = () => {
     const newAnswers = [...selectedAnswers];
-    newAnswers[currentQuestion] = selectedAnswer;
+    newAnswers[currentQuestion] = selectedAnswer!;
     setSelectedAnswers(newAnswers);
 
     if (currentQuestion < testQuestions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
       setSelectedAnswer(null);
+      setShowExplanation(false);
+      setCurrentQuestionResult(null);
     } else {
       completeTest(newAnswers);
     }
@@ -402,31 +433,53 @@ const SocialDailyTest = () => {
             </TabsList>
 
             <TabsContent value="test">
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('dailyFinanceTest')}</CardTitle>
-                  <CardDescription>
-                    {hasAlreadyTakenTest ? 
-                      t('alreadyTakenToday') : 
-                      t('readyToStart')
-                    }
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <Button 
-                    onClick={handleStartTest} 
-                    size="lg"
-                    disabled={hasAlreadyTakenTest}
-                  >
-                    {hasAlreadyTakenTest ? t('completedToday') : t('startDailyTest')}
-                  </Button>
-                  {hasAlreadyTakenTest && (
-                    <p className="text-sm text-muted-foreground mt-4">
-                      {t('comeBackTomorrow')}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t('dailyFinanceTest')}</CardTitle>
+                    <CardDescription>
+                      {hasAlreadyTakenTest ? 
+                        t('alreadyTakenToday') : 
+                        t('readyToStart')
+                      }
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="text-center space-y-4">
+                    <Button 
+                      onClick={() => handleStartTest(false)} 
+                      size="lg"
+                      disabled={hasAlreadyTakenTest}
+                      className="w-full"
+                    >
+                      {hasAlreadyTakenTest ? t('completedToday') : t('startDailyTest')}
+                    </Button>
+                    {hasAlreadyTakenTest && (
+                      <p className="text-sm text-muted-foreground">
+                        {t('comeBackTomorrow')}
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t('practiceMode')}</CardTitle>
+                    <CardDescription>
+                      {t('practiceTestDesc')}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="text-center">
+                    <Button 
+                      onClick={() => handleStartTest(true)} 
+                      size="lg"
+                      variant="outline"
+                      className="w-full"
+                    >
+                      {t('startPracticeTest')}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
 
             <TabsContent value="friends">
@@ -502,6 +555,12 @@ const SocialDailyTest = () => {
                 <Trophy className="w-4 h-4 mr-2" />
                 {t('viewRankings')}
               </Button>
+              {result && (
+                <Button onClick={() => handleStartTest(true)} variant="outline">
+                  <Brain className="w-4 h-4 mr-2" />
+                  {t('retakeForLearning')}
+                </Button>
+              )}
             </div>
             <Button onClick={() => window.location.href = '/'}>
               {t('backToHome')}
@@ -536,23 +595,88 @@ const SocialDailyTest = () => {
                   {getModuleIcon(currentQ.module)}
                   <span className="ml-1">{t(currentQ.module)}</span>
                 </Badge>
-                <Badge variant="outline">{t(userDifficulty)}</Badge>
+                <div className="flex gap-2">
+                  <Badge variant="outline">{t(userDifficulty)}</Badge>
+                  {isPracticeMode && <Badge variant="secondary">{t('practiceMode')}</Badge>}
+                </div>
               </div>
               <CardTitle className="text-xl">
                 {t(currentQ.questionKey)}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {currentQ.options.map((optionKey, index) => (
-                <Button
-                  key={index}
-                  variant={selectedAnswer === index ? "default" : "outline"}
-                  className="w-full text-left justify-start h-auto py-4 px-4"
-                  onClick={() => handleAnswerSelect(index)}
-                >
-                  {String.fromCharCode(65 + index)}. {t(optionKey)}
-                </Button>
-              ))}
+              {currentQ.options.map((optionKey, index) => {
+                let buttonVariant: "default" | "outline" | "destructive" | "secondary" = 
+                  selectedAnswer === index ? "default" : "outline";
+                
+                if (showExplanation && currentQuestionResult) {
+                  if (index === currentQuestionResult.correctAnswer) {
+                    buttonVariant = "default"; // Correct answer - highlighted
+                  } else if (index === currentQuestionResult.userAnswer && !currentQuestionResult.isCorrect) {
+                    buttonVariant = "destructive"; // Wrong user answer
+                  } else {
+                    buttonVariant = "outline";
+                  }
+                }
+
+                return (
+                  <Button
+                    key={index}
+                    variant={buttonVariant}
+                    className="w-full text-left justify-start h-auto py-4 px-4"
+                    onClick={() => handleAnswerSelect(index)}
+                    disabled={showExplanation}
+                  >
+                    <div className="flex items-center gap-2">
+                      {showExplanation && index === currentQuestionResult?.correctAnswer && (
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      )}
+                      {showExplanation && index === currentQuestionResult?.userAnswer && !currentQuestionResult?.isCorrect && (
+                        <XCircle className="w-4 h-4 text-red-600" />
+                      )}
+                      <span>{String.fromCharCode(65 + index)}. {t(optionKey)}</span>
+                    </div>
+                  </Button>
+                );
+              })}
+
+              {/* Show explanation in practice mode */}
+              {showExplanation && currentQuestionResult && isPracticeMode && (
+                <Card className="mt-4 border-l-4 border-l-primary">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Brain className="w-5 h-5" />
+                      {t('explanation')}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {t(currentQ.explanationKey)}
+                    </p>
+                    <div className="flex items-center gap-4 text-sm">
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium">{t('yourAnswer')}:</span>
+                        <span className={currentQuestionResult.isCorrect ? "text-green-600" : "text-red-600"}>
+                          {String.fromCharCode(65 + currentQuestionResult.userAnswer)}
+                        </span>
+                        {currentQuestionResult.isCorrect ? (
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                        ) : (
+                          <XCircle className="w-4 h-4 text-red-600" />
+                        )}
+                      </div>
+                      {!currentQuestionResult.isCorrect && (
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium">{t('correctAnswer')}:</span>
+                          <span className="text-green-600">
+                            {String.fromCharCode(65 + currentQuestionResult.correctAnswer)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </CardContent>
           </Card>
 
@@ -560,16 +684,26 @@ const SocialDailyTest = () => {
           <div className="flex justify-between">
             <Button
               variant="outline"
-              onClick={() => setCurrentQuestion(Math.max(0, currentQuestion - 1))}
+              onClick={() => {
+                if (currentQuestion > 0) {
+                  setCurrentQuestion(currentQuestion - 1);
+                  setSelectedAnswer(selectedAnswers[currentQuestion - 1] || null);
+                  setShowExplanation(false);
+                  setCurrentQuestionResult(null);
+                }
+              }}
               disabled={currentQuestion === 0}
             >
               {t('previous')}
             </Button>
             <Button
-              onClick={handleNext}
-              disabled={selectedAnswer === null}
+              onClick={showExplanation ? proceedToNextQuestion : handleNext}
+              disabled={selectedAnswer === null && !showExplanation}
             >
-              {currentQuestion === testQuestions.length - 1 ? t('finishTest') : t('next')}
+              {showExplanation ? 
+                (currentQuestion === testQuestions.length - 1 ? t('finishTest') : t('continueToNext')) :
+                (currentQuestion === testQuestions.length - 1 ? t('finishTest') : t('next'))
+              }
             </Button>
           </div>
         </div>

@@ -423,6 +423,15 @@ const translations = {
     comeBackTomorrow: 'Come back tomorrow for a new test!',
     viewFriends: 'View Friends',
     viewRankings: 'View Rankings',
+    practiceMode: 'Practice Mode',
+    startPracticeTest: 'Start Practice Test',
+    practiceTestDesc: 'Practice with immediate feedback and explanations',
+    explanation: 'Explanation',
+    yourAnswer: 'Your Answer',
+    correctAnswer: 'Correct Answer',
+    continueToNext: 'Continue to Next Question',
+    reviewAnswers: 'Review Answers',
+    retakeForLearning: 'Retake for Learning',
     
     // Daily Test Questions - Markets
     whatIsCompound: 'What is compound interest?',
@@ -1214,6 +1223,9 @@ const translations = {
     comeBackTomorrow: '¡Vuelve mañana para un nuevo test!',
     viewFriends: 'Ver Amigos',
     viewRankings: 'Ver Rankings',
+    practiceMode: 'Modo Práctica',
+    startPracticeTest: 'Comenzar Prueba de Práctica',
+    practiceTestDesc: 'Practica con retroalimentación inmediata y explicaciones',
     
     // LF Business
     lfBusiness: 'LF Business',
