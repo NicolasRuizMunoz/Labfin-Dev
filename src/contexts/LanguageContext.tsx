@@ -432,6 +432,9 @@ const translations = {
     continueToNext: 'Continue to Next Question',
     reviewAnswers: 'Review Answers',
     retakeForLearning: 'Retake for Learning',
+    beginnerDescription: 'Simplified questions with basic financial concepts and step-by-step guidance',
+    mediumDescription: 'Balanced complexity with intermediate financial concepts and moderate difficulty',
+    advancedDescription: 'Complex scenarios with advanced financial analysis and comprehensive concepts',
     
     // Daily Test Questions - Markets
     whatIsCompound: 'What is compound interest?',
@@ -1226,6 +1229,15 @@ const translations = {
     practiceMode: 'Modo Práctica',
     startPracticeTest: 'Comenzar Prueba de Práctica',
     practiceTestDesc: 'Practica con retroalimentación inmediata y explicaciones',
+    explanation: 'Explicación',
+    yourAnswer: 'Tu Respuesta',
+    correctAnswer: 'Respuesta Correcta',
+    continueToNext: 'Continuar a la Siguiente Pregunta',
+    reviewAnswers: 'Revisar Respuestas',
+    retakeForLearning: 'Repetir para Aprender',
+    beginnerDescription: 'Preguntas simplificadas con conceptos financieros básicos y guía paso a paso',
+    mediumDescription: 'Complejidad equilibrada con conceptos financieros intermedios y dificultad moderada',
+    advancedDescription: 'Escenarios complejos con análisis financiero avanzado y conceptos integrales',
     
     // LF Business
     lfBusiness: 'LF Business',

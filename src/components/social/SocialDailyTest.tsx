@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CheckCircle, XCircle, Brain, Target, TrendingUp, Home, CreditCard, Calendar, Users, Trophy, LogIn } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CheckCircle, XCircle, Brain, Target, TrendingUp, Home, CreditCard, Calendar, Users, Trophy, LogIn, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate } from 'react-router-dom';
@@ -418,10 +419,32 @@ const SocialDailyTest = () => {
             <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
               {t('dailyTestDescription')}
             </p>
-            <div className="mb-6">
-              <Badge className="text-lg px-4 py-2">
-                {t('difficultyLevel')}: {t(userDifficulty)}
-              </Badge>
+            <div className="mb-6 space-y-4">
+              <div className="flex items-center justify-center gap-4">
+                <Badge className="text-lg px-4 py-2">
+                  {t('difficultyLevel')}: {t(userDifficulty)}
+                </Badge>
+                <div className="flex items-center gap-2">
+                  <Settings className="w-4 h-4" />
+                  <Select value={userDifficulty} onValueChange={(value: 'beginner' | 'medium' | 'advanced') => setUserDifficulty(value)}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="beginner">{t('beginner')}</SelectItem>
+                      <SelectItem value="medium">{t('medium')}</SelectItem>
+                      <SelectItem value="advanced">{t('advanced')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="text-center max-w-md mx-auto">
+                <p className="text-sm text-muted-foreground">
+                  {userDifficulty === 'beginner' && t('beginnerDescription')}
+                  {userDifficulty === 'medium' && t('mediumDescription')}
+                  {userDifficulty === 'advanced' && t('advancedDescription')}
+                </p>
+              </div>
             </div>
           </div>
 
