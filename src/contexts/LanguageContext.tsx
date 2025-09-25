@@ -221,11 +221,11 @@ const translations = {
     backToHome: 'Back to Home',
 
     // Authentication Required
+    authRequired: 'Authentication Required',
     signInToAccess: 'Please sign in to access the daily test and compete with friends',
     alreadyTakenToday: 'Already taken today',
     readyToStart: 'Ready to test your financial knowledge?',
     completedToday: 'Completed Today',
-    comeBackTomorrow: 'Come back tomorrow for a new test!',
     viewFriends: 'View Friends',
     viewRankings: 'View Rankings',
 
@@ -563,7 +563,6 @@ const translations = {
     alreadyTakenToday: 'Ya has tomado la prueba de hoy',
     readyToStart: '¿Listo para probar tus conocimientos financieros?',
     completedToday: 'Completado Hoy',
-    comeBackTomorrow: '¡Vuelve mañana para una nueva prueba!',
     viewFriends: 'Ver Amigos',
     viewRankings: 'Ver Rankings',
 
