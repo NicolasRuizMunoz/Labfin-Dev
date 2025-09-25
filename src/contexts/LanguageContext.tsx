@@ -422,7 +422,95 @@ const translations = {
     completedToday: 'Completed Today',
     comeBackTomorrow: 'Come back tomorrow for a new test!',
     viewFriends: 'View Friends',
-    viewRankings: 'View Rankings'
+    viewRankings: 'View Rankings',
+    
+    // Daily Test Questions - Markets
+    whatIsCompound: 'What is compound interest?',
+    compoundOption1: 'Interest paid only on the original principal',
+    compoundOption2: 'Interest earned on both the principal and previously earned interest',
+    compoundOption3: 'A type of bank account',
+    compoundOption4: 'Monthly fees charged by banks',
+    compoundExplanation: 'Compound interest is interest calculated on both the initial principal and the accumulated interest from previous periods.',
+    
+    whatIsDiversification: 'What is diversification in investing?',
+    diversificationOption1: 'Putting all money in one stock',
+    diversificationOption2: 'Buying only government bonds',
+    diversificationOption3: 'Spreading investments across different assets to reduce risk',
+    diversificationOption4: 'Only investing in your home country',
+    diversificationExplanation: 'Diversification reduces risk by spreading investments across different assets, sectors, and geographic regions.',
+    
+    whatIsRiskReturn: 'What is the relationship between risk and return in investing?',
+    riskReturnOption1: 'Higher risk investments typically offer higher potential returns',
+    riskReturnOption2: 'Risk and return are not related',
+    riskReturnOption3: 'Lower risk always means higher returns',
+    riskReturnOption4: 'All investments have the same risk level',
+    riskReturnExplanation: 'Generally, investments with higher potential risk offer higher returns to compensate investors for taking on additional risk.',
+    
+    whatIsAssetAllocation: 'What is asset allocation?',
+    assetAllocationOption1: 'Buying only one type of investment',
+    assetAllocationOption2: 'Dividing investments among different asset classes (stocks, bonds, real estate)',
+    assetAllocationOption3: 'Keeping all money in cash',
+    assetAllocationOption4: 'Only investing in tech stocks',
+    assetAllocationExplanation: 'Asset allocation involves dividing investments among different asset classes to balance risk and reward according to your goals and risk tolerance.',
+    
+    whatIsBetaVolatility: 'What does Beta measure in finance?',
+    betaOption1: 'The total return of an investment',
+    betaOption2: 'The dividend yield of a stock',
+    betaOption3: 'The volatility of a stock relative to the overall market',
+    betaOption4: 'The price-to-earnings ratio',
+    betaExplanation: 'Beta measures how much a stock\'s price moves relative to the overall market. A beta of 1 means it moves with the market, above 1 is more volatile, below 1 is less volatile.',
+    
+    // Daily Test Questions - Real Estate
+    whatIsDownPayment: 'What is a down payment in real estate?',
+    downPaymentOption1: 'Money paid upfront when buying a house',
+    downPaymentOption2: 'Monthly mortgage payment',
+    downPaymentOption3: 'Property taxes',
+    downPaymentOption4: 'Home insurance premium',
+    downPaymentExplanation: 'A down payment is the upfront cash payment made when buying a house, typically expressed as a percentage of the purchase price.',
+    
+    whatIsPMI: 'What is PMI (Private Mortgage Insurance)?',
+    pmiOption1: 'Insurance for the property structure',
+    pmiOption2: 'Insurance that protects the lender if you default on your loan',
+    pmiOption3: 'Insurance for personal belongings',
+    pmiOption4: 'Life insurance for mortgage holders',
+    pmiExplanation: 'PMI protects the lender in case you default on your mortgage. It\'s typically required when your down payment is less than 20%.',
+    
+    whatIsCapRate: 'What is a capitalization rate (cap rate) in real estate?',
+    capRateOption1: 'The interest rate on a mortgage',
+    capRateOption2: 'Property tax rate',
+    capRateOption3: 'Annual rental income divided by property value',
+    capRateOption4: 'The down payment percentage',
+    capRateExplanation: 'Cap rate is calculated by dividing the annual net operating income by the current market value of the property. It helps evaluate investment property returns.',
+    
+    // Daily Test Questions - Credit
+    whatIsInterestRate: 'What is an interest rate?',
+    interestRateOption1: 'The cost of borrowing money, expressed as a percentage',
+    interestRateOption2: 'A monthly fee for having a bank account',
+    interestRateOption3: 'The amount of money you can borrow',
+    interestRateOption4: 'Insurance for your loan',
+    interestRateExplanation: 'Interest rate is the percentage charged on the principal amount of borrowed money, representing the cost of the loan.',
+    
+    whatIsAmortization: 'What is loan amortization?',
+    amortizationOption1: 'Paying only interest on a loan',
+    amortizationOption2: 'The process of gradually paying off a loan through regular payments',
+    amortizationOption3: 'Increasing the loan amount over time',
+    amortizationOption4: 'Paying the entire loan amount at once',
+    amortizationExplanation: 'Amortization is the process of gradually reducing a debt through regular payments that cover both principal and interest.',
+    
+    whatIsDebtToIncomeRatio: 'What is debt-to-income ratio?',
+    dtiOption1: 'Your total monthly debt payments divided by your gross monthly income',
+    dtiOption2: 'Your total assets divided by total debts',
+    dtiOption3: 'Your net worth divided by annual income',
+    dtiOption4: 'Your credit score divided by income',
+    dtiExplanation: 'DTI ratio compares your total monthly debt payments to your gross monthly income. Lenders use it to assess your ability to repay loans.',
+    
+    // Daily Test Questions - Retirement
+    whatIs401k: 'What is a 401(k)?',
+    '401kOption1': 'A type of savings account',
+    '401kOption2': 'A government pension program',
+    '401kOption3': 'An employer-sponsored retirement savings plan',
+    '401kOption4': 'A type of mutual fund',
+    '401kExplanation': 'A 401(k) is an employer-sponsored retirement savings plan that allows employees to save and invest for retirement with tax advantages.'
   },
   es: {
     // Navigation
