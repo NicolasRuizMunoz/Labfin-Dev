@@ -229,6 +229,46 @@ const translations = {
     viewFriends: 'View Friends',
     viewRankings: 'View Rankings',
 
+    // Profile Header
+    yourProfile: 'Your Profile',
+    friendsCount: 'friends',
+    user: 'User',
+    riskScore: 'Risk Score',
+    riskProfile: 'Risk Profile',
+    timeHorizon: 'Time Horizon',
+    primaryGoal: 'Primary Goal',
+    avgScore: 'Avg Score',
+    testsCompleted: 'Tests Completed',
+    lastTest: 'Last Test',
+    noAssessment: 'Take your assessment to see personalized insights',
+    personalizedTips: 'Tips for You',
+    completeAssessmentForTips: 'Complete your assessment to get personalized tips',
+    
+    // Risk Profile Tips
+    conservativeTip: 'Focus on stable investments like bonds and high-grade stocks for steady growth.',
+    moderateTip: 'Balance your portfolio with a mix of stocks and bonds to optimize risk-return.',
+    aggressiveTip: 'Consider growth stocks and emerging markets for higher potential returns.',
+    beginnerTip: 'Start with our beginner modules to build a solid foundation in financial concepts.',
+    practiceMoreTip: 'Take more practice tests to improve your financial knowledge and confidence.',
+    
+    // Assessment translations
+    conservative: 'Conservative',
+    moderate: 'Moderate', 
+    aggressive: 'Aggressive',
+    shortTerm: 'Short Term',
+    mediumTerm: 'Medium Term',
+    longTerm: 'Long Term',
+    capitalPreservation: 'Capital Preservation',
+    incomeGeneration: 'Income Generation',
+    capitalAppreciation: 'Capital Appreciation',
+    retirementGoal: 'Retirement',
+    stocksAsset: 'Stocks',
+    bondsAsset: 'Bonds',
+    realEstateAsset: 'Real Estate',
+    mixedAssets: 'Mixed Assets',
+    stableIncome: 'Stable',
+    variableIncome: 'Variable',
+
     // Additional friend features
     pendingRequests: 'Pending Requests',
     outgoingRequests: 'Outgoing Requests',
@@ -565,6 +605,46 @@ const translations = {
     completedToday: 'Completado Hoy',
     viewFriends: 'Ver Amigos',
     viewRankings: 'Ver Rankings',
+
+    // Profile Header
+    yourProfile: 'Tu Perfil',
+    friendsCount: 'amigos',
+    user: 'Usuario',
+    riskScore: 'Puntuación de Riesgo',
+    riskProfile: 'Perfil de Riesgo',
+    timeHorizon: 'Horizonte Temporal',
+    primaryGoal: 'Objetivo Principal',
+    avgScore: 'Puntuación Promedio',
+    testsCompleted: 'Pruebas Completadas',
+    lastTest: 'Última Prueba',
+    noAssessment: 'Realiza tu evaluación para ver insights personalizados',
+    personalizedTips: 'Consejos para Ti',
+    completeAssessmentForTips: 'Completa tu evaluación para obtener consejos personalizados',
+    
+    // Risk Profile Tips
+    conservativeTip: 'Enfócate en inversiones estables como bonos y acciones de alta calidad para un crecimiento constante.',
+    moderateTip: 'Equilibra tu portafolio con una mezcla de acciones y bonos para optimizar el riesgo-retorno.',
+    aggressiveTip: 'Considera acciones de crecimiento y mercados emergentes para mayores retornos potenciales.',
+    beginnerTip: 'Comienza con nuestros módulos para principiantes para construir una base sólida en conceptos financieros.',
+    practiceMoreTip: 'Realiza más pruebas de práctica para mejorar tu conocimiento financiero y confianza.',
+    
+    // Assessment translations
+    conservative: 'Conservador',
+    moderate: 'Moderado',
+    aggressive: 'Agresivo', 
+    shortTerm: 'Corto Plazo',
+    mediumTerm: 'Mediano Plazo', 
+    longTerm: 'Largo Plazo',
+    capitalPreservation: 'Preservación de Capital',
+    incomeGeneration: 'Generación de Ingresos',
+    capitalAppreciation: 'Apreciación de Capital',
+    retirementGoal: 'Jubilación',
+    stocksAsset: 'Acciones',
+    bondsAsset: 'Bonos',
+    realEstateAsset: 'Bienes Raíces',
+    mixedAssets: 'Activos Mixtos',
+    stableIncome: 'Estable',
+    variableIncome: 'Variable',
 
     // Additional friend features
     pendingRequests: 'Solicitudes Pendientes',
