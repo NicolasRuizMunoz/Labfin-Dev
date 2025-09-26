@@ -60,7 +60,7 @@ const SocialDailyTest = () => {
       id: 'markets_beginner_1',
       module: 'markets',
       difficulty: 'beginner',
-      questionKey: 'whatIsCompoundInterest',
+      questionKey: 'whatIsCompound',
       options: ['compoundOption1', 'compoundOption2', 'compoundOption3', 'compoundOption4'],
       correctAnswer: 1,
       explanationKey: 'compoundExplanation'
