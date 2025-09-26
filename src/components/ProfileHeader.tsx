@@ -329,3 +329,5 @@ export const ProfileHeader = () => {
     </div>
   );
 };
+
+export default ProfileHeader;

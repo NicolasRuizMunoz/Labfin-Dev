@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Navigation from "@/components/Navigation";
-import { ProfileHeader } from "@/components/ProfileHeader";
+import ProfileHeader from "@/components/ProfileHeader";
 import SelfAssessmentPage from "./pages/SelfAssessmentPage";
 import DailyTestPage from "./pages/DailyTestPage";
 import SocialDailyTest from "./components/social/SocialDailyTest";
