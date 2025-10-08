@@ -1,0 +1,59 @@
+# ==== OS / Editores ====
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# ==== Env / secretos ====
+.env
+.env.*
+!.env.example
+
+# ==== Python (backend) ====
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+.build/
+dist/
+build/
+.venv/
+venv/
+env/
+ENV/
+.tox/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage*
+coverage.xml
+htmlcov/
+pip-wheel-metadata/
+.cache/
+
+# ==== Node / Frontend ====
+node_modules/
+**/node_modules/
+# bundles / caches
+frontend/dist/
+**/.vite/
+**/.parcel-cache
+**/.eslintcache
+**/coverage/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ==== Docker (si usas) ====
+docker-data/
+*.pid
+
+# ==== Misceláneo ====
+*.zip

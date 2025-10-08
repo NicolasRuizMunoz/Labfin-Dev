@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pymysql
+bcrypt
+pyjwt
+pydantic-settings
+google-auth
