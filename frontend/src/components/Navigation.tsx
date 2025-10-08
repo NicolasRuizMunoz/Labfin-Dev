@@ -1,16 +1,38 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { TrendingUp, Home, CreditCard, PiggyBank, Menu, Brain, CheckCircle2, Globe, Calendar, Building2 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  TrendingUp,
+  Home,
+  CreditCard,
+  PiggyBank,
+  Menu,
+  Brain,
+  CheckCircle2,
+  Globe,
+  Calendar,
+  Building2,
+  LogIn,
+  LogOut,
+} from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
+
 const labfinLogo = '/lovable-uploads/12094485-6192-4e4a-89bc-352de1dd8110.png';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { language, setLanguage, t } = useLanguage();
+  const { user, signOut } = useAuth();
 
   const navItems = [
     { name: t('home'), href: '/', icon: Brain },
@@ -23,24 +45,15 @@ const Navigation = () => {
     { name: t('retirement'), href: '/retirement', icon: PiggyBank, disabled: true },
   ];
 
-  const isActive = (href: string) => {
-    if (href === '/') return location.pathname === '/';
-    return location.pathname.startsWith(href);
-  };
+  const isActive = (href: string) => (href === '/' ? location.pathname === '/' : location.pathname.startsWith(href));
 
   return (
     <nav className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 max-w-7xl mx-auto items-center px-4">
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2 mr-4">
-          <img 
-            src={labfinLogo} 
-            alt="LabFin Logo" 
-            className="w-7 h-7 object-contain"
-          />
-          <span className="hidden lg:inline-block font-bold text-lg text-primary">
-            LabFin
-          </span>
+          <img src={labfinLogo} alt="LabFin Logo" className="w-7 h-7 object-contain" />
+          <span className="hidden lg:inline-block font-bold text-lg text-primary">LabFin</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -54,26 +67,21 @@ const Navigation = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="z-50">
-              <DropdownMenuItem 
-                onClick={() => setLanguage('en')}
-                className={language === 'en' ? 'bg-accent' : ''}
-              >
+              <DropdownMenuItem onClick={() => setLanguage('en')} className={language === 'en' ? 'bg-accent' : ''}>
                 English
               </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => setLanguage('es')}
-                className={language === 'es' ? 'bg-accent' : ''}
-              >
+              <DropdownMenuItem onClick={() => setLanguage('es')} className={language === 'es' ? 'bg-accent' : ''}>
                 Español
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
               <Button
                 key={item.name}
-                variant={isActive(item.href) ? "default" : "ghost"}
+                variant={isActive(item.href) ? 'default' : 'ghost'}
                 size="sm"
                 className={`
                   px-2 py-1 text-xs h-8
@@ -97,11 +105,27 @@ const Navigation = () => {
               </Button>
             );
           })}
+
+          {/* Auth (desktop) */}
+          {!user ? (
+            <Button variant="outline" size="sm" className="ml-2" onClick={() => navigate('/auth')}>
+              <LogIn className="w-3 h-3 mr-1" />
+              Ingresar
+            </Button>
+          ) : (
+            <>
+              <span className="text-xs opacity-70 ml-2 hidden xl:inline">{user.email}</span>
+              <Button variant="outline" size="sm" className="ml-2" onClick={signOut}>
+                <LogOut className="w-3 h-3 mr-1" />
+                Salir
+              </Button>
+            </>
+          )}
         </div>
 
-        {/* Mobile/Tablet Navigation */}
+        {/* Mobile / Tablet */}
         <div className="lg:hidden ml-auto flex items-center space-x-2">
-          {/* Mobile Language Switcher */}
+          {/* Language */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -109,20 +133,16 @@ const Navigation = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="z-50">
-              <DropdownMenuItem 
-                onClick={() => setLanguage('en')}
-                className={language === 'en' ? 'bg-accent' : ''}
-              >
+              <DropdownMenuItem onClick={() => setLanguage('en')} className={language === 'en' ? 'bg-accent' : ''}>
                 English
               </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => setLanguage('es')}
-                className={language === 'es' ? 'bg-accent' : ''}
-              >
+              <DropdownMenuItem onClick={() => setLanguage('es')} className={language === 'es' ? 'bg-accent' : ''}>
                 Español
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Drawer */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -136,12 +156,9 @@ const Navigation = () => {
                   return (
                     <Button
                       key={item.name}
-                      variant={isActive(item.href) ? "default" : "ghost"}
+                      variant={isActive(item.href) ? 'default' : 'ghost'}
                       size="sm"
-                      className={`
-                        justify-start
-                        ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}
-                      `}
+                      className={`justify-start ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                       asChild={!item.disabled}
                       disabled={item.disabled}
                       onClick={() => !item.disabled && setIsOpen(false)}
@@ -160,6 +177,35 @@ const Navigation = () => {
                     </Button>
                   );
                 })}
+
+                {/* Auth (mobile) */}
+                {!user ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="justify-start"
+                    onClick={() => {
+                      setIsOpen(false);
+                      navigate('/auth');
+                    }}
+                  >
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Ingresar
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="justify-start"
+                    onClick={() => {
+                      setIsOpen(false);
+                      signOut();
+                    }}
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Salir
+                  </Button>
+                )}
               </div>
             </SheetContent>
           </Sheet>
