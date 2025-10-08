@@ -3,7 +3,7 @@ import time
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from passlib.hash import bcrypt
+from app.core.security import hash_password
 
 from app.database.db import engine, get_db, Base
 from app.models.role import Role
@@ -41,7 +41,7 @@ def seed_labfin_admin():
     admin = User(
         email="admin@labfin.dev",
         username="admin",
-        hashed_password=bcrypt.hash("admin123"),
+        hashed_password=hash_password("admin123"),
         role_id=labfin_role.id,
         is_active=True,
     )

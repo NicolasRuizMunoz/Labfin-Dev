@@ -1,12 +1,19 @@
 # app/core/config.py
-from pydantic_settings import BaseSettings
-from typing import List
 from urllib.parse import quote_plus
+from typing import List, Optional
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
+    # Pydantic v2: configuración del modelo
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra="ignore",          # ignora variables que no existan en el modelo
+        case_sensitive=False,    # DB_HOST == db_host
+    )
+
     APP_NAME: str = "service_users"
 
-    # DB (variables del .env)
+    # DB
     DB_HOST: str
     DB_PORT: int = 3306
     DB_NAME: str
@@ -19,15 +26,11 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 180
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
-    # Otros
-    DATA_SERVICE_URL: str | None = None
+    # CORS
     CORS_ORIGINS: List[str] = ["http://localhost:5173"]
 
-    # Google (opcional)
-    GOOGLE_CLIENT_ID: str | None = None
-
-    class Config:
-        env_file = ".env"
+    # Google (opcional para /auth/google)
+    GOOGLE_CLIENT_ID: Optional[str] = None
 
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:

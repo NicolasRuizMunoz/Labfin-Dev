@@ -1,8 +1,19 @@
-fastapi
-uvicorn[standard]
-sqlalchemy
-pymysql
-bcrypt
-pyjwt
-pydantic-settings
-google-auth
+fastapi==0.110.2
+uvicorn[standard]==0.29.0
+
+# DB
+sqlalchemy==2.0.30
+pymysql==1.1.1
+cryptography==42.0.8   # <- para caching_sha2_password
+
+# Seguridad / auth
+bcrypt==4.1.2
+pyjwt==2.8.0           # usamos PyJWT en core/security.py
+
+# Config y validación
+pydantic-settings==2.2.1
+pydantic[email]==2.7.1
+
+# Google Sign-In (verificación de ID token)
+google-auth==2.29.0
+requests==2.31.0
