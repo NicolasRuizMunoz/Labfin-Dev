@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 import httpx
 
 from app.core.config import settings
@@ -15,6 +15,13 @@ class LoginReq(BaseModel):
 
 class GoogleReq(BaseModel):
     id_token: str
+
+class RegisterOrgAdminReq(BaseModel):
+    org_name: str
+    org_rut: str
+    email: EmailStr
+    username: str
+    password: str
 
 def set_auth_cookies(resp: Response, access_token: str, refresh_token: str):
     resp.set_cookie(
@@ -80,3 +87,15 @@ async def logout():
     resp.delete_cookie(settings.COOKIE_ACCESS_NAME, path="/", domain=settings.COOKIE_DOMAIN)
     resp.delete_cookie(settings.COOKIE_REFRESH_NAME, path="/", domain=settings.COOKIE_DOMAIN)
     return resp
+
+@router.post("/register-org-admin")
+async def register_org_admin(payload: RegisterOrgAdminReq):
+    url = f"{settings.AUTH_SERVICE_URL}/auth/register-org-admin"
+    async with httpx.AsyncClient(timeout=30) as client:
+        r = await client.post(url, json=payload.model_dump())
+    return JSONResponse(r.json(), status_code=r.status_code)
+
+# Alias opcional para que el front pueda llamar /users/register
+@router.post("/register")
+async def register_alias(payload: RegisterOrgAdminReq):
+    return await register_org_admin(payload)  # reutiliza el de arriba

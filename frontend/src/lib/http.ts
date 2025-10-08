@@ -1,15 +1,20 @@
-export const API = import.meta.env.VITE_API_BASE_URL ?? "/api";
+export const API = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
-export async function http<T>(path: string, init?: RequestInit): Promise<T> {
+async function http<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API}${path}`, {
-    credentials: "include", // cookies httpOnly del gateway
-    headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
     ...init,
   });
+
+  const isJSON = res.headers.get('content-type')?.includes('application/json');
+  const body = isJSON ? await res.json().catch(() => null) : await res.text().catch(() => '');
+
   if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try { msg = (await res.json()).detail ?? msg; } catch {}
-    throw new Error(msg);
+    const msg = isJSON ? (body?.detail || body?.message || res.statusText) : res.statusText;
+    throw new Error(typeof msg === 'string' ? msg : JSON.stringify(msg));
   }
-  return res.json() as Promise<T>;
+  return body as T;
 }
+
+export default http; // 👈 export por defecto

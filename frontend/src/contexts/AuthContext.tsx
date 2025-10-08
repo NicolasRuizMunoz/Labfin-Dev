@@ -1,11 +1,12 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import * as authApi from "@/services/auth";
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import * as authApi from '@/services/auth';
+
 export type User = authApi.Me;
 
 type AuthContextType = {
   user: User | null;
   loading: boolean;
-  signUp: (email: string, password: string, username: string) => Promise<{ error: any }>;
+  signUp: (org_name: string, org_rut: string, email: string, password: string, username: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 };
@@ -13,7 +14,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 };
 
@@ -21,7 +22,6 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Recupera sesión al montar
   useEffect(() => {
     (async () => {
       try { setUser(await authApi.me()); }
@@ -30,10 +30,9 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
     })();
   }, []);
 
-  async function signUp(email: string, password: string, username: string) {
+  async function signUp(org_name: string, org_rut: string, email: string, password: string, username: string) {
     try {
-      await authApi.signup({ email, password, username });
-      // opcional: auto-login
+      await authApi.signup({ org_name, org_rut, email, password, username });
       await authApi.login({ email, password });
       setUser(await authApi.me());
       return { error: null };
