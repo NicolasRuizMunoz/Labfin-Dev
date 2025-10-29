@@ -23,6 +23,7 @@ dist/
 build/
 .venv/
 venv/
+venv2/
 env/
 ENV/
 .tox/
