@@ -58,3 +58,6 @@ docker-data/
 
 # ==== Misceláneo ====
 *.zip
+
+processed_files
+uploaded_files
