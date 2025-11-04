@@ -1,18 +1,12 @@
-# utils/files.py
 import os
 import hashlib
-from app.models.file import FileEntry
 from sqlalchemy.orm import Session
-from app.config import UPLOAD_DIR, PROCESSED_DIR
 
-# === Paths (Estos se pueden eliminar si no los usas, ya que los servicios definen los paths) ===
-def get_local_file_path(filename: str, is_processed: bool = False) -> str:
-    base_dir = PROCESSED_DIR if is_processed else UPLOAD_DIR
-    return os.path.join(base_dir, filename)
+from app.models.file import FileEntry
 
-# === Archivos (Estos SÍ se usan) ===
-def delete_file(path: str):
-    """Elimina un archivo local si existe."""
+
+def delete_file(path: str) -> None:
+    """Elimina un archivo local si existe (utilitario)."""
     try:
         if os.path.exists(path):
             os.remove(path)
@@ -20,7 +14,7 @@ def delete_file(path: str):
     except Exception as e:
         print(f"⚠️ Error al eliminar archivo local {path}: {e}")
 
-# === Checksum (Este SÍ se usa) ===
+
 def generate_checksum(file_path: str) -> str:
     hash_md5 = hashlib.md5()
     with open(file_path, "rb") as f:
@@ -28,16 +22,20 @@ def generate_checksum(file_path: str) -> str:
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
-# === Validaciones (Estas SÍ se usan) ===
-def is_duplicate(checksum: str, organization_id: int, db: Session, exclude_file_id: int | None = None) -> bool:
-    """Verifica duplicados usando organization_id."""
-    query = db.query(FileEntry).filter_by(
-        organization_id=organization_id, # <-- Corregido
-        checksum=checksum
+
+def is_duplicate(
+    checksum: str,
+    organization_id: int,
+    db: Session,
+    exclude_file_id: int | None = None,
+) -> bool:
+    """
+    Verifica duplicados por (organization_id, checksum).
+    """
+    q = db.query(FileEntry).filter(
+        FileEntry.organization_id == organization_id,
+        FileEntry.checksum == checksum,
     )
     if exclude_file_id:
-        query = query.filter(FileEntry.id != exclude_file_id)
-    return query.first() is not None
-
-def validate_extension(ext: str, allowed: list[str]) -> bool:
-    return ext in allowed
+        q = q.filter(FileEntry.id != exclude_file_id)
+    return q.first() is not None

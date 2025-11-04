@@ -21,6 +21,17 @@ import RetirementPage from "./pages/RetirementPage";
 import LFBusinessPage from "./pages/LFBusinessPage";
 import NotFound from "./pages/NotFound";
 
+// ➕ nuevas páginas
+import FilesManagerPage from "./pages/FilesManagerPage";
+const BatchesPage = () => (
+  <div className="mx-auto max-w-6xl p-4">
+    <h1 className="text-xl font-semibold">Batches</h1>
+    <p className="text-sm text-muted-foreground mt-2">
+      (Opcional) Administración de batches. También puedes gestionarlos desde File Manager.
+    </p>
+  </div>
+);
+
 import ProtectedRoute from "@/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -45,6 +56,8 @@ const App = () => (
               <Route element={<ProtectedRoute />}>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/business" element={<LFBusinessPage />} />
+                <Route path="/files" element={<FilesManagerPage />} />
+                <Route path="/batches" element={<BatchesPage />} />
                 <Route path="/markets" element={<MarketsPage />} />
                 <Route path="/real-estate" element={<RealEstatePage />} />
                 <Route path="/credit" element={<CreditPage />} />

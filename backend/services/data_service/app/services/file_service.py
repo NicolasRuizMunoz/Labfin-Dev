@@ -1,127 +1,128 @@
-from app.models.file import FileEntry
 from datetime import datetime
-from sqlalchemy.orm import Session
-from app.enums.file_status import FileStatusEnum
-from fastapi import HTTPException
 from typing import List, Optional
+
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
+
+from app.models.file import FileEntry
+from app.enums.file_status import FileStatusEnum
+
+
+# ---------- CREATE / READ ----------
 
 def create_file_entry(
     db: Session,
     organization_id: int,
-    batch_id: int,
+    batch_id: Optional[int],
     original_filename: str,
-    logical_filename: str,
     ext: str,
-    file_category: str,
-    local_filename: str,
-    checksum: str
+    checksum: str,
 ) -> FileEntry:
     """
     Crea la entrada inicial del archivo en la base de datos.
-    El estado por defecto es PENDING e is_active es Falso (hasta que esté listo).
+    Estado inicial: PENDING. is_active=False (hasta que el pipeline lo deje listo).
     """
     entry = FileEntry(
         batch_id=batch_id,
         organization_id=organization_id,
         original_filename=original_filename,
-        logical_filename=logical_filename,
         file_type=ext,
-        file_category=file_category,
         checksum=checksum,
         status=FileStatusEnum.PENDING,
-        is_active=False, # <-- No está activo hasta que termine el pipeline
+        is_active=False,
         uploaded_at=datetime.utcnow(),
-        local_filename=local_filename
+        # s3_key_original / s3_key_processed quedan en None al inicio
     )
     db.add(entry)
     db.commit()
     db.refresh(entry)
     return entry
 
-def get_file_by_id(db: Session, file_id: int, organization_id: int) -> FileEntry:
-    """Obtiene un archivo por ID, verificando que pertenezca a la organización."""
-    file = db.query(FileEntry).filter(
-        FileEntry.id == file_id,
-        FileEntry.organization_id == organization_id
-    ).first()
-    if not file:
-        raise HTTPException(status_code=404, detail="Archivo no encontrado")
-    return file
 
-def get_files_by_organization(db: Session, organization_id: int) -> List[FileEntry]:
+def get_file_by_id(db: Session, file_id: int, organization_id: int) -> FileEntry:
+    f = (
+        db.query(FileEntry)
+        .filter(FileEntry.id == file_id, FileEntry.organization_id == organization_id)
+        .first()
+    )
+    if not f:
+        raise HTTPException(status_code=404, detail="Archivo no encontrado")
+    return f
+
+
+def get_files_by_organization(db: Session, org_id: int) -> List[FileEntry]:
     """
-    Lista todos los archivos de una organización que no hayan fallado.
+    Devuelve todos los archivos de la organización (puedes filtrar por estados si lo deseas).
     """
     return (
         db.query(FileEntry)
-        .filter(
-            FileEntry.organization_id == organization_id,
-            FileEntry.status != FileStatusEnum.FAILED
-        )
+        .filter(FileEntry.organization_id == org_id)
         .order_by(FileEntry.uploaded_at.desc())
         .all()
     )
 
-def set_file_active_status(
-    db: Session, 
-    file_id: int, 
-    organization_id: int, 
-    is_active: bool
-) -> FileEntry:
-    """Actualiza el estado 'is_active' de un archivo."""
-    file = get_file_by_id(db, file_id, organization_id)
-    
-    # Solo puedes activar un archivo que esté LISTO (ACTIVE)
-    if is_active and file.status != FileStatusEnum.ACTIVE:
-        raise HTTPException(
-            status_code=400,
-            detail="No se puede activar un archivo que no esté completamente procesado."
-        )
-            
+
+# ---------- UPDATE ----------
+
+def set_active_flag(db: Session, file: FileEntry, is_active: bool) -> None:
+    """
+    Cambia el flag is_active. (Si deseas forzar ACTIVE para activar, haz la validación aquí).
+    """
+    # Si quieres restringir activación sólo cuando status==ACTIVE, descomenta:
+    # if is_active and file.status != FileStatusEnum.ACTIVE:
+    #     raise HTTPException(status_code=400, detail="No se puede activar un archivo que no esté ACTIVE.")
+
     file.is_active = is_active
+    db.add(file)
+    db.commit()
+    db.refresh(file)
+
+
+def update_file_s3_paths(
+    db: Session,
+    file_id: int,
+    s3_key_original: Optional[str] = None,
+    s3_key_processed: Optional[str] = None,
+) -> FileEntry:
+    file = db.query(FileEntry).filter(FileEntry.id == file_id).first()
+    if not file:
+        raise HTTPException(status_code=404, detail="Archivo no encontrado")
+
+    if s3_key_original is not None:
+        file.s3_key_original = s3_key_original
+    if s3_key_processed is not None:
+        file.s3_key_processed = s3_key_processed
+
+    db.add(file)
     db.commit()
     db.refresh(file)
     return file
 
-def update_file_s3_paths(
-    db: Session, 
-    file_id: int, 
-    s3_key_original: str, 
-    s3_key_processed: str
-):
-    """(Llamado por Celery) Actualiza las rutas S3 de un archivo."""
-    # Usamos merge para asegurar que la sesión de Celery se maneje bien
-    file_data = {
-        "id": file_id,
-        "s3_key_original": s3_key_original,
-        "s3_key_processed": s3_key_processed,
-    }
-    db.merge(FileEntry(**file_data))
-    db.commit()
 
 def update_file_status(
-    db: Session, 
-    file_id: int, 
-    status: FileStatusEnum,
-    set_active: bool = False
-):
-    """(Llamado por Celery) Actualiza el estado de un archivo en el pipeline."""
-    file_data = {
-        "id": file_id,
-        "status": status,
-    }
-    if status == FileStatusEnum.ACTIVE:
-        file_data["processed_at"] = datetime.utcnow()
-        # Cuando el pipeline lo marca como ACTIVE, lo ponemos is_active=True
-        # El usuario luego puede desactivarlo si quiere.
-        if set_active:
-             file_data["is_active"] = True
+    db: Session,
+    file_id: int,
+    new_status: FileStatusEnum,
+    set_active: Optional[bool] = None,
+) -> FileEntry:
+    file = db.query(FileEntry).filter(FileEntry.id == file_id).first()
+    if not file:
+        raise HTTPException(status_code=404, detail="Archivo no encontrado")
 
-    db.merge(FileEntry(**file_data))
+    file.status = new_status
+    if new_status == FileStatusEnum.ACTIVE:
+        file.processed_at = datetime.utcnow()
+        if set_active is not None:
+            file.is_active = set_active
+
+    db.add(file)
     db.commit()
+    db.refresh(file)
+    return file
 
 
-def delete_file_entry(db: Session, file: FileEntry):
-    """Elimina el archivo de la base de datos."""
+# ---------- DELETE ----------
+
+def delete_file_entry(db: Session, file: FileEntry) -> None:
     db.delete(file)
     db.commit()

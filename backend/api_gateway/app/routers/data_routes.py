@@ -1,48 +1,55 @@
 from fastapi import APIRouter, Request, HTTPException
+from fastapi.responses import Response
 from app.utils.proxy import proxy_request
 from app.core.config import settings
-from typing import Any
-from fastapi.responses import Response
+from app.utils.tokens import get_access_from_cookies
 
 router = APIRouter()
-
 SERVICE_URL = settings.DATA_SERVICE_URL
 
-# --- Rutas de Ingesta (Upload, Batch) ---
+def _auth_header_from_cookie(request: Request) -> dict:
+    token = get_access_from_cookies(request, settings.COOKIE_ACCESS_NAME)  # "access_token"
+    if not token:
+        raise HTTPException(status_code=401, detail="Missing token")
+    return {"Authorization": f"Bearer {token}"}
 
-@router.api_route("/upload/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
+def _compose_target(base: str, path: str, request: Request) -> str:
+    # preserva el querystring
+    qs = request.url.query
+    return f"{base}/{path}" + (f"?{qs}" if qs else "")
+
+@router.api_route("/upload/{path:path}", methods=["GET","POST","PUT","PATCH","DELETE"])
 async def proxy_upload(request: Request, path: str):
-    """Proxy genérico para todas las rutas /upload/* """
-    url = f"{SERVICE_URL}/upload/{path}"
-    
-    # proxy_request ya maneja headers, cookies, y body
+    url = _compose_target(f"{SERVICE_URL}/upload", path, request)
+    headers = _auth_header_from_cookie(request)
+    content = None if request.method in ("GET", "HEAD") else await request.body()
+
+    # DEBUG opcional: comenta en prod
+    print("[GW] /upload ->", url, "| has Bearer:", "Authorization" in headers)
+
     resp = await proxy_request(
         method=request.method,
         url=url,
         request=request,
-        data=await request.body() # Asegúrate de pasar el body
+        headers=headers,     # SIEMPRE Bearer
+        content=content,     # RAW (JSON o multipart); None en GET/HEAD
     )
     return Response(content=resp.content, status_code=resp.status_code, headers=resp.headers)
 
-# --- Rutas de Gestión (File) ---
-
-@router.api_route("/file/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
+@router.api_route("/file/{path:path}", methods=["GET","POST","PUT","PATCH","DELETE"])
 async def proxy_file(request: Request, path: str):
-    """Proxy genérico para todas las rutas /file/* """
-    url = f"{SERVICE_URL}/file/{path}"
-    
+    url = _compose_target(f"{SERVICE_URL}/file", path, request)
+    headers = _auth_header_from_cookie(request)
+    content = None if request.method in ("GET", "HEAD") else await request.body()
+
+    # DEBUG opcional: comenta en prod
+    print("[GW] /file ->", url, "| has Bearer:", "Authorization" in headers)
+
     resp = await proxy_request(
         method=request.method,
         url=url,
         request=request,
-        data=await request.body()
+        headers=headers,
+        content=content,
     )
     return Response(content=resp.content, status_code=resp.status_code, headers=resp.headers)
-
-# --- Rutas de Chat (Fase 2 - Próximamente) ---
-
-# @router.api_route("/chat/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
-# async def proxy_chat(request: Request, path: str):
-#     url = f"{SERVICE_URL}/chat/{path}"
-#     resp = await proxy_request(method=request.method, url=url, request=request, data=await request.body())
-#     return Response(content=resp.content, status_code=resp.status_code, headers=resp.headers)

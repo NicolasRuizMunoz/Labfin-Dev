@@ -21,6 +21,8 @@ import {
   Building2,
   LogIn,
   LogOut,
+  FileText,
+  FolderOpen,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -37,6 +39,8 @@ const Navigation = () => {
   const navItems = [
     { name: t('home'), href: '/', icon: Brain },
     { name: 'LF Business', href: '/business', icon: Building2 },
+    { name: 'File Manager', href: '/files', icon: FileText },
+    { name: 'Batches', href: '/batches', icon: FolderOpen },
     { name: t('markets'), href: '/markets', icon: TrendingUp },
     { name: t('realEstate'), href: '/real-estate', icon: Home },
     { name: t('credit'), href: '/credit', icon: CreditCard },
