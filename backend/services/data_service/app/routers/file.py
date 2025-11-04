@@ -38,7 +38,7 @@ def list_organization_files(
 
 
 @router.patch("/{file_id}/set-active", response_model=FileEntryResponse)
-def set_active(
+def set_active_flag(
     file_id: int,
     body: FileActiveStatusUpdate,
     db: Session = Depends(get_db),
@@ -49,10 +49,12 @@ def set_active(
         raise HTTPException(status_code=403, detail="User does not belong to any organization")
     org_id = int(org_id)
 
-    file = file_service.get_file_by_id(db, file_id, org_id)
-    file_service.set_active_flag(db, file, is_active=body.is_active)
-    return file
+    # Actualiza usando la función que sí existe en el servicio
+    file_service.set_file_active_status(db, file_id=file_id, organization_id=org_id, is_active=body.is_active)
 
+    # Devuelve el estado actualizado desde DB
+    updated = file_service.get_file_by_id(db, file_id, org_id)
+    return updated
 
 @router.get("/download-url/{file_id}", response_model=dict)
 def get_download_url(

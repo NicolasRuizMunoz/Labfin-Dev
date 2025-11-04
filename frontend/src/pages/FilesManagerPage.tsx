@@ -47,7 +47,7 @@ const FilesManagerPage: React.FC = () => {
 
   // --- Upload form ---
   const [file, setFile] = useState<File | null>(null);
-  const [batchId, setBatchId] = useState<number | "">("");
+  const [batchId, setBatchId] = useState<number | null>(null);
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -128,14 +128,14 @@ const FilesManagerPage: React.FC = () => {
       setFormError("Debes seleccionar un archivo.");
       return;
     }
-    if (batchId === "") {
-      setFormError("Debes seleccionar un batch.");
-      return;
-    }
 
     const form = new FormData();
     form.append("file", file);
-    form.append("batch_id", String(batchId));
+    if (typeof batchId === "number") {
+      form.append("batch_id", String(batchId));
+    }
+    // si más adelante usas categorías opcionales:
+    // form.append("file_category", "documentos");
 
     setUploading(true);
     try {
@@ -182,8 +182,8 @@ const FilesManagerPage: React.FC = () => {
 
   const BatchSelect = (
     <Select
-      onValueChange={(v) => setBatchId(v === "none" ? "" : Number(v))}
-      value={batchId === "" ? "none" : String(batchId)}
+      onValueChange={(v) => setBatchId(v === "none" ? null : Number(v))}
+      value={batchId === null ? "none" : String(batchId)}
     >
       <SelectTrigger className="w-full">
         <SelectValue placeholder="Select batch" />
@@ -321,7 +321,7 @@ const FilesManagerPage: React.FC = () => {
             {formError && <p className="text-xs text-red-600">{formError}</p>}
 
             <div className="flex items-center gap-2">
-              <Button type="submit" disabled={!file || uploading || batchId === ""}>
+              <Button type="submit" disabled={!file || uploading}>
                 {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Upload"}
               </Button>
             </div>
