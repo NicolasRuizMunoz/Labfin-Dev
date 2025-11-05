@@ -12,7 +12,7 @@ class FileBatch(Base):
 
     id = Column(Integer, primary_key=True)
     organization_id = Column(Integer, nullable=False, index=True)
-    name = Column(String(100), nullable=False)
+    name = Column(String(100), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Un lote tiene muchos archivos

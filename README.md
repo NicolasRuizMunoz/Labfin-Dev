@@ -39,7 +39,7 @@ cd services/data_service
 uvicorn app.main:app --reload --port 8002
 
 # Aparte de esto, debe ir en otra terminal en servicedata:
-celery -A celery_worker.celery_app worker --loglevel=info --pool=solo
+celery -A app.celery_worker.celery_app worker --loglevel=info --pool=solo
 ```
 
 admin@labfin.dev
