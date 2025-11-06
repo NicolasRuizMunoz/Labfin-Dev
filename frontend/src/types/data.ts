@@ -19,7 +19,7 @@ export type GroupedFiles = Record<FileStatus, FileEntry[]>;
 
 export type Batch = {
   id: number;
-  name: string;
+  name: string | null; 
   organization_id: number;
   files?: FileEntry[];
 };

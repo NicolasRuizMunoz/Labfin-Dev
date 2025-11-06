@@ -3,16 +3,34 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Trash2, Download, RefreshCw, CheckSquare, Upload as UploadIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Loader2,
+  Trash2,
+  Download,
+  RefreshCw,
+  CheckSquare,
+  Upload as UploadIcon,
+  ChevronsUpDown,
+  Check,
+} from "lucide-react";
 
 import * as dataApi from "@/services/data";
 import type { Batch, FileEntry, FileStatus } from "@/types/data";
+import { cn } from "@/lib/utils";
 
 function StatusBadge({ s }: { s: FileStatus }) {
   const style: Record<FileStatus, string> = {
@@ -27,29 +45,35 @@ function StatusBadge({ s }: { s: FileStatus }) {
 }
 
 type BatchWithFiles = Batch & { files: FileEntry[] };
+type BatchChoice =
+  | { mode: "existing"; id: number; label: string }
+  | { mode: "new"; name: string };
 
-const BatchUploadAndManager: React.FC = () => {
-  // ---- Batches + files (vista principal) ----
+const FilesManagerPage: React.FC = () => {
+  // ---- Batches + files ----
   const [batches, setBatches] = useState<BatchWithFiles[]>([]);
   const [loadingBatches, setLoadingBatches] = useState(false);
   const [polling, setPolling] = useState(true);
 
   // ---- Form de subida ----
-  const [selectedBatchId, setSelectedBatchId] = useState<number | "new" | null>(null);
-  const [newBatchName, setNewBatchName] = useState("");
   const [files, setFiles] = useState<File[]>([]);
-  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Mantener selección de archivos por batch (checkbox para confirmar por archivo dentro del batch)
+  // Combobox (un solo control para seleccionar o crear)
+  const [batchOpen, setBatchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [choice, setChoice] = useState<BatchChoice | null>(null);
+
+  // Selección por archivo (para Confirm selected)
   const [checkedByFileId, setCheckedByFileId] = useState<Record<number, boolean>>({});
 
-  // ---- Helpers ----
+  // ---- Fetch ----
   const refresh = async () => {
     setLoadingBatches(true);
     try {
-      const list = await dataApi.listBatches(); // debe devolver batches con "files"
+      const list = await dataApi.listBatches(); // debe incluir files
       setBatches(list as BatchWithFiles[]);
     } finally {
       setLoadingBatches(false);
@@ -66,7 +90,7 @@ const BatchUploadAndManager: React.FC = () => {
     return () => clearInterval(id);
   }, [polling]);
 
-  // ---- Subida masiva con creación automática de batch ----
+  // ---- Upload ----
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
@@ -75,23 +99,26 @@ const BatchUploadAndManager: React.FC = () => {
       setFormError("Selecciona uno o más archivos.");
       return;
     }
+    if (!choice) {
+      setFormError("Selecciona un batch o escribe un nombre para crearlo.");
+      return;
+    }
 
     setUploading(true);
     try {
-      let batchIdToUse: number | null = null;
+      let batchIdToUse: number;
 
-      if (selectedBatchId === "new" || selectedBatchId === null) {
-        // Crear batch al vuelo: si no hay nombre, generamos uno
-        const name = newBatchName.trim()
-          ? newBatchName.trim()
+      if (choice.mode === "existing") {
+        batchIdToUse = choice.id;
+      } else {
+        const name = choice.name.trim()
+          ? choice.name.trim()
           : (files.length === 1 ? files[0].name : `Batch ${new Date().toISOString().slice(0,19).replace('T',' ')}`);
         const created = await dataApi.createBatch(name);
         batchIdToUse = created.id;
-      } else {
-        batchIdToUse = selectedBatchId;
       }
 
-      // Subir todos los archivos a ese batch
+      // Subir todos los archivos a ese batch (secuencial para mantener logs ordenados; puedes usar Promise.all si quieres)
       for (const f of files) {
         const fd = new FormData();
         fd.append("file", f);
@@ -101,9 +128,7 @@ const BatchUploadAndManager: React.FC = () => {
 
       // Limpiar formulario
       setFiles([]);
-      setNewBatchName("");
       if (fileInputRef.current) fileInputRef.current.value = "";
-      // Volver a cargar
       await refresh();
     } catch (err: any) {
       setFormError(err?.message ?? "Error al subir archivos");
@@ -163,6 +188,20 @@ const BatchUploadAndManager: React.FC = () => {
     }
     await refresh();
   };
+
+  // ---- Combobox ----
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return batches;
+    return batches.filter(b =>
+      (`${b.name ?? ""}`.toLowerCase().includes(q) || String(b.id).includes(q))
+    );
+  }, [batches, query]);
+
+  const currentLabel =
+    choice?.mode === "existing"
+      ? `#${choice.id} — ${choice.label}`
+      : (choice?.name ? `Create: “${choice.name}”` : "");
 
   // ---- UI ----
   const BatchCard: React.FC<{ batch: BatchWithFiles }> = ({ batch }) => {
@@ -240,7 +279,6 @@ const BatchUploadAndManager: React.FC = () => {
             </TableBody>
           </Table>
 
-          {/* Acciones para los seleccionados dentro del batch */}
           <div className="mt-3 flex items-center gap-2">
             <Button size="sm" onClick={() => confirmSelectedInBatch(batch)}>
               Confirm selected
@@ -269,7 +307,6 @@ const BatchUploadAndManager: React.FC = () => {
         </div>
       </div>
 
-      {/* Subida + creación automática de batch */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Upload files (auto-batch)</CardTitle>
@@ -284,55 +321,141 @@ const BatchUploadAndManager: React.FC = () => {
                   type="file"
                   multiple
                   accept=".pdf"
-                  onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
+                  onChange={(e) => {
+                    const picked = Array.from(e.target.files ?? []);
+                    setFiles((prev) => {
+                      const map = new Map(prev.map(f => [`${f.name}::${f.size}`, f]));
+                      for (const f of picked) map.set(`${f.name}::${f.size}`, f);
+                      return Array.from(map.values());
+                    });
+                  }}
                 />
-                <div className="text-xs text-muted-foreground">
-                  {files.length > 0
-                    ? `${files.length} archivo(s) seleccionados`
-                    : "No files selected"}
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-muted-foreground">
+                    {files.length === 0
+                      ? "No files selected"
+                      : files.length === 1
+                        ? `Selected: ${files[0].name} (${Math.round(files[0].size / 1024)} KB)`
+                        : `${files.length} archivos seleccionados`}
+                  </div>
+                  {files.length > 0 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => {
+                        setFiles([]);
+                        if (fileInputRef.current) fileInputRef.current.value = "";
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  )}
                 </div>
+                {files.length > 1 && (
+                  <ul className="mt-2 text-xs space-y-1">
+                    {files.map((f, i) => (
+                      <li key={`${f.name}-${f.size}-${i}`} className="flex items-center justify-between">
+                        <span className="truncate max-w-[420px]">{f.name}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className="h-6 px-2"
+                          onClick={() => setFiles((prev) => prev.filter((_, pi) => pi !== i))}
+                        >
+                          Remove
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               <div className="space-y-1">
-                <Label>Batch</Label>
-                <Select
-                  value={selectedBatchId === null ? "new" : String(selectedBatchId)}
-                  onValueChange={(v) => setSelectedBatchId(v === "new" ? null : Number(v))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="New batch" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="new">Create new batch</SelectItem>
-                    {batches.map((b) => (
-                      <SelectItem key={b.id} value={String(b.id)}>
-                        #{b.id} — {b.name ?? "(sin nombre)"} ({b.files.length})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Batch (select or type to create)</Label>
+                <Popover open={batchOpen} onOpenChange={setBatchOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={batchOpen}
+                      className="w-full justify-between"
+                    >
+                      {(
+                        choice?.mode === "existing"
+                          ? `#${choice.id} — ${choice.label}`
+                          : (choice?.name ? `Create: “${choice.name}”` : "")
+                      ) || "Select a batch or type a new name"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                    <Command shouldFilter={false}>
+                      <CommandInput
+                        placeholder="Type to search or create..."
+                        value={query}
+                        onValueChange={(v) => {
+                          setQuery(v);
+                          if (v.trim().length > 0) {
+                            setChoice({ mode: "new", name: v });
+                          } else {
+                            setChoice(null);
+                          }
+                        }}
+                      />
+                      <CommandEmpty>
+                        {query.trim().length > 0 ? <>Create: “{query.trim()}”</> : <>No batches</>}
+                      </CommandEmpty>
+                      <CommandList>
+                        <CommandGroup heading="Existing">
+                          {filtered.map((b) => {
+                            const label = `${b.name ?? "(sin nombre)"}`;
+                            const selected = choice?.mode === "existing" && choice.id === b.id;
+                            return (
+                              <CommandItem
+                                key={b.id}
+                                value={String(b.id)}
+                                onSelect={() => {
+                                  setChoice({ mode: "existing", id: b.id, label });
+                                  setQuery(label);
+                                  setBatchOpen(false);
+                                }}
+                              >
+                                <Check className={cn("mr-2 h-4 w-4", selected ? "opacity-100" : "opacity-0")} />
+                                #{b.id} — {label} ({b.files.length})
+                              </CommandItem>
+                            );
+                          })}
+                        </CommandGroup>
+                        {query.trim().length > 0 && (
+                          <CommandGroup heading="Create new">
+                            <CommandItem
+                              value={`__create__:${query.trim()}`}
+                              onSelect={() => {
+                                setChoice({ mode: "new", name: query.trim() });
+                                setBatchOpen(false);
+                              }}
+                            >
+                              Create: “{query.trim()}”
+                            </CommandItem>
+                          </CommandGroup>
+                        )}
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="space-y-1 md:col-span-2">
-                <Label>Optional batch name (for new batch)</Label>
-                <Input
-                  placeholder="e.g., Declaraciones 2024"
-                  value={newBatchName}
-                  onChange={(e) => setNewBatchName(e.target.value)}
-                  disabled={selectedBatchId !== null && selectedBatchId !== "new"}
-                />
-              </div>
-              <div className="flex items-end">
-                <Button type="submit" disabled={files.length === 0 || uploading}>
+            <div className="flex items-center justify-between">
+              {formError && <p className="text-xs text-red-600">{formError}</p>}
+              <div className="flex items-center gap-2 ml-auto">
+                <Button type="submit" disabled={files.length === 0 || uploading || !choice}>
                   {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadIcon className="h-4 w-4 mr-2" />}
                   Upload
                 </Button>
               </div>
             </div>
-
-            {formError && <p className="text-xs text-red-600">{formError}</p>}
           </form>
         </CardContent>
       </Card>
@@ -355,4 +478,4 @@ const BatchUploadAndManager: React.FC = () => {
   );
 };
 
-export default BatchUploadAndManager;
+export default FilesManagerPage;

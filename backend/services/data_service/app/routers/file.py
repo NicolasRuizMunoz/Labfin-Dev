@@ -1,30 +1,29 @@
 # app/routers/file.py
 from collections import defaultdict
-from typing import Dict, List, Optional
-from pydantic import BaseModel
-
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from typing import Dict, List
 import os
+
+from fastapi import APIRouter, Depends, HTTPException, Body, Request, Path
+from sqlalchemy.orm import Session
 
 from app.database.db import get_db
 from app.dependencies.auth import get_current_user_data
 from app.enums.file_status import FileStatusEnum
 from app.routers.schemas.auth import UserTokenData
-from app.routers.schemas.file import FileEntryResponse, FileActiveStatusUpdate
+from app.routers.schemas.file import FileEntryResponse, FileActiveStatusUpdate, FileIdsRequest
 from app.services import file_service, s3_service
 from app.tasks.file_tasks import run_rag_pipeline
 from app.config import UPLOAD_DIR
 
 router = APIRouter()
 
-# ---- helpers fallback ----
 def enqueue_or_sync(file_id: int, local_path: str) -> str:
+    """
+    Encola en Celery si hay worker; si no, ejecuta síncrono (modo fallback).
+    """
     try:
         from app.celery_worker import celery_app
-        # ¿hay broker?
         celery_app.connection().ensure_connection(max_retries=1)
-        # intentar ping (opcional)
         try:
             celery_app.control.ping(timeout=0.5)
         except Exception:
@@ -32,12 +31,8 @@ def enqueue_or_sync(file_id: int, local_path: str) -> str:
         run_rag_pipeline.delay(file_id=file_id, local_path=local_path)
         return "queued"
     except Exception:
-        # sin broker/worker: correr síncrono
         run_rag_pipeline.run(file_id=file_id, local_path=local_path)
         return "sync"
-
-class ConfirmBulkRequest(BaseModel):
-    file_ids: List[int]
 
 @router.get("/list", response_model=Dict[str, List[FileEntryResponse]])
 def list_organization_files(
@@ -50,9 +45,11 @@ def list_organization_files(
     org_id = int(org_id)
 
     files = file_service.get_files_by_organization(db, org_id)
+
     grouped: Dict[str, List[FileEntryResponse]] = defaultdict(list)
     for f in files:
         grouped[f.status.value].append(f)
+    # asegurar claves para todos los estados
     for key in [s.value for s in FileStatusEnum]:
         grouped.setdefault(key, [])
     return grouped
@@ -109,9 +106,42 @@ def delete_file(
     file_service.delete_file_entry(db, file)
     return {"message": f"Archivo {file.original_filename} eliminado."}
 
+# ---- IMPORTANTE: estática antes que dinámica ----
+@router.post("/confirm/bulk", response_model=dict)
+async def confirm_files_bulk(
+    request: Request,
+    body: FileIdsRequest = Body(...),
+    db: Session = Depends(get_db),
+    current_user: UserTokenData = Depends(get_current_user_data),
+):
+    org_id = current_user.organization_id
+    if org_id is None:
+        raise HTTPException(status_code=403, detail="User does not belong a una organización")
+    org_id = int(org_id)
+
+    enqueued = 0
+    errors: list[dict] = []
+
+    for fid in body.file_ids:
+        try:
+            f = file_service.get_file_by_id(db, fid, org_id)
+            saved_name = f"{org_id}__{f.batch_id or 'no-batch'}__{f.original_filename}"
+            local_path = os.path.join(UPLOAD_DIR, saved_name)
+            if not os.path.exists(local_path):
+                # idempotente: si no está local, lo saltamos sin error duro
+                continue
+            enqueue_or_sync(f.id, local_path)
+            enqueued += 1
+        except HTTPException as e:
+            errors.append({"file_id": fid, "error": e.detail})
+        except Exception as e:
+            errors.append({"file_id": fid, "error": str(e)})
+
+    return {"enqueued": enqueued, "errors": errors}
+
 @router.post("/confirm/{file_id}", response_model=dict)
 def confirm_file(
-    file_id: int,
+    file_id: int = Path(..., ge=1, description="ID numérico del archivo (>= 1)"),
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user_data),
 ):
@@ -124,37 +154,7 @@ def confirm_file(
     saved_name = f"{org_id}__{f.batch_id or 'no-batch'}__{f.original_filename}"
     local_path = os.path.join(UPLOAD_DIR, saved_name)
     if not os.path.exists(local_path):
-        # idempotente: nada que hacer si ya se procesó/limpió
         return {"message": "No-op: archivo local no está disponible", "file_id": f.id}
 
     mode = enqueue_or_sync(f.id, local_path)
     return {"message": f"Procesamiento lanzado ({mode})", "file_id": f.id}
-
-@router.post("/confirm/bulk", response_model=dict)
-def confirm_files_bulk(
-    body: ConfirmBulkRequest,
-    db: Session = Depends(get_db),
-    current_user: UserTokenData = Depends(get_current_user_data),
-):
-    org_id = current_user.organization_id
-    if org_id is None:
-        raise HTTPException(status_code=403, detail="User does not belong a una organización")
-    org_id = int(org_id)
-
-    enqueued = 0
-    errors = []
-    for fid in body.file_ids:
-        try:
-            f = file_service.get_file_by_id(db, fid, org_id)
-            saved_name = f"{org_id}__{f.batch_id or 'no-batch'}__{f.original_filename}"
-            local_path = os.path.join(UPLOAD_DIR, saved_name)
-            if not os.path.exists(local_path):
-                # idempotencia: si ya no existe, no es error
-                continue
-            enqueue_or_sync(f.id, local_path)
-            enqueued += 1
-        except HTTPException as e:
-            errors.append({"file_id": fid, "error": e.detail})
-        except Exception as e:
-            errors.append({"file_id": fid, "error": str(e)})
-    return {"enqueued": enqueued, "errors": errors}

@@ -19,8 +19,8 @@ async def proxy_request(method: str, url: str, request: Request | None = None, *
                 kwargs["cookies"] = request.cookies
 
             # DEBUG temporal
-            print("[GW][PROXY] →", method, url)
-            print("[GW][PROXY] headers:", kwargs.get("headers", {}).keys())
+            #print("[GW][PROXY] →", method, url)
+            #print("[GW][PROXY] headers:", kwargs.get("headers", {}).keys())
 
             resp = await client.request(method.upper(), url, **kwargs)
             return resp
