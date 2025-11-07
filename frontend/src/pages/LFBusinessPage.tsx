@@ -3,12 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MessageCircle, FileText, Calculator, AlertTriangle, DollarSign, Building, Users } from 'lucide-react';
-import { AICoach } from '@/components/AICoach';
 import { useLanguage } from '@/contexts/LanguageContext';
+import ChatModal from '@/components/ChatModal';
 
 const LFBusinessPage = () => {
   const { t, language } = useLanguage();
-  const [showAICoach, setShowAICoach] = useState(false);
+  const [showChat, setShowChat] = useState(false);
 
   const businessTopics = [
     {
@@ -201,7 +201,7 @@ const LFBusinessPage = () => {
               </p>
               <Button 
                 size="lg"
-                onClick={() => setShowAICoach(true)}
+                onClick={() => setShowChat(true)}
                 className="bg-gradient-hero hover:shadow-glow transition-all duration-300"
               >
                 <MessageCircle className="w-5 h-5 mr-2" />
@@ -212,19 +212,16 @@ const LFBusinessPage = () => {
         </div>
       </section>
 
-      {/* AI Coach Modal */}
-      {showAICoach && (
-        <AICoach 
-          isOpen={showAICoach}
-          onClose={() => setShowAICoach(false)}
-          webhookUrl="https://n8n.srv1004834.hstgr.cloud/webhook/ceff8144-41db-4f93-a17b-dd578fb92383"
-          disableAssessment={true}
-        />
-      )}
+      {/* Chat Modal (interno) */}
+      <ChatModal
+        isOpen={showChat}
+        onClose={() => setShowChat(false)}
+        // sessionId={123} // opcional: pasa un id para reabrir sesión existente
+      />
 
       {/* Fixed AI Coach Button */}
       <Button
-        onClick={() => setShowAICoach(true)}
+        onClick={() => setShowChat(true)}
         className="fixed bottom-6 right-6 rounded-full w-14 h-14 shadow-elevated bg-gradient-hero hover:shadow-glow transition-all duration-300 z-50"
         size="icon"
       >
