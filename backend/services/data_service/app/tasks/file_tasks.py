@@ -1,31 +1,34 @@
 # app/tasks/file_tasks.py
-from app.celery_worker import celery_app
-from sqlalchemy.orm import Session
+import logging
 from app.database.db import SessionLocal
 from app.services.ingest_pipeline import process_and_upload
-from app.services import file_service
-from app.enums.file_status import FileStatusEnum
-import time, traceback
+from app.services.index_service import index_file
 
-def _log(step: str, **ctx):
-    print(f"[RAG-PIPELINE] {step} :: {ctx}")
+LOGGER = logging.getLogger(__name__)
 
-@celery_app.task
 def run_rag_pipeline(file_id: int, local_path: str):
-    t0 = time.time()
-    db: Session = SessionLocal()
+    """
+    1) Procesa y sube (original + txt)
+    2) Indexa en FAISS
+    """
+    db = SessionLocal()
     try:
-        _log("INIT", file_id=file_id, local_path=local_path)
-        process_and_upload(db, file_id, local_path)
-        _log("DONE", file_id=file_id, elapsed=f"{time.time()-t0:.2f}s")
+        process_and_upload(db, file_id=file_id, local_path=local_path)
+        created = index_file(db, file_id=file_id)
+        LOGGER.info(f"[PIPELINE] file_id={file_id} indexados={created}")
     except Exception as e:
-        _log("ERROR", file_id=file_id, error=str(e), trace=traceback.format_exc())
-        try:
-            file_service.update_file_status(db, file_id, FileStatusEnum.FAILED)
-        except Exception:
-            pass
+        LOGGER.exception(f"[PIPELINE] Error en run_rag_pipeline file_id={file_id}: {e}")
+        raise
     finally:
-        try:
-            db.close()
-        except Exception:
-            pass
+        db.close()
+
+# Celery wrapper opcional:
+try:
+    from app.celery_worker import celery_app
+
+    @celery_app.task(name="run_rag_pipeline")
+    def run_rag_pipeline_task(file_id: int, local_path: str):
+        run_rag_pipeline(file_id, local_path)
+except Exception:
+    # modo síncrono: usas run_rag_pipeline.run en tu router
+    pass

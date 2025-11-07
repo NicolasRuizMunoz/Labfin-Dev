@@ -13,17 +13,17 @@ python-dotenv==1.0.1
 
 # Seguridad / auth
 bcrypt==4.1.2
-pyjwt==2.8.0                # usado en service_users
-python-jose[cryptography]==3.3.0  # usado en service_data
+pyjwt==2.8.0
+python-jose[cryptography]==3.3.0
 cryptography==42.0.8
 
-# Google Sign-In (verificación de ID token)
+# Google Sign-In
 google-auth==2.29.0
 
-# Uploads (formularios/archivos)
+# Uploads / formularios
 python-multipart==0.0.9
 
-# DB
+# Base de datos
 sqlalchemy==2.0.30
 pymysql==1.1.1
 
@@ -31,6 +31,22 @@ pymysql==1.1.1
 boto3==1.34.99
 PyMuPDF==1.23.21
 
-# Tareas asíncronas
+# Tareas asíncronas (solo si usas Celery en producción)
 celery==5.3.1
 redis==4.5.5
+
+# Cálculo numérico / embeddings
+numpy==1.26.4
+scipy==1.13.1
+
+# --- RAG / Embeddings / Vector Store ---
+# FAISS (para CPU)
+faiss-cpu==1.8.0
+# Sentence Transformers (E5, multilingual)
+sentence-transformers==2.7.0
+# Transformers para compatibilidad del modelo E5
+transformers==4.40.2
+# Tokenizers necesarios para embeddings
+torch==2.3.0
+# tqdm para logs de embedding
+tqdm==4.66.4

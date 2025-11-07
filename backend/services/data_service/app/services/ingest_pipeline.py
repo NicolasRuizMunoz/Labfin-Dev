@@ -5,10 +5,10 @@ from app.services import file_processing_service, file_service, s3_service
 from app.enums.file_status import FileStatusEnum
 from app.utils.files import delete_file
 
-def process_and_upload(db: Session, file_id: int, local_path: str) -> None:
+def process_and_upload(db: Session, file_id: int, local_path: str, cleanup: bool = True) -> None:
     """
     Procesa un PDF a TXT, sube original+procesado a S3, actualiza DB y
-    limpia los archivos locales. Lanza excepciones si algo crítico falla.
+    (opcionalmente) limpia los archivos locales.
     """
     fe = db.query(file_service.FileEntry).filter(file_service.FileEntry.id == file_id).first()
     if not fe:
@@ -49,11 +49,12 @@ def process_and_upload(db: Session, file_id: int, local_path: str) -> None:
     # 3) Finalizar + limpiar
     file_service.update_file_status(db, file_id, FileStatusEnum.ACTIVE, set_active=True)
 
-    try:
-        delete_file(local_path)
-    except Exception:
-        pass
-    try:
-        delete_file(processed_txt_path)
-    except Exception:
-        pass
+    if cleanup:
+        try:
+            delete_file(local_path)
+        except Exception:
+            pass
+        try:
+            delete_file(processed_txt_path)
+        except Exception:
+            pass

@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from app.startup import init_db
 from app.routers import upload, batch, file, chat
+import logging
+logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(title="LabFin Data Service")
 

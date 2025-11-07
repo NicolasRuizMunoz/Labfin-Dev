@@ -70,3 +70,24 @@ def update_file_status(db: Session, file_id: int, status: FileStatusEnum, set_ac
 def delete_file_entry(db: Session, file: FileEntry):
     db.delete(file)
     db.commit()
+
+# === Helpers internos para pipelines (sin validar organización) ===
+
+def get_file_by_id_raw(db: Session, file_id: int) -> Optional[FileEntry]:
+    """
+    Lookup directo por id SIN validar organization_id.
+    Útil para tareas internas como indexación/ingesta.
+    Devuelve None si no existe.
+    """
+    return db.query(FileEntry).filter(FileEntry.id == file_id).first()
+
+
+def get_file_by_id_or_404(db: Session, file_id: int) -> FileEntry:
+    """
+    Variante que levanta 404 si no existe, también sin validar organización.
+    Útil cuando quieres abortar rápido en pipelines.
+    """
+    fe = get_file_by_id_raw(db, file_id)
+    if not fe:
+        raise HTTPException(status_code=404, detail=f"FileEntry {file_id} no existe")
+    return fe
