@@ -53,7 +53,6 @@ const FilesManagerPage: React.FC = () => {
   // ---- Batches + files ----
   const [batches, setBatches] = useState<BatchWithFiles[]>([]);
   const [loadingBatches, setLoadingBatches] = useState(false);
-  const [polling, setPolling] = useState(true);
 
   // ---- Form de subida ----
   const [files, setFiles] = useState<File[]>([]);
@@ -81,14 +80,9 @@ const FilesManagerPage: React.FC = () => {
   };
 
   useEffect(() => {
+    // Solo un fetch al montar; el usuario usa "Refresh" si quiere actualizar
     refresh();
   }, []);
-
-  useEffect(() => {
-    if (!polling) return;
-    const id = setInterval(refresh, 3000);
-    return () => clearInterval(id);
-  }, [polling]);
 
   // ---- Upload ----
   const handleUpload = async (e: React.FormEvent) => {
@@ -118,7 +112,7 @@ const FilesManagerPage: React.FC = () => {
         batchIdToUse = created.id;
       }
 
-      // Subir todos los archivos a ese batch (secuencial para mantener logs ordenados; puedes usar Promise.all si quieres)
+      // Subir todos los archivos a ese batch
       for (const f of files) {
         const fd = new FormData();
         fd.append("file", f);
@@ -174,17 +168,46 @@ const FilesManagerPage: React.FC = () => {
     await refresh();
   };
 
+  // ✅ Delete all (borra archivos; si queda vacío intenta borrar el batch)
   const deleteAllInBatch = async (batch: BatchWithFiles) => {
     if (!confirm(`Eliminar TODOS los archivos del batch "${batch.name ?? `#${batch.id}`}"?`)) return;
+
     for (const f of batch.files) {
-      try { await dataApi.deleteFile(f.id); } catch {}
+      try { await dataApi.deleteFile(f.id); } catch (e) { console.error(e); }
     }
+
+    // Refresca para verificar si quedó vacío
     await refresh();
+
+    // Si ya no hay archivos en el batch, intenta borrar el batch automáticamente
+    const updated = (await dataApi.listBatches()) as BatchWithFiles[];
+    const still = updated.find(b => b.id === batch.id);
+    if (still && still.files.length === 0) {
+      try {
+        await dataApi.deleteBatch(batch.id);
+      } catch (e: any) {
+        // Si backend protege y exige vacío, ya está vacío; si fallara, mostramos mensaje
+        console.error(e);
+      } finally {
+        await refresh();
+      }
+    }
+  };
+
+  // ✅ Botón dedicado: borrar solo el batch (si no está vacío, backend devuelve 400)
+  const deleteBatchOnly = async (batch: BatchWithFiles) => {
+    if (!confirm(`Eliminar el batch "${batch.name ?? `#${batch.id}`}"?`)) return;
+    try {
+      await dataApi.deleteBatch(batch.id);
+      await refresh();
+    } catch (e: any) {
+      alert(e?.message ?? "No se pudo eliminar el batch. Asegúrate de que no tenga archivos.");
+    }
   };
 
   const setAllActive = async (batch: BatchWithFiles, value: boolean) => {
     for (const f of batch.files) {
-      try { await dataApi.setActive(f.id, value); } catch {}
+      try { await dataApi.setActive(f.id, value); } catch (e) { console.error(e); }
     }
     await refresh();
   };
@@ -236,6 +259,10 @@ const FilesManagerPage: React.FC = () => {
             </Button>
             <Button size="sm" variant="destructive" onClick={() => deleteAllInBatch(batch)}>
               <Trash2 className="h-4 w-4 mr-2" /> Delete all
+            </Button>
+            {/* ✅ Nuevo botón: borrar batch */}
+            <Button size="sm" variant="destructive" onClick={() => deleteBatchOnly(batch)}>
+              <Trash2 className="h-4 w-4 mr-2" /> Delete batch
             </Button>
           </div>
         </CardHeader>
@@ -297,9 +324,7 @@ const FilesManagerPage: React.FC = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Document Batches</h1>
         <div className="flex items-center gap-2">
-          <Button variant="secondary" onClick={() => setPolling((v) => !v)}>
-            {polling ? "Pause polling" : "Resume polling"}
-          </Button>
+          {/* ❌ Quitamos Pause/Resume polling */}
           <Button variant="ghost" onClick={() => refresh()}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh

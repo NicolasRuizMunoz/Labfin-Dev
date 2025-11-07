@@ -16,6 +16,12 @@ export const createBatch = (name?: string) =>
     headers: { 'Content-Type': 'application/json' },
   });
 
+// ✅ NEW: DELETE /batch/{id}
+export const deleteBatch = (batchId: number) =>
+  http<{ message: string }>(`/data/batch/${batchId}`, {
+    method: 'DELETE',
+  });
+
 // -------- Upload --------
 
 // POST /upload/  -> multipart: file, batch_id
