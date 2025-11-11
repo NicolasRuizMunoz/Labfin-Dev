@@ -39,7 +39,6 @@ def _user_id_from_sub(current_user: UserTokenData) -> int:
     return int(sub)
 
 def _to_chat_message_response(m) -> ChatMessageResponse:
-    # sources_json -> List[ChatSource]
     sources: List[ChatSource] = []
     if m.sources_json:
         for s in m.sources_json:
@@ -48,14 +47,17 @@ def _to_chat_message_response(m) -> ChatMessageResponse:
                 file_name=s.get("file_name"),
                 page=s.get("page"),
                 score=s.get("score"),
+                fragment=s.get("fragment", ""),
+                uri=s.get("uri", ""),
             ))
     return ChatMessageResponse(
         id=m.id,
-        role=m.role,  # Literal["user","assistant"]
+        role=m.role,
         message=m.message,
         sources=sources,
         created_at=m.created_at,
     )
+
 
 # --------- Sesiones ---------
 
@@ -147,9 +149,6 @@ def post_user_message(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user_data),
 ):
-    """
-    Crea el mensaje del usuario y devuelve la respuesta del asistente.
-    """
     org_id = _require_org_id(current_user)
     user_id = _user_id_from_sub(current_user)
 
@@ -157,7 +156,7 @@ def post_user_message(
     if not session:
         raise HTTPException(status_code=404, detail="Sesión no encontrada")
 
-    # 1) Guardar mensaje del usuario
+    # 1) Guardar mensaje de usuario
     chat_service.add_message(
         db,
         session=session,
@@ -166,15 +165,16 @@ def post_user_message(
         sources=None,
     )
 
-    # 2) Llamar a tu orquestador/LLM
+    # 2) Generar respuesta del "agente" con top-k desde FAISS
     assistant_text, assistant_sources = chat_service.generate_assistant_reply(
+        db=db,
         user_message=payload.message,
         organization_id=org_id,
         user_id=user_id,
         session_id=session.id,
     )
 
-    # 3) Guardar respuesta del asistente
+    # 3) Guardar mensaje del asistente
     assistant_msg = chat_service.add_message(
         db,
         session=session,

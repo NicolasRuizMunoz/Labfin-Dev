@@ -15,10 +15,6 @@ app.include_router(batch.router,  prefix="/batch",  tags=["Batch Management"])
 app.include_router(file.router,   prefix="/file",   tags=["File Management"])
 app.include_router(chat.router,   prefix="/chat",   tags=["Chat"])
 
-# --- Rutas de Consulta (Fase 2 - Próximamente) ---
-# from app.routers import chat
-# app.include_router(chat.router, prefix="/chat", tags=["Chat RAG"])
-
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "data-service"}

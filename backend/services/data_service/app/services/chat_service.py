@@ -1,10 +1,14 @@
-# app/services/chat_service.py
+import os
 from typing import List, Optional, Tuple, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import asc, desc
 
-from app.models.chat import ChatSession, ChatMessage  # ajusta import si tu ruta difiere
+from app.models.chat import ChatSession, ChatMessage
 from app.routers.schemas.chat import ChatSource
+from app.services.file_service import get_file_by_id_raw
+from app.services.vector_store_faiss import FaissStore
+from app.services.index_service import _EMBEDDER as EMBEDDER  # reutiliza el embedder cargado
+from app.services import s3_service
 
 # ------------ Sesiones ------------
 
@@ -59,7 +63,6 @@ def add_message(
 ) -> ChatMessage:
     sources_json: Optional[List[Dict[str, Any]]] = None
     if sources:
-        # Convertimos a JSON primitivo
         sources_json = [s.model_dump() if hasattr(s, "model_dump") else dict(s) for s in sources]
 
     msg = ChatMessage(
@@ -85,21 +88,90 @@ def list_messages(
     q = q.order_by(asc(ChatMessage.created_at) if ascending else desc(ChatMessage.created_at))
     return q.offset(offset).limit(limit).all()
 
-# ------------ Integración LLM (stub listo para n8n/worker) ------------
+# ------------ Utilidades internas ------------
+
+def _build_uri_from_key(key: Optional[str]) -> str:
+    """
+    Intenta construir una URL/URI útil para el front.
+    Prioriza un método explícito del s3_service si existe; fallback a s3://bucket/key o base pública.
+    """
+    if not key:
+        return ""
+
+    # Si tu s3_service expone build_public_url / generate_presigned_url, úsalos:
+    if hasattr(s3_service, "build_public_url"):
+        try:
+            return s3_service.build_public_url(key)  # típico: https://<bucket-public>/<key>
+        except Exception:
+            pass
+    if hasattr(s3_service, "generate_presigned_url"):
+        try:
+            return s3_service.generate_presigned_url(key, expires_in=3600)
+        except Exception:
+            pass
+
+    # Fallback simple:
+    bucket = os.environ.get("S3_BUCKET", "").strip()
+    public_base = os.environ.get("S3_PUBLIC_BASE_URL", "").rstrip("/")
+    if public_base:
+        return f"{public_base}/{key}"
+    if bucket:
+        return f"s3://{bucket}/{key}"
+    return key  # como último recurso
+
+# ------------ Integración "agente" basada en RAG ------------
 
 def generate_assistant_reply(
     *,
+    db: Session,
     user_message: str,
     organization_id: int,
     user_id: int,
     session_id: int,
 ) -> Tuple[str, List[ChatSource]]:
     """
-    Punto único de integración para tu orquestador (n8n / Celery / endpoint LLM).
-    - Aquí puedes llamar vía httpx a n8n, u encolar una tarea Celery.
-    - Debe devolver (texto_respuesta, fuentes).
+    Recupera los top-5 fragmentos más similares desde FAISS y arma la respuesta estructurada.
     """
-    # TODO: Reemplazar por integración real
-    dummy_text = "Entendido. Estoy procesando tu consulta sobre documentos tributarios."
-    dummy_sources: List[ChatSource] = []
-    return dummy_text, dummy_sources
+    # 1) Generar embedding de la consulta
+    qvec = EMBEDDER.embed_query(user_message)
+
+    # 2) Buscar en el índice FAISS
+    store = FaissStore(org_id=organization_id, dim=EMBEDDER.dim)
+    results = store.search(qvec, top_k=5)
+
+    if not results:
+        return "No se encontraron fragmentos relevantes para tu consulta.", []
+
+    sources: List[ChatSource] = []
+
+    for score, meta in results:
+        file_id = int(meta.get("file_id"))
+        s3_key_processed = meta.get("s3_key_processed")
+        fragment = meta.get("content_preview", "").strip()
+        uri = _build_uri_from_key(s3_key_processed)
+
+        # Obtener el nombre del archivo
+        fe = get_file_by_id_raw(db, file_id)
+        file_name = fe.original_filename if fe and getattr(fe, "original_filename", None) else str(file_id)
+
+        sources.append(ChatSource(
+            file_id=file_id,
+            file_name=file_name,
+            page=None,
+            score=float(score),
+            fragment=fragment,
+            uri=uri,
+        ))
+
+    # 3) Armar mensaje estructurado para el agente / frontend
+    lines = ["He encontrado los 5 fragmentos más relevantes para tu consulta:"]
+    for i, s in enumerate(sources, start=1):
+        lines.append(
+            f"\n{i}. **{s.file_name}**\n"
+            f"   • Relevancia: {s.score:.4f}\n"
+            f"   • URI: {s.uri}\n"
+            f"   • Fragmento: {s.fragment[:300]}{'...' if len(s.fragment) > 300 else ''}"
+        )
+
+    assistant_text = "\n".join(lines)
+    return assistant_text, sources
