@@ -49,6 +49,7 @@ def _to_chat_message_response(m) -> ChatMessageResponse:
                 score=s.get("score"),
                 fragment=s.get("fragment", ""),
                 uri=s.get("uri", ""),
+                s3_key_processed=s.get("s3_key_processed"),
             ))
     return ChatMessageResponse(
         id=m.id,

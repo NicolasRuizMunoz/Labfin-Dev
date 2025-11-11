@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    environment:
+      - OLLAMA_NUM_GPU=0 
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    restart: unless-stopped
+
+  model_service:
+    build: .
+    container_name: model_service
+    env_file:
+      - ./.env         # crea este archivo a partir de .env.example
+    environment:
+      # Aseguramos conexión docker↔docker
+      - OLLAMA_BASE_URL=http://ollama:11434
+      # Puedes sobreescribir cualquier var del .env aquí si lo necesitas
+    ports:
+      - "8088:8080"
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+volumes:
+  ollama_models:

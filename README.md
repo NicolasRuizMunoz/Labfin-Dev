@@ -42,5 +42,13 @@ uvicorn app.main:app --reload --port 8002
 celery -A app.celery_worker.celery_app worker --loglevel=info --pool=solo
 ```
 
+4. Model_servie
+```bash
+cd services/model_service
+docker compose build --no-cache
+docker compose up -d
+docker logs -f model_service
+```
+
 admin@labfin.dev
 admin123

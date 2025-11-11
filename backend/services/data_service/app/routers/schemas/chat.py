@@ -31,6 +31,7 @@ class ChatSource(BaseModel):
     score: float
     fragment: str
     uri: str
+    s3_key_processed: Optional[str] = None
 
 class ChatMessageResponse(BaseModel):
     id: int
