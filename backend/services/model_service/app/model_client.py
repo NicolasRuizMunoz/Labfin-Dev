@@ -17,7 +17,8 @@ async def generate_text(system_prompt: str, user_prompt: str) -> str:
         "stream": False,
         "options": {
             "temperature": 0.2,
-            "num_ctx": 2048,   # antes 4096
+            "num_ctx": 1024,   # antes 4096
+            "num_predict": 512, 
             "num_gpu": 0       # ⬅️ CPU
         }
     }

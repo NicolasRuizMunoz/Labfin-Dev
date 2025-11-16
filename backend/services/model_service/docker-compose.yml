@@ -4,7 +4,10 @@ services:
   ollama:
     image: ollama/ollama:latest
     environment:
-      - OLLAMA_NUM_GPU=0 
+      # Forzar CPU, sin GPU
+      - OLLAMA_NUM_GPU=0
+      # Alternativa (puedes usar esta en vez de la anterior si prefieres):
+      # - OLLAMA_NO_GPU=1
     container_name: ollama
     ports:
       - "11434:11434"
@@ -16,11 +19,12 @@ services:
     build: .
     container_name: model_service
     env_file:
-      - ./.env         # crea este archivo a partir de .env.example
+      - ./.env
     environment:
       # Aseguramos conexión docker↔docker
       - OLLAMA_BASE_URL=http://ollama:11434
-      # Puedes sobreescribir cualquier var del .env aquí si lo necesitas
+      # Opcional: sobreescribir explícitamente aquí también
+      # - OLLAMA_MODEL=llama3.2:1b
     ports:
       - "8088:8080"
     depends_on:

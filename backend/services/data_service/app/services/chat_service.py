@@ -91,37 +91,43 @@ def list_messages(
     return q.offset(offset).limit(limit).all()
 
 # ------------ Utilidades internas ------------
-
-def _build_uri_from_key(key: Optional[str]) -> str:
-    """
-    Intenta construir una URL/URI útil para el front.
-    Prioriza un método explícito del s3_service si existe; fallback a s3://bucket/key o base pública.
-    """
-    if not key:
+def _build_uri_from_key(s3_key_processed: str | None) -> str:
+    if not s3_key_processed:
         return ""
+    # Ajusta esto a tu formato real de URI pública / interna
+    return f"s3://{s3_key_processed}"
 
-    # Si tu s3_service expone build_public_url / generate_presigned_url, úsalos:
-    if hasattr(s3_service, "build_public_url"):
-        try:
-            return s3_service.build_public_url(key)  # típico: https://<bucket-public>/<key>
-        except Exception:
-            pass
-    if hasattr(s3_service, "generate_presigned_url"):
-        try:
-            return s3_service.generate_presigned_url(key, expires_in=3600)
-        except Exception:
-            pass
 
-    # Fallback simple:
-    bucket = os.environ.get("S3_BUCKET", "").strip()
-    public_base = os.environ.get("S3_PUBLIC_BASE_URL", "").rstrip("/")
-    if public_base:
-        return f"{public_base}/{key}"
-    if bucket:
-        return f"s3://{bucket}/{key}"
-    return key  # como último recurso
+def _dedupe_faiss_results(
+    results: List[Tuple[float, dict]]
+) -> List[Tuple[float, dict]]:
+    """
+    Deduplica resultados de FAISS para evitar múltiples fragmentos del MISMO texto.
+    Criterio:
+      - Si existe meta["s3_key_processed"], se usa como clave principal.
+      - Si no, se usa meta["file_id"] como clave de fallback.
+    De esta forma solo se mantiene el primer fragmento de cada texto origen.
+    """
+    seen = set()
+    deduped: List[Tuple[float, dict]] = []
 
-# ------------ Integración "agente" basada en RAG ------------
+    for score, meta in results:
+        s3_key = meta.get("s3_key_processed")
+        file_id = meta.get("file_id")
+        dedupe_key = s3_key or f"file:{file_id}"
+
+        if dedupe_key in seen:
+            continue
+
+        seen.add(dedupe_key)
+        deduped.append((score, meta))
+
+    print(
+        f"[CHAT_RAG_DEBUG] raw_results={len(results)} deduped_results={len(deduped)}",
+        flush=True,
+    )
+    return deduped
+
 
 def generate_assistant_reply(
     *,
@@ -132,9 +138,11 @@ def generate_assistant_reply(
     session_id: int,
 ) -> Tuple[str, List[ChatSource]]:
     """
-    Recupera los top-5 fragmentos más similares desde FAISS y:
+    Recupera fragmentos similares desde FAISS y:
       - intenta llamar al model_service para generar 'answer' usando ese contexto,
       - si falla, hace fallback a una respuesta estructurada local con las fuentes.
+    Deduplica resultados para que si varios hits provienen del mismo texto
+    (mismo s3_key_processed o mismo file_id), solo se use un fragmento.
     """
     # 1) Embedding de la consulta
     qvec = EMBEDDER.embed_query(user_message)
@@ -145,6 +153,11 @@ def generate_assistant_reply(
 
     if not results:
         return "No se encontraron fragmentos relevantes para tu consulta.", []
+
+    # 2b) Deduplicar resultados por texto origen
+    results = _dedupe_faiss_results(results)
+    if not results:
+        return "No se encontraron fragmentos relevantes únicos para tu consulta.", []
 
     # 3) Construir fuentes (para guardar y para enviar al orquestador)
     sources: List[ChatSource] = []
@@ -164,7 +177,7 @@ def generate_assistant_reply(
             score=float(score),
             fragment=fragment,
             uri=uri,
-            s3_key_processed=s3_key_processed,  # ⬅️ añade esto
+            s3_key_processed=s3_key_processed,
         ))
 
     # 4) Orquestador (model_service): intentar generar respuesta del modelo
@@ -173,8 +186,8 @@ def generate_assistant_reply(
         # Éxito → usamos la respuesta del modelo
         return answer, sources
 
-    # 5) Fallback local: mensaje estructurado con las fuentes
-    lines = ["He encontrado los 5 fragmentos más relevantes para tu consulta:"]
+    # 5) Fallback local: mensaje estructurado con las fuentes efectivamente usadas (deduplicadas)
+    lines = ["He encontrado los fragmentos más relevantes para tu consulta:"]
     for i, s in enumerate(sources, start=1):
         lines.append(
             f"\n{i}. **{s.file_name}**\n"
