@@ -7,32 +7,13 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 
 import Navigation from "@/components/Navigation";
-import ProfileHeader from "@/components/ProfileHeader";
+import ProtectedRoute from "@/auth/ProtectedRoute";
 
-import SelfAssessmentPage from "./pages/SelfAssessmentPage";
-import DailyTestPage from "./pages/DailyTestPage";
-import SocialDailyTest from "./components/social/SocialDailyTest";
 import AuthPage from "./pages/AuthPage";
 import HomePage from "./pages/HomePage";
-import MarketsPage from "./pages/MarketsPage";
-import RealEstatePage from "./pages/RealEstatePage";
-import CreditPage from "./pages/CreditPage";
-import RetirementPage from "./pages/RetirementPage";
-import LFBusinessPage from "./pages/LFBusinessPage";
-import NotFound from "./pages/NotFound";
-
-// ➕ nuevas páginas
 import FilesManagerPage from "./pages/FilesManagerPage";
-const BatchesPage = () => (
-  <div className="mx-auto max-w-6xl p-4">
-    <h1 className="text-xl font-semibold">Batches</h1>
-    <p className="text-sm text-muted-foreground mt-2">
-      (Opcional) Administración de batches. También puedes gestionarlos desde File Manager.
-    </p>
-  </div>
-);
-
-import ProtectedRoute from "@/auth/ProtectedRoute";
+import TendersPage from "./pages/TendersPage";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -44,29 +25,17 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            {/* Header (se muestra siempre) */}
             <Navigation />
-            <ProfileHeader />
 
             <Routes>
-              {/* Pública */}
               <Route path="/auth" element={<AuthPage />} />
 
-              {/* Bloque protegido */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/business" element={<LFBusinessPage />} />
                 <Route path="/files" element={<FilesManagerPage />} />
-                <Route path="/batches" element={<BatchesPage />} />
-                <Route path="/markets" element={<MarketsPage />} />
-                <Route path="/real-estate" element={<RealEstatePage />} />
-                <Route path="/credit" element={<CreditPage />} />
-                <Route path="/assessment" element={<SelfAssessmentPage />} />
-                <Route path="/daily-test" element={<SocialDailyTest />} />
-                <Route path="/retirement" element={<RetirementPage />} />
+                <Route path="/tenders" element={<TendersPage />} />
               </Route>
 
-              {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

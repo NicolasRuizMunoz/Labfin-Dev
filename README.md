@@ -14,9 +14,9 @@ npm run dev
 
 ```bash
 cd backend
-python -m venv venv #si no esta el ambiente virtual creado.
+    python -m venv venv
 venv\Scripts\activate
-pip install -r requirements-all.txt
+    pip install -r requirements-all.txt
 ```
 
 1. api_gateway

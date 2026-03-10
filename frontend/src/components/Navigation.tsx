@@ -6,120 +6,106 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  TrendingUp,
-  Home,
-  CreditCard,
-  PiggyBank,
-  Menu,
-  Brain,
-  CheckCircle2,
-  Globe,
-  Calendar,
-  Building2,
-  LogIn,
-  LogOut,
-  FileText,
-  FolderOpen,
-} from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Home, FileText, ClipboardList, Menu, LogIn, LogOut, User, Building2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const labfinLogo = '/lovable-uploads/12094485-6192-4e4a-89bc-352de1dd8110.png';
+
+const navItems = [
+  { name: 'Home', href: '/', icon: Home },
+  { name: 'File Manager', href: '/files', icon: FileText },
+  { name: 'Licitaciones', href: '/tenders', icon: ClipboardList },
+];
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { language, setLanguage, t } = useLanguage();
   const { user, signOut } = useAuth();
 
-  const navItems = [
-    { name: t('home'), href: '/', icon: Brain },
-    { name: 'LF Business', href: '/business', icon: Building2 },
-    { name: 'File Manager', href: '/files', icon: FileText },
-    { name: 'Batches', href: '/batches', icon: FolderOpen },
-    { name: t('markets'), href: '/markets', icon: TrendingUp },
-    { name: t('realEstate'), href: '/real-estate', icon: Home },
-    { name: t('credit'), href: '/credit', icon: CreditCard },
-    { name: t('selfAssessment'), href: '/assessment', icon: CheckCircle2 },
-    { name: t('dailyTest'), href: '/daily-test', icon: Calendar },
-    { name: t('retirement'), href: '/retirement', icon: PiggyBank, disabled: true },
-  ];
+  const isActive = (href: string) =>
+    href === '/' ? location.pathname === '/' : location.pathname.startsWith(href);
 
-  const isActive = (href: string) => (href === '/' ? location.pathname === '/' : location.pathname.startsWith(href));
+  const displayName = user?.username || user?.email?.split('@')[0] || 'Usuario';
+  const initials = displayName.slice(0, 2).toUpperCase();
 
   return (
     <nav className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 max-w-7xl mx-auto items-center px-4">
+      <div className="container flex h-14 max-w-7xl mx-auto items-center px-4 gap-2">
+
         {/* Logo */}
-        <Link to="/" className="flex items-center space-x-2 mr-4">
-          <img src={labfinLogo} alt="LabFin Logo" className="w-7 h-7 object-contain" />
-          <span className="hidden lg:inline-block font-bold text-lg text-primary">LabFin</span>
+        <Link to="/" className="flex items-center space-x-2 mr-4 shrink-0">
+          <img src={labfinLogo} alt="LabFin" className="w-7 h-7 object-contain" />
+          <span className="hidden md:inline-block font-bold text-lg text-primary">LabFin</span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <div className="hidden lg:flex ml-auto items-center space-x-0.5">
-          {/* Language Switcher */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="flex items-center space-x-1 px-2 text-xs">
-                <Globe className="w-3 h-3" />
-                <span className="font-medium">{language.toUpperCase()}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="z-50">
-              <DropdownMenuItem onClick={() => setLanguage('en')} className={language === 'en' ? 'bg-accent' : ''}>
-                English
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setLanguage('es')} className={language === 'es' ? 'bg-accent' : ''}>
-                Español
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        {/* Desktop nav items — left */}
+        <div className="hidden lg:flex items-center space-x-0.5">
+          {navItems.map(({ name, href, icon: Icon }) => (
+            <Button
+              key={href}
+              variant={isActive(href) ? 'default' : 'ghost'}
+              size="sm"
+              className={`px-3 py-1 text-xs h-8 ${isActive(href) ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'}`}
+              asChild
+            >
+              <Link to={href} className="flex items-center space-x-1">
+                <Icon className="w-3 h-3" />
+                <span>{name}</span>
+              </Link>
+            </Button>
+          ))}
+        </div>
 
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Button
-                key={item.name}
-                variant={isActive(item.href) ? 'default' : 'ghost'}
-                size="sm"
-                className={`
-                  px-2 py-1 text-xs h-8
-                  ${isActive(item.href) ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'}
-                  ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}
-                `}
-                asChild={!item.disabled}
-                disabled={item.disabled}
-              >
-                {item.disabled ? (
-                  <span className="flex items-center space-x-1">
-                    <Icon className="w-3 h-3" />
-                    <span className="hidden xl:inline whitespace-nowrap">{item.name}</span>
-                  </span>
-                ) : (
-                  <Link to={item.href} className="flex items-center space-x-1">
-                    <Icon className="w-3 h-3" />
-                    <span className="hidden xl:inline whitespace-nowrap">{item.name}</span>
-                  </Link>
-                )}
-              </Button>
-            );
-          })}
+        {/* Spacer */}
+        <div className="flex-1" />
 
-          {/* Auth (desktop) */}
+        {/* Desktop right side */}
+        <div className="hidden lg:flex items-center space-x-2">
           {!user ? (
-            <Button variant="outline" size="sm" className="ml-2" onClick={() => navigate('/auth')}>
+            <Button variant="outline" size="sm" onClick={() => navigate('/auth')}>
               <LogIn className="w-3 h-3 mr-1" />
               Ingresar
             </Button>
           ) : (
             <>
-              <span className="text-xs opacity-70 ml-2 hidden xl:inline">{user.email}</span>
-              <Button variant="outline" size="sm" className="ml-2" onClick={signOut}>
+              {/* Avatar + username → profile dropdown (4th item) */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="flex items-center space-x-2 px-2 h-8">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={undefined} />
+                      <AvatarFallback className="text-xs bg-primary/10 text-primary">{initials}</AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs font-medium">{displayName}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="flex flex-col gap-0.5">
+                    <span className="font-semibold">{displayName}</span>
+                    <span className="text-xs font-normal text-muted-foreground">{user.email}</span>
+                    {user.organization_id && (
+                      <span className="text-xs font-normal text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <Building2 className="w-3 h-3" />
+                        Org #{user.organization_id}
+                      </span>
+                    )}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem disabled className="text-xs text-muted-foreground">
+                    <User className="w-3 h-3 mr-2" />
+                    Configuración de cuenta
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Salir */}
+              <Button variant="outline" size="sm" className="h-8" onClick={signOut}>
                 <LogOut className="w-3 h-3 mr-1" />
                 Salir
               </Button>
@@ -128,25 +114,13 @@ const Navigation = () => {
         </div>
 
         {/* Mobile / Tablet */}
-        <div className="lg:hidden ml-auto flex items-center space-x-2">
-          {/* Language */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Globe className="w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="z-50">
-              <DropdownMenuItem onClick={() => setLanguage('en')} className={language === 'en' ? 'bg-accent' : ''}>
-                English
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setLanguage('es')} className={language === 'es' ? 'bg-accent' : ''}>
-                Español
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Drawer */}
+        <div className="lg:hidden flex items-center space-x-2">
+          {user && (
+            <Avatar className="h-7 w-7">
+              <AvatarImage src={undefined} />
+              <AvatarFallback className="text-xs bg-primary/10 text-primary">{initials}</AvatarFallback>
+            </Avatar>
+          )}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -155,65 +129,49 @@ const Navigation = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-64 z-50">
               <div className="flex flex-col space-y-2 mt-6">
-                {navItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Button
-                      key={item.name}
-                      variant={isActive(item.href) ? 'default' : 'ghost'}
-                      size="sm"
-                      className={`justify-start ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      asChild={!item.disabled}
-                      disabled={item.disabled}
-                      onClick={() => !item.disabled && setIsOpen(false)}
-                    >
-                      {item.disabled ? (
-                        <span className="flex items-center space-x-2">
-                          <Icon className="w-4 h-4" />
-                          <span>{item.name}</span>
-                        </span>
-                      ) : (
-                        <Link to={item.href} className="flex items-center space-x-2">
-                          <Icon className="w-4 h-4" />
-                          <span>{item.name}</span>
-                        </Link>
-                      )}
-                    </Button>
-                  );
-                })}
+                {navItems.map(({ name, href, icon: Icon }) => (
+                  <Button
+                    key={href}
+                    variant={isActive(href) ? 'default' : 'ghost'}
+                    size="sm"
+                    className="justify-start"
+                    asChild
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Link to={href} className="flex items-center space-x-2">
+                      <Icon className="w-4 h-4" />
+                      <span>{name}</span>
+                    </Link>
+                  </Button>
+                ))}
 
-                {/* Auth (mobile) */}
-                {!user ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="justify-start"
-                    onClick={() => {
-                      setIsOpen(false);
-                      navigate('/auth');
-                    }}
-                  >
-                    <LogIn className="w-4 h-4 mr-2" />
-                    Ingresar
-                  </Button>
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="justify-start"
-                    onClick={() => {
-                      setIsOpen(false);
-                      signOut();
-                    }}
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Salir
-                  </Button>
-                )}
+                <div className="pt-2 border-t">
+                  {!user ? (
+                    <Button
+                      variant="outline" size="sm" className="w-full justify-start"
+                      onClick={() => { setIsOpen(false); navigate('/auth'); }}
+                    >
+                      <LogIn className="w-4 h-4 mr-2" />
+                      Ingresar
+                    </Button>
+                  ) : (
+                    <>
+                      <div className="px-3 py-2 text-xs text-muted-foreground">{user.email}</div>
+                      <Button
+                        variant="outline" size="sm" className="w-full justify-start"
+                        onClick={() => { setIsOpen(false); signOut(); }}
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Salir
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
             </SheetContent>
           </Sheet>
         </div>
+
       </div>
     </nav>
   );
