@@ -15,9 +15,11 @@ def create_file_entry(
     original_filename: str,
     file_type: str,
     checksum: str,
+    licitacion_id: Optional[int] = None,
 ) -> FileEntry:
     entry = FileEntry(
         batch_id=batch_id,
+        licitacion_id=licitacion_id,
         organization_id=organization_id,
         original_filename=original_filename,
         file_type=file_type,
@@ -38,12 +40,25 @@ def get_file_by_id(db: Session, file_id: int, organization_id: int) -> FileEntry
         FileEntry.organization_id == organization_id,
     ).first()
     if not file:
-        raise HTTPException(status_code=404, detail="File not found")
+        raise HTTPException(status_code=404, detail="Archivo no encontrado")
     return file
 
 
 def get_file_by_id_raw(db: Session, file_id: int) -> Optional[FileEntry]:
     return db.query(FileEntry).filter(FileEntry.id == file_id).first()
+
+
+def get_files_by_licitacion(db: Session, organization_id: int, licitacion_id: int) -> List[FileEntry]:
+    return (
+        db.query(FileEntry)
+        .filter(
+            FileEntry.organization_id == organization_id,
+            FileEntry.licitacion_id == licitacion_id,
+            FileEntry.status != FileStatusEnum.FAILED,
+        )
+        .order_by(FileEntry.uploaded_at.desc())
+        .all()
+    )
 
 
 def get_files_by_organization(db: Session, organization_id: int) -> List[FileEntry]:

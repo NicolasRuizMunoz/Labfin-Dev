@@ -16,23 +16,25 @@ router = APIRouter(prefix="/upload", tags=["Upload"])
 def upload_file(
     file: UploadFile = File(...),
     batch_id: Optional[int] = Form(None),
+    licitacion_id: Optional[int] = Form(None),
     logical_filename: Optional[str] = Form(None),
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
     if current_user.organization_id is None:
-        raise HTTPException(status_code=403, detail="User does not belong to any organization")
+        raise HTTPException(status_code=403, detail="El usuario no pertenece a ninguna organización")
     try:
         file_entry, _ = upload_service.save_upload(
             db=db,
             file=file,
             organization_id=int(current_user.organization_id),
             batch_id=batch_id,
+            licitacion_id=licitacion_id,
             logical_filename=logical_filename,
         )
-        return UploadFileResponse(message="File received and registered", file=file_entry)
+        return UploadFileResponse(message="Archivo recibido y registrado", file=file_entry)
     except HTTPException:
         raise
     except Exception as e:
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Unexpected upload error: {e}")
+        raise HTTPException(status_code=500, detail=f"Error inesperado al subir archivo: {e}")

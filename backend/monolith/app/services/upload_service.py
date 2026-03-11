@@ -13,7 +13,7 @@ def _validate_ext(original_filename: str) -> str:
     _, ext = os.path.splitext(original_filename or "")
     ext = ext.lower().lstrip(".")
     if not ext or ext not in set(ALLOWED_EXTENSIONS):
-        raise HTTPException(status_code=400, detail=f"Extension not allowed: .{ext or '?'}")
+        raise HTTPException(status_code=400, detail=f"Extensión no permitida: .{ext or '?'}")
     return ext
 
 
@@ -23,6 +23,7 @@ def save_upload(
     organization_id: int,
     batch_id: Optional[int],
     logical_filename: Optional[str],
+    licitacion_id: Optional[int] = None,
 ):
     original_filename = file.filename or "unnamed"
     ext = _validate_ext(original_filename)
@@ -41,12 +42,13 @@ def save_upload(
             os.remove(saved_path)
         except Exception:
             pass
-        raise HTTPException(status_code=409, detail="Duplicate file (checksum already exists).")
+        raise HTTPException(status_code=409, detail="Archivo duplicado (ya existe un archivo con el mismo contenido).")
 
     file_entry = file_service.create_file_entry(
         db=db,
         organization_id=organization_id,
         batch_id=batch_id,
+        licitacion_id=licitacion_id,
         original_filename=original_filename,
         file_type=ext,
         checksum=checksum,

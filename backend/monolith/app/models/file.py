@@ -22,5 +22,8 @@ class FileEntry(Base):
     checksum = Column(String(128), nullable=True)
     is_active = Column(Boolean, default=True)
 
+    licitacion_id = Column(Integer, ForeignKey("licitaciones.id"), nullable=True)
+
     batch = relationship("FileBatch", back_populates="files")
+    licitacion = relationship("Licitacion", back_populates="files")
     chunks = relationship("DocumentChunk", back_populates="file_entry", cascade="all, delete")
