@@ -10,6 +10,7 @@ import {
   Loader2,
   RefreshCw,
   Calendar,
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,17 +28,19 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
-import { getLicitacion, getLicitacionFiles } from '@/services/tenders';
+import { getLicitacion, getLicitacionFiles, analizarLicitacion, type AnalisisResult } from '@/services/tenders';
 import * as dataApi from '@/services/data';
 import http from '@/lib/http';
 import type { FileEntry, FileStatus } from '@/types/data';
+
+const CONFIRMABLE: FileStatus[] = ['PENDING', 'STAGED', 'FAILED'];
 
 const STATUS_LABEL: Record<FileStatus, string> = {
   PENDING: 'Pendiente',
   STAGED: 'En cola',
   CONFIRMED: 'Confirmado',
   UPLOADED: 'Subido',
-  ACTIVE: 'Activo',
+  ACTIVE: 'Listo',
   FAILED: 'Fallido',
 };
 
@@ -60,6 +63,13 @@ const LicitacionDetailPage: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [checkedIds, setCheckedIds] = useState<Record<number, boolean>>({});
+
+  const [confirmando, setConfirmando] = useState(false);
+  const [confirmProgress, setConfirmProgress] = useState<{ actual: number; total: number } | null>(null);
+
+  const [analisis, setAnalisis] = useState<AnalisisResult | null>(null);
+  const [analizando, setAnalizando] = useState(false);
+  const [analisisError, setAnalisisError] = useState<string | null>(null);
 
   const { data: licitacion } = useQuery({
     queryKey: ['licitacion', licitacionId],
@@ -100,22 +110,36 @@ const LicitacionDetailPage: React.FC = () => {
     }
   };
 
-  const confirmSelected = async () => {
+  const runConfirm = async (ids: number[]) => {
+    // Solo archivos que aún no han sido procesados
+    const pending = ids.filter((id) => {
+      const f = files.find((f) => f.id === id);
+      return f && CONFIRMABLE.includes(f.status as FileStatus);
+    });
+    if (!pending.length) return;
+    setConfirmando(true);
+    setConfirmProgress({ actual: 0, total: pending.length });
+    try {
+      for (let i = 0; i < pending.length; i++) {
+        setConfirmProgress({ actual: i + 1, total: pending.length });
+        await dataApi.confirmOne(pending[i]);
+      }
+      setCheckedIds({});
+      refetch();
+    } finally {
+      setConfirmando(false);
+      setConfirmProgress(null);
+    }
+  };
+
+  const confirmSelected = () => {
     const ids = Object.entries(checkedIds)
       .filter(([, v]) => v)
       .map(([k]) => Number(k));
-    if (!ids.length) return;
-    await dataApi.confirmFilesBulk(ids);
-    setCheckedIds({});
-    refetch();
+    return runConfirm(ids);
   };
 
-  const confirmAll = async () => {
-    const ids = files.map((f) => f.id);
-    if (!ids.length) return;
-    await dataApi.confirmFilesBulk(ids);
-    refetch();
-  };
+  const confirmAll = () => runConfirm(files.map((f) => f.id));
 
   const toggleActive = async (f: FileEntry) => {
     await dataApi.setActive(f.id, !f.is_active);
@@ -139,22 +163,44 @@ const LicitacionDetailPage: React.FC = () => {
 
   const selectedCount = Object.values(checkedIds).filter(Boolean).length;
 
+  const handleAnalizar = async () => {
+    setAnalizando(true);
+    setAnalisisError(null);
+    setAnalisis(null);
+    try {
+      const result = await analizarLicitacion(licitacionId);
+      setAnalisis(result);
+    } catch (err: any) {
+      setAnalisisError(err?.message ?? 'Error al generar el análisis');
+    } finally {
+      setAnalizando(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-6xl p-4 space-y-6">
       {/* Encabezado */}
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/tenders')}>
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold">{licitacion?.nombre ?? '...'}</h1>
-          {licitacion?.fecha_vencimiento && (
-            <p className="text-sm text-muted-foreground flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5" />
-              Vence: {new Date(licitacion.fecha_vencimiento).toLocaleDateString('es-CL')}
-            </p>
-          )}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/tenders')}>
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">{licitacion?.nombre ?? '...'}</h1>
+            {licitacion?.fecha_vencimiento && (
+              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5" />
+                Vence: {new Date(licitacion.fecha_vencimiento).toLocaleDateString('es-CL')}
+              </p>
+            )}
+          </div>
         </div>
+        <Button onClick={handleAnalizar} disabled={analizando} className="gap-2">
+          {analizando
+            ? <Loader2 className="w-4 h-4 animate-spin" />
+            : <Sparkles className="w-4 h-4" />}
+          {analizando ? 'Analizando...' : 'Analizar con IA'}
+        </Button>
       </div>
 
       {/* Subir archivos */}
@@ -271,6 +317,7 @@ const LicitacionDetailPage: React.FC = () => {
                       <TableCell>
                         <Checkbox
                           checked={!!checkedIds[f.id]}
+                          disabled={!CONFIRMABLE.includes(f.status as FileStatus)}
                           onCheckedChange={(v) =>
                             setCheckedIds((p) => ({ ...p, [f.id]: !!v }))
                           }
@@ -308,19 +355,89 @@ const LicitacionDetailPage: React.FC = () => {
                 </TableBody>
               </Table>
             </CardContent>
+            {confirmando && confirmProgress && (
+              <div className="px-4 py-3 border-t bg-muted/40 flex items-center gap-3">
+                <Loader2 className="h-4 w-4 animate-spin text-primary shrink-0" />
+                <div className="flex-1 space-y-1">
+                  <p className="text-xs text-muted-foreground">
+                    Procesando archivo {confirmProgress.actual} de {confirmProgress.total}…
+                    <span className="ml-1 text-xs text-foreground font-medium">
+                      (esto puede tardar varios segundos por archivo)
+                    </span>
+                  </p>
+                  <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full bg-primary rounded-full transition-all duration-300"
+                      style={{ width: `${(confirmProgress.actual / confirmProgress.total) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="p-3 flex items-center gap-2 border-t">
-              <Button size="sm" onClick={confirmSelected} disabled={selectedCount === 0}>
-                <CheckSquare className="h-4 w-4 mr-2" />
+              <Button size="sm" onClick={confirmSelected} disabled={selectedCount === 0 || confirmando}>
+                {confirmando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckSquare className="h-4 w-4 mr-2" />}
                 Confirmar seleccionados{selectedCount > 0 ? ` (${selectedCount})` : ''}
               </Button>
-              <Button size="sm" variant="secondary" onClick={confirmAll}>
-                <CheckSquare className="h-4 w-4 mr-2" />
+              <Button size="sm" variant="secondary" onClick={confirmAll} disabled={confirmando}>
+                {confirmando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckSquare className="h-4 w-4 mr-2" />}
                 Confirmar todos
               </Button>
             </div>
           </Card>
         )}
       </div>
+
+      {/* Panel de análisis IA */}
+      {(analisis || analizando || analisisError) && (
+        <>
+          <Separator />
+          <div className="space-y-3">
+            <h2 className="text-lg font-medium flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              Análisis IA
+            </h2>
+
+            {analizando && (
+              <Card>
+                <CardContent className="py-12 flex flex-col items-center gap-3 text-muted-foreground">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  <p className="text-sm">Analizando documentos con IA...</p>
+                  <p className="text-xs">Esto puede tomar entre 20 y 60 segundos.</p>
+                </CardContent>
+              </Card>
+            )}
+
+            {analisisError && !analizando && (
+              <Card className="border-destructive/40">
+                <CardContent className="py-6 text-sm text-destructive">
+                  {analisisError}
+                </CardContent>
+              </Card>
+            )}
+
+            {analisis && !analizando && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Modelo: {analisis.model}</span>
+                    <span className="flex gap-4">
+                      <span>Docs licitación: {analisis.chunks_licitacion} archivos</span>
+                      <span>Docs empresa: {analisis.chunks_empresa} archivos</span>
+                      {analisis.tokens_usados && <span>Tokens: {analisis.tokens_usados.toLocaleString()}</span>}
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="prose prose-sm max-w-none dark:prose-invert whitespace-pre-wrap text-sm leading-relaxed">
+                    {analisis.analisis}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 };

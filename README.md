@@ -14,41 +14,17 @@ npm run dev
 
 ```bash
 cd backend
-    python -m venv venv
+python -m venv venv
 venv\Scripts\activate
-    pip install -r requirements-all.txt
+
 ```
 
-1. api_gateway
-
 ```bash
-cd api_gateway
+cd monolith
+pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-2. Auth_Service
-
-```bash
-cd services/auth_service
-uvicorn app.main:app --reload --port 8001
-```
-
-3. Data_Service
-```bash
-cd services/data_service
-uvicorn app.main:app --reload --port 8002
-
-# Aparte de esto, debe ir en otra terminal en servicedata:
-celery -A app.celery_worker.celery_app worker --loglevel=info --pool=solo
-```
-
-4. Model_servie
-```bash
-cd services/model_service
-docker compose build --no-cache
-docker compose up -d
-docker logs -f model_service
-```
 
 admin@labfin.dev
 admin123

@@ -51,6 +51,17 @@ export const deleteLicitacion = (id: number) =>
 export const getLicitacionFiles = (id: number) =>
   http<import('@/types/data').FileEntry[]>(`/data/licitacion/${id}/files`);
 
+export interface AnalisisResult {
+  analisis: string;
+  model: string;
+  tokens_usados: number | null;
+  chunks_licitacion: number;
+  chunks_empresa: number;
+}
+
+export const analizarLicitacion = (id: number) =>
+  http<AnalisisResult>(`/data/licitacion/${id}/analizar`, { method: 'POST' });
+
 export const uploadFilesToLicitacion = async (licitacionId: number, files: File[]) => {
   for (const file of files) {
     const fd = new FormData();

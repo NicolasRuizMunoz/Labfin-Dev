@@ -7,7 +7,7 @@ from app.database.db import get_db
 from app.dependencies.auth import get_current_user, UserTokenData
 from app.schemas.licitacion import LicitacionCreate, LicitacionUpdate, LicitacionResponse
 from app.schemas.file import FileEntryResponse
-from app.services import licitacion_service, file_service
+from app.services import licitacion_service, file_service, analysis_service
 
 router = APIRouter(prefix="/licitacion", tags=["Licitaciones"])
 
@@ -49,6 +49,17 @@ def list_licitacion_files(
     org_id = int(current_user.organization_id)
     licitacion_service.get_one(db, org_id, lic_id)  # valida que la licitación pertenece a la org
     return file_service.get_files_by_licitacion(db, org_id, lic_id)
+
+
+@router.post("/{lic_id}/analizar", response_model=dict)
+def analizar_licitacion(
+    lic_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserTokenData = Depends(get_current_user),
+):
+    if current_user.organization_id is None:
+        raise HTTPException(status_code=403, detail="El usuario no pertenece a ninguna organización")
+    return analysis_service.analyze_licitacion(db, int(current_user.organization_id), lic_id)
 
 
 @router.patch("/{lic_id}", response_model=LicitacionResponse)

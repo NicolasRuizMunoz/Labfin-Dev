@@ -55,3 +55,17 @@ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2:1b")
 OLLAMA_TIMEOUT = float(os.getenv("OLLAMA_TIMEOUT", "300"))
 MAX_SOURCES = int(os.getenv("MAX_SOURCES", "5"))
 MAX_CHARS_PER_CHUNK = int(os.getenv("MAX_CHARS_PER_CHUNK", "1200"))
+
+# OpenAI (para análisis de licitaciones)
+# Modelos recomendados por costo/ventana:
+#   gpt-4o-mini  → 128k tokens, ~17x más barato que gpt-4o, buena calidad (recomendado)
+#   gpt-4o       → 128k tokens, máxima calidad
+#   gpt-4.1-mini → 1M tokens, ideal si los documentos son muy extensos
+#   gpt-4.1      → 1M tokens, máxima calidad + contexto enorme
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+# Límites de caracteres enviados al LLM.
+# gpt-4o / gpt-4o-mini tienen ventana de ~500k chars; gpt-4.1* hasta ~4M chars.
+# Valores actuales usan ~35% de la ventana disponible — aumentar si los docs son muy largos.
+ANALYSIS_MAX_LIC_CHARS = int(os.getenv("ANALYSIS_MAX_LIC_CHARS", "180000"))
+ANALYSIS_MAX_COMPANY_CHARS = int(os.getenv("ANALYSIS_MAX_COMPANY_CHARS", "80000"))

@@ -6,7 +6,8 @@ from typing import Dict, List
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Request
 from sqlalchemy.orm import Session
 
-from app.config import UPLOAD_DIR
+from app.config import UPLOAD_DIR, PROCESSED_DIR
+from app.utils.files import delete_file
 from app.database.db import get_db
 from app.dependencies.auth import get_current_user, UserTokenData
 from app.enums.file_status import FileStatusEnum
@@ -26,10 +27,22 @@ def _require_org(current_user: UserTokenData) -> int:
 
 
 def _run_pipeline(file_id: int, local_path: str) -> int:
+    """
+    Orden: procesar → subir a S3 → indexar → limpiar disco local.
+    El cleanup va DESPUÉS de indexar porque index_file lee el .txt local.
+    Si el local ya no existiera (reindexado manual), index_service lo descarga de S3 automáticamente.
+    """
     db = SessionLocal()
     try:
         process_and_upload(db, file_id=file_id, local_path=local_path, cleanup=False)
-        return index_service.index_file(db, file_id=file_id)
+        n = index_service.index_file(db, file_id=file_id)
+        # Limpiar archivos locales — ya están en S3 e indexados en DB
+        saved_name = os.path.basename(local_path)
+        processed_name = os.path.splitext(saved_name)[0] + ".txt"
+        processed_path = os.path.join(PROCESSED_DIR, processed_name)
+        delete_file(local_path)
+        delete_file(processed_path)
+        return n
     finally:
         db.close()
 
