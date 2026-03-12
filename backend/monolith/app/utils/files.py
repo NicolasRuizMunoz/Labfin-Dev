@@ -19,7 +19,8 @@ def generate_checksum(file_path: str) -> str:
     return hash_md5.hexdigest()
 
 
-def is_duplicate(checksum: str, organization_id: int, db: Session, exclude_file_id: int | None = None) -> bool:
+def find_duplicate(checksum: str, organization_id: int, db: Session, exclude_file_id: int | None = None):
+    """Devuelve el FileEntry duplicado o None."""
     from app.models.file import FileEntry
     q = db.query(FileEntry).filter(
         FileEntry.organization_id == organization_id,
@@ -27,4 +28,8 @@ def is_duplicate(checksum: str, organization_id: int, db: Session, exclude_file_
     )
     if exclude_file_id:
         q = q.filter(FileEntry.id != exclude_file_id)
-    return q.first() is not None
+    return q.first()
+
+
+def is_duplicate(checksum: str, organization_id: int, db: Session, exclude_file_id: int | None = None) -> bool:
+    return find_duplicate(checksum, organization_id, db, exclude_file_id) is not None

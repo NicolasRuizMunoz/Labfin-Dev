@@ -5,7 +5,7 @@ from fastapi import HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from app.config import ALLOWED_EXTENSIONS, UPLOAD_DIR
-from app.utils.files import generate_checksum, is_duplicate
+from app.utils.files import generate_checksum, find_duplicate
 from app.services import file_service
 
 
@@ -37,12 +37,16 @@ def save_upload(
 
     checksum = generate_checksum(saved_path)
 
-    if is_duplicate(checksum, organization_id, db):
+    existing = find_duplicate(checksum, organization_id, db)
+    if existing:
         try:
             os.remove(saved_path)
         except Exception:
             pass
-        raise HTTPException(status_code=409, detail="Archivo duplicado (ya existe un archivo con el mismo contenido).")
+        raise HTTPException(
+            status_code=409,
+            detail=f"Archivo duplicado: el contenido de \"{original_filename}\" ya existe como \"{existing.original_filename}\".",
+        )
 
     file_entry = file_service.create_file_entry(
         db=db,

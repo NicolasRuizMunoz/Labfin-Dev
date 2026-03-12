@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Home, FileText, ClipboardList, Menu, LogIn, LogOut, User, Building2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
-const labfinLogo = '/lovable-uploads/12094485-6192-4e4a-89bc-352de1dd8110.png';
+const evaliticsLogo = '/evalitics-logo.png';
 
 const navItems = [
   { name: 'Home', href: '/', icon: Home },
@@ -40,8 +40,8 @@ const Navigation = () => {
 
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2 mr-4 shrink-0">
-          <img src={labfinLogo} alt="LabFin" className="w-7 h-7 object-contain" />
-          <span className="hidden md:inline-block font-bold text-lg text-primary">LabFin</span>
+          <img src={evaliticsLogo} alt="Evalitics" className="w-7 h-7 object-contain" />
+          <span className="hidden md:inline-block font-bold text-lg text-primary">Evalitics</span>
         </Link>
 
         {/* Desktop nav items — left */}

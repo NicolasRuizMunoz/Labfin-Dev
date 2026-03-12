@@ -115,7 +115,7 @@ const AuthPage = () => {
             <Brain className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            {isLogin ? t('welcomeBack') : t('joinLabFin')}
+            {isLogin ? t('welcomeBack') : 'Únete a Evalitics'}
           </h1>
           <p className="text-muted-foreground">
             {isLogin ? t('signInToContinue') : t('createAccountToStart')}

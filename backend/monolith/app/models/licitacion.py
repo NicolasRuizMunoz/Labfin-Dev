@@ -14,3 +14,9 @@ class Licitacion(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     files = relationship("FileEntry", back_populates="licitacion")
+    analisis = relationship(
+        "AnalisisLicitacion",
+        back_populates="licitacion",
+        order_by="AnalisisLicitacion.created_at.desc()",
+        cascade="all, delete",
+    )

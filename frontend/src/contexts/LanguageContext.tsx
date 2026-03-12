@@ -50,7 +50,7 @@ const translations = {
     
     // Home Page
     welcomeTitle: 'Master Finance with',
-    welcomeTitleHighlight: 'LabFin Simulations',
+    welcomeTitleHighlight: 'Evalitics',
     welcomeSubtitle: 'Master personal finance through interactive simulations. Practice investing, real estate, credit management, and retirement planning in a risk-free environment.',
     startAICoach: 'Start AI Coach',
     exploreMarkets: 'Explore Markets',
@@ -427,7 +427,7 @@ const translations = {
     
     // Home Page
     welcomeTitle: 'Domina las Finanzas con',
-    welcomeTitleHighlight: 'Simulaciones LabFin',
+    welcomeTitleHighlight: 'Evalitics',
     welcomeSubtitle: 'Domina las finanzas personales mediante simulaciones interactivas. Practica inversiones, bienes raíces, gestión de crédito y planificación de jubilación en un entorno libre de riesgos.',
     startAICoach: 'Comenzar con Entrenador IA',
     exploreMarkets: 'Explorar Mercados',

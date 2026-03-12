@@ -29,7 +29,9 @@ CORS_ORIGINS: list[str] = [
 
 # Files
 ALLOWED_EXTENSIONS: list[str] = [
-    e.strip().lower() for e in os.getenv("ALLOWED_EXTENSIONS", "pdf").split(",") if e.strip()
+    e.strip().lower() for e in os.getenv(
+        "ALLOWED_EXTENSIONS", "pdf,txt,csv,docx,xlsx,xls,pptx"
+    ).split(",") if e.strip()
 ]
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploaded_files")
 PROCESSED_DIR = os.getenv("PROCESSED_DIR", "processed_files")

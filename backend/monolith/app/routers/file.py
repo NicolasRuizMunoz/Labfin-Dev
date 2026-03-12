@@ -7,7 +7,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Path, Request
 from sqlalchemy.orm import Session
 
 from app.config import UPLOAD_DIR, PROCESSED_DIR
-from app.utils.files import delete_file
+from app.utils.files import delete_file as delete_local_file
 from app.database.db import get_db
 from app.dependencies.auth import get_current_user, UserTokenData
 from app.enums.file_status import FileStatusEnum
@@ -40,8 +40,8 @@ def _run_pipeline(file_id: int, local_path: str) -> int:
         saved_name = os.path.basename(local_path)
         processed_name = os.path.splitext(saved_name)[0] + ".txt"
         processed_path = os.path.join(PROCESSED_DIR, processed_name)
-        delete_file(local_path)
-        delete_file(processed_path)
+        delete_local_file(local_path)
+        delete_local_file(processed_path)
         return n
     finally:
         db.close()

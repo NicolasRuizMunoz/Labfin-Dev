@@ -11,6 +11,7 @@ import {
   Search,
   TrendingUp,
   ShieldCheck,
+  Sparkles,
 } from 'lucide-react';
 import { AICoach } from '@/components/AICoach';
 import { useState } from 'react';
@@ -28,15 +29,15 @@ const features = [
     icon: FileText,
     title: 'Documentos de la Empresa',
     description:
-      'Centraliza los archivos y antecedentes de tu empresa. Tus documentos quedan indexados y disponibles para el asistente de IA.',
+      'Centraliza los archivos y antecedentes de tu empresa. Tus documentos quedan indexados y disponibles para que EVA los consulte en cada análisis.',
     href: '/files',
     cta: 'Gestionar Archivos',
   },
   {
     icon: Search,
-    title: 'Análisis con IA',
+    title: 'Análisis con EVA',
     description:
-      'El asistente lee tus documentos y las bases de la licitación para responder preguntas, detectar requisitos clave y reducir el tiempo de análisis.',
+      'EVA lee las bases de la licitación y los antecedentes de tu empresa para detectar requisitos clave, evaluar garantías, analizar logística y entregarte una recomendación fundamentada.',
     href: '/tenders',
     cta: 'Ver Análisis',
   },
@@ -44,7 +45,7 @@ const features = [
     icon: BarChart3,
     title: 'Estimaciones y Métricas',
     description:
-      'Obtén estimaciones de costos, plazos y probabilidad de adjudicación para distintos escenarios antes de presentar tu oferta.',
+      'Obtén estimaciones de costos, plazos y punto de equilibrio para distintos escenarios antes de presentar tu oferta.',
     href: '/tenders',
     cta: 'Ver Estimaciones',
   },
@@ -54,7 +55,7 @@ const steps = [
   {
     number: '01',
     title: 'Sube tus documentos',
-    description: 'Carga los antecedentes de tu empresa una sola vez. El sistema los indexa automáticamente.',
+    description: 'Carga los antecedentes de tu empresa una sola vez. EVA los indexa automáticamente para usarlos en cada análisis.',
   },
   {
     number: '02',
@@ -63,21 +64,21 @@ const steps = [
   },
   {
     number: '03',
-    title: 'Analiza con IA',
-    description: 'El asistente cruza tus antecedentes con las bases y te entrega requisitos, brechas y recomendaciones.',
+    title: 'Analiza con EVA',
+    description: 'EVA cruza tus antecedentes con las bases, evalúa garantías, logística y márgenes, y te entrega una recomendación con preguntas clave.',
   },
   {
     number: '04',
-    title: 'Genera estimaciones',
-    description: 'Simula distintos escenarios de oferta económica y obtén proyecciones de adjudicación.',
+    title: 'Decide con datos',
+    description: 'Responde las preguntas que EVA no puede responder sola y toma la decisión de postular con información completa.',
   },
 ];
 
 const highlights = [
   { icon: ShieldCheck, text: 'Datos de tu empresa seguros y bajo tu control' },
-  { icon: TrendingUp, text: 'Análisis de probabilidad de adjudicación por licitación' },
-  { icon: CheckCircle, text: 'Detección automática de requisitos que debes cumplir' },
-  { icon: MessageCircle, text: 'Asistente IA disponible para consultas en lenguaje natural' },
+  { icon: TrendingUp, text: 'Punto de equilibrio y proyección financiera por licitación' },
+  { icon: CheckCircle, text: 'Detección automática de requisitos, garantías y plazos clave' },
+  { icon: MessageCircle, text: 'EVA disponible para consultas en lenguaje natural' },
 ];
 
 const HomePage = () => {
@@ -92,7 +93,7 @@ const HomePage = () => {
           <h1 className="text-4xl md:text-6xl font-bold text-primary-foreground mb-6">
             Gana más licitaciones
             <span className="block bg-gradient-to-r from-green-400 to-purple-400 bg-clip-text text-transparent">
-              con inteligencia artificial
+              con EVA
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-primary-foreground/90 mb-4 max-w-3xl mx-auto">
@@ -122,8 +123,32 @@ const HomePage = () => {
               onClick={() => setShowAICoach(true)}
             >
               <MessageCircle className="w-5 h-5 mr-2" />
-              Consultar Asistente IA
+              Consultar a EVA
             </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* EVA intro */}
+      <section className="py-16 px-6">
+        <div className="container max-w-3xl mx-auto">
+          <div className="flex flex-col sm:flex-row items-start gap-6 p-6 rounded-2xl bg-primary/5 border border-primary/20">
+            <div className="shrink-0 flex items-center justify-center w-14 h-14 rounded-full bg-primary/10">
+              <Sparkles className="w-7 h-7 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-foreground mb-2">
+                Conoce a EVA, tu agente de análisis de licitaciones
+              </h2>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                EVA es el agente de inteligencia artificial de Evalitics. Lee las bases de cada licitación, cruza la
+                información con los antecedentes de tu empresa y genera un análisis completo: fechas clave, logística y
+                tiempos de abastecimiento, costo del producto, margen estimado, garantías exigidas y los riesgos
+                principales. Además, identifica las preguntas que solo tu equipo puede responder — como si tienes caja
+                suficiente para la boleta de garantía o si hay ambigüedades en las bases — para que puedas decidir con
+                toda la información sobre la mesa.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -203,14 +228,14 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* AI Coach floating button */}
+      {/* EVA floating button */}
       <Button
         onClick={() => setShowAICoach(true)}
         className="fixed bottom-6 right-6 rounded-full w-14 h-14 shadow-elevated bg-gradient-hero hover:shadow-glow transition-all duration-300 z-50"
         size="icon"
-        title="Asistente IA"
+        title="Consultar a EVA"
       >
-        <MessageCircle className="w-6 h-6" />
+        <Sparkles className="w-6 h-6" />
       </Button>
 
       {showAICoach && <AICoach isOpen={showAICoach} onClose={() => setShowAICoach(false)} />}

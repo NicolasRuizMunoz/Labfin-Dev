@@ -1,7 +1,7 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ClipboardList, Plus, Trash2, Calendar, FileText, Paperclip } from 'lucide-react';
+import { ClipboardList, Plus, Trash2, Calendar, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -18,7 +18,6 @@ import {
   listLicitaciones,
   createLicitacion,
   deleteLicitacion,
-  uploadFilesToLicitacion,
   type Licitacion,
 } from '@/services/tenders';
 
@@ -26,11 +25,9 @@ const TendersPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [nombre, setNombre] = useState('');
   const [fechaVencimiento, setFechaVencimiento] = useState('');
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const { data: licitaciones = [], isLoading } = useQuery({
     queryKey: ['licitaciones'],
@@ -40,21 +37,14 @@ const TendersPage = () => {
   const resetForm = () => {
     setNombre('');
     setFechaVencimiento('');
-    setSelectedFiles([]);
-    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const createMut = useMutation({
-    mutationFn: async () => {
-      const lic = await createLicitacion({
+    mutationFn: () =>
+      createLicitacion({
         nombre,
         fecha_vencimiento: fechaVencimiento || null,
-      });
-      if (selectedFiles.length > 0) {
-        await uploadFilesToLicitacion(lic.id, selectedFiles);
-      }
-      return lic;
-    },
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['licitaciones'] });
       setOpen(false);
@@ -178,26 +168,6 @@ const TendersPage = () => {
                 value={fechaVencimiento}
                 onChange={(e) => setFechaVencimiento(e.target.value)}
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="archivos">
-                <span className="flex items-center gap-1">
-                  <Paperclip className="w-3.5 h-3.5" />
-                  Documentos (opcional)
-                </span>
-              </Label>
-              <Input
-                id="archivos"
-                type="file"
-                multiple
-                ref={fileInputRef}
-                onChange={(e) => setSelectedFiles(Array.from(e.target.files ?? []))}
-              />
-              {selectedFiles.length > 0 && (
-                <p className="text-xs text-muted-foreground">
-                  {selectedFiles.length} {selectedFiles.length === 1 ? 'archivo seleccionado' : 'archivos seleccionados'}
-                </p>
-              )}
             </div>
           </div>
           <DialogFooter>
