@@ -15,7 +15,6 @@ router = APIRouter(prefix="/upload", tags=["Upload"])
 @router.post("/", response_model=UploadFileResponse, status_code=status.HTTP_201_CREATED)
 def upload_file(
     file: UploadFile = File(...),
-    batch_id: Optional[int] = Form(None),
     licitacion_id: Optional[int] = Form(None),
     logical_filename: Optional[str] = Form(None),
     db: Session = Depends(get_db),
@@ -28,7 +27,6 @@ def upload_file(
             db=db,
             file=file,
             organization_id=int(current_user.organization_id),
-            batch_id=batch_id,
             licitacion_id=licitacion_id,
             logical_filename=logical_filename,
         )

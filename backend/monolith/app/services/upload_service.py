@@ -21,7 +21,6 @@ def save_upload(
     db: Session,
     file: UploadFile,
     organization_id: int,
-    batch_id: Optional[int],
     logical_filename: Optional[str],
     licitacion_id: Optional[int] = None,
 ):
@@ -29,7 +28,7 @@ def save_upload(
     ext = _validate_ext(original_filename)
 
     os.makedirs(UPLOAD_DIR, exist_ok=True)
-    saved_name = f"{organization_id}__{batch_id or 'no-batch'}__{original_filename}"
+    saved_name = f"{organization_id}__{original_filename}"
     saved_path = os.path.join(UPLOAD_DIR, saved_name)
 
     with open(saved_path, "wb") as f:
@@ -51,7 +50,6 @@ def save_upload(
     file_entry = file_service.create_file_entry(
         db=db,
         organization_id=organization_id,
-        batch_id=batch_id,
         licitacion_id=licitacion_id,
         original_filename=original_filename,
         file_type=ext,

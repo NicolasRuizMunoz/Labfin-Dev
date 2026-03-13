@@ -11,14 +11,12 @@ from app.models.file import FileEntry
 def create_file_entry(
     db: Session,
     organization_id: int,
-    batch_id: Optional[int],
     original_filename: str,
     file_type: str,
     checksum: str,
     licitacion_id: Optional[int] = None,
 ) -> FileEntry:
     entry = FileEntry(
-        batch_id=batch_id,
         licitacion_id=licitacion_id,
         organization_id=organization_id,
         original_filename=original_filename,

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -17,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Loader2, Eye, Trash2, CheckSquare, Download } from 'lucide-react';
+import { Loader2, Eye, Trash2, CheckSquare, Download, FileText } from 'lucide-react';
 import * as dataApi from '@/services/data';
 import type { FileEntry, FileStatus } from '@/types/data';
 
@@ -33,12 +32,12 @@ const STATUS_LABEL: Record<FileStatus, string> = {
 };
 
 const STATUS_STYLE: Record<FileStatus, string> = {
-  PENDING: 'bg-yellow-100 text-yellow-900',
-  STAGED: 'bg-zinc-100 text-zinc-900',
-  CONFIRMED: 'bg-green-100 text-green-900',
-  UPLOADED: 'bg-blue-100 text-blue-900',
-  ACTIVE: 'bg-indigo-100 text-indigo-900',
-  FAILED: 'bg-red-100 text-red-900',
+  PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
+  STAGED: 'bg-slate-50 text-slate-600 border-slate-200',
+  CONFIRMED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  UPLOADED: 'bg-sky-50 text-sky-700 border-sky-200',
+  ACTIVE: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  FAILED: 'bg-red-50 text-red-700 border-red-200',
 };
 
 interface FileTableProps {
@@ -54,13 +53,10 @@ const FileTable: React.FC<FileTableProps> = ({
   onRefetch,
   emptyMessage = 'No hay archivos aún.',
 }) => {
-  const [checkedIds, setCheckedIds] = useState<Record<number, boolean>>({});
   const [confirmProgress, setConfirmProgress] = useState<{ actual: number; total: number } | null>(null);
   const [confirmando, setConfirmando] = useState(false);
-  const [viewState, setViewState] = useState<{ file: FileEntry; url: string } | null>(null);
-  const [viewLoading, setViewLoading] = useState<number | null>(null); // file id being fetched
-
-  const selectedIds = Object.entries(checkedIds).filter(([, v]) => v).map(([k]) => Number(k));
+  const [viewState, setViewState] = useState<{ file: FileEntry; previewUrl: string; downloadUrl: string } | null>(null);
+  const [viewLoading, setViewLoading] = useState<number | null>(null);
 
   // ---- Confirm ----
   const runConfirm = async (ids: number[]) => {
@@ -76,7 +72,6 @@ const FileTable: React.FC<FileTableProps> = ({
         setConfirmProgress({ actual: i + 1, total: pending.length });
         await dataApi.confirmOne(pending[i]);
       }
-      setCheckedIds({});
       onRefetch();
     } finally {
       setConfirmando(false);
@@ -84,7 +79,6 @@ const FileTable: React.FC<FileTableProps> = ({
     }
   };
 
-  const confirmSelected = () => runConfirm(selectedIds);
   const confirmAll = () => runConfirm(files.map((f) => f.id));
 
   // ---- Active ----
@@ -108,12 +102,15 @@ const FileTable: React.FC<FileTableProps> = ({
     onRefetch();
   };
 
-  // ---- View ----
+  // ---- View (preview inline + download URL) ----
   const handleView = async (f: FileEntry) => {
     setViewLoading(f.id);
     try {
-      const { url } = await dataApi.getDownloadUrl(f.id);
-      setViewState({ file: f, url });
+      const [preview, download] = await Promise.all([
+        dataApi.getPreviewUrl(f.id),
+        dataApi.getDownloadUrl(f.id),
+      ]);
+      setViewState({ file: f, previewUrl: preview.url, downloadUrl: download.url });
     } catch {
       alert('El archivo aún no está disponible para visualizar.');
     } finally {
@@ -122,97 +119,112 @@ const FileTable: React.FC<FileTableProps> = ({
   };
 
   if (loading) return <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />;
-  if (files.length === 0) return <p className="text-sm text-muted-foreground">{emptyMessage}</p>;
+
+  if (files.length === 0) {
+    return (
+      <div className="rounded-lg border bg-background shadow-sm p-8 text-center">
+        <FileText className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+        <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-3">
+    <div className="rounded-lg border bg-background shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="px-5 py-3 border-b bg-muted/30 flex items-center justify-between">
+        <p className="text-sm font-medium text-foreground">
+          {files.length} {files.length === 1 ? 'archivo' : 'archivos'}
+        </p>
+      </div>
+
       {/* Tabla */}
-      <div className="rounded-md border overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-10">Sel.</TableHead>
-              <TableHead>Archivo</TableHead>
-              <TableHead className="w-28">Estado</TableHead>
-              <TableHead className="w-20">Activo</TableHead>
-              <TableHead className="w-36">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {files.map((f) => {
-              const isConfirmable = CONFIRMABLE.includes(f.status as FileStatus);
-              return (
-                <TableRow key={f.id}>
-                  <TableCell>
-                    <Checkbox
-                      checked={!!checkedIds[f.id]}
-                      disabled={!isConfirmable || confirmando}
-                      onCheckedChange={(v) => setCheckedIds((p) => ({ ...p, [f.id]: !!v }))}
-                    />
-                  </TableCell>
-                  <TableCell>
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-muted/20 hover:bg-muted/20">
+            <TableHead>Archivo</TableHead>
+            <TableHead className="w-28">Estado</TableHead>
+            <TableHead className="w-20">Activo</TableHead>
+            <TableHead className="w-36 text-right">Acciones</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {files.map((f) => {
+            const isConfirmable = CONFIRMABLE.includes(f.status as FileStatus);
+            return (
+              <TableRow key={f.id} className="hover:bg-muted/10 transition-colors">
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-muted-foreground/60 shrink-0" />
                     <span className="block truncate max-w-xs text-sm" title={f.original_filename}>
                       {f.original_filename}
                     </span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={STATUS_STYLE[f.status as FileStatus] ?? ''}>
-                      {STATUS_LABEL[f.status as FileStatus] ?? f.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline" className={`text-xs font-medium ${STATUS_STYLE[f.status as FileStatus] ?? ''}`}>
+                    {STATUS_LABEL[f.status as FileStatus] ?? f.status}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <span
+                    className={f.status !== 'ACTIVE' ? 'cursor-not-allowed' : undefined}
+                    title={f.status !== 'ACTIVE' ? 'Debe confirmarse primero para poder activar' : undefined}
+                  >
                     <Switch
                       checked={!!f.is_active}
                       onCheckedChange={() => toggleActive(f)}
-                      disabled={confirmando}
+                      disabled={confirmando || f.status !== 'ACTIVE'}
                     />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1.5">
-                      {/* Confirmar */}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center justify-end gap-1">
+                    {isConfirmable && (
                       <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={!isConfirmable || confirmando}
-                        title={isConfirmable ? 'Confirmar e indexar' : 'El archivo ya fue procesado'}
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-primary"
+                        disabled={confirmando}
+                        title="Confirmar e indexar"
                         onClick={() => runConfirm([f.id])}
                       >
                         <CheckSquare className="h-4 w-4" />
                       </Button>
-                      {/* Ver */}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        title="Ver archivo"
-                        disabled={viewLoading === f.id}
-                        onClick={() => handleView(f)}
-                      >
-                        {viewLoading === f.id
-                          ? <Loader2 className="h-4 w-4 animate-spin" />
-                          : <Eye className="h-4 w-4" />}
-                      </Button>
-                      {/* Eliminar */}
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        title="Eliminar archivo"
-                        onClick={() => deleteOne(f)}
-                        disabled={confirmando}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </div>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-primary"
+                      title="Ver archivo"
+                      disabled={viewLoading === f.id}
+                      onClick={() => handleView(f)}
+                    >
+                      {viewLoading === f.id
+                        ? <Loader2 className="h-4 w-4 animate-spin" />
+                        : <Eye className="h-4 w-4" />}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                      title="Eliminar archivo"
+                      onClick={() => deleteOne(f)}
+                      disabled={confirmando}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
 
       {/* Barra de progreso */}
       {confirmando && confirmProgress && (
-        <div className="px-4 py-3 border rounded-md bg-muted/40 flex items-center gap-3">
+        <div className="px-5 py-3 border-t bg-primary/5 flex items-center gap-3">
           <Loader2 className="h-4 w-4 animate-spin text-primary shrink-0" />
           <div className="flex-1 space-y-1">
             <p className="text-xs text-muted-foreground">
@@ -230,30 +242,21 @@ const FileTable: React.FC<FileTableProps> = ({
       )}
 
       {/* Acciones en bloque */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <Button
-          size="sm"
-          onClick={confirmSelected}
-          disabled={selectedIds.length === 0 || confirmando}
-        >
-          {confirmando
-            ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
-            : <CheckSquare className="h-4 w-4 mr-1.5" />}
-          Confirmar seleccionados{selectedIds.length > 0 ? ` (${selectedIds.length})` : ''}
-        </Button>
+      <div className="px-5 py-3 border-t bg-muted/20 flex items-center gap-2 flex-wrap">
         <Button size="sm" variant="secondary" onClick={confirmAll} disabled={confirmando}>
           {confirmando
             ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
             : <CheckSquare className="h-4 w-4 mr-1.5" />}
           Confirmar todos
         </Button>
-        <Button size="sm" variant="destructive" onClick={deleteAll} disabled={confirmando}>
+        <div className="flex-1" />
+        <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive hover:text-destructive-foreground" onClick={deleteAll} disabled={confirmando}>
           <Trash2 className="h-4 w-4 mr-1.5" />
           Borrar todos
         </Button>
       </div>
 
-      {/* Modal de visualización */}
+      {/* Modal de visualización (preview inline) */}
       {viewState && (
         <Dialog open onOpenChange={() => setViewState(null)}>
           <DialogContent className="max-w-4xl w-full h-[85vh] flex flex-col p-0 gap-0">
@@ -262,7 +265,7 @@ const FileTable: React.FC<FileTableProps> = ({
                 {viewState.file.original_filename}
               </DialogTitle>
               <a
-                href={viewState.url}
+                href={viewState.downloadUrl}
                 download={viewState.file.original_filename}
                 target="_blank"
                 rel="noreferrer"
@@ -275,7 +278,7 @@ const FileTable: React.FC<FileTableProps> = ({
             </DialogHeader>
             <div className="flex-1 overflow-hidden bg-muted/20">
               <iframe
-                src={viewState.url}
+                src={viewState.previewUrl}
                 title={viewState.file.original_filename}
                 className="w-full h-full border-0"
               />

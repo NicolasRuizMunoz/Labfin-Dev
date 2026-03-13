@@ -8,7 +8,6 @@ from app.database.db import Base
 class FileEntry(Base):
     __tablename__ = "files"
     id = Column(Integer, primary_key=True, index=True)
-    batch_id = Column(Integer, ForeignKey("file_batches.id"), nullable=True)
     organization_id = Column(Integer, nullable=False, index=True)
 
     original_filename = Column(String(255), nullable=False)
@@ -24,6 +23,5 @@ class FileEntry(Base):
 
     licitacion_id = Column(Integer, ForeignKey("licitaciones.id"), nullable=True)
 
-    batch = relationship("FileBatch", back_populates="files")
     licitacion = relationship("Licitacion", back_populates="files")
     chunks = relationship("DocumentChunk", back_populates="file_entry", cascade="all, delete")

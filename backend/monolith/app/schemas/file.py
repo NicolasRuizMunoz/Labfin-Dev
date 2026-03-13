@@ -6,7 +6,6 @@ from datetime import datetime
 
 class FileEntryResponse(BaseModel):
     id: int = Field(..., alias="id")
-    batch_id: Optional[int]
     licitacion_id: Optional[int]
     organization_id: int
     original_filename: str

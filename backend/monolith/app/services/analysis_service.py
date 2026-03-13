@@ -229,6 +229,24 @@ def analyze_licitacion(db: Session, org_id: int, licitacion_id: int) -> dict:
         )
         raw_answer = response.choices[0].message.content or ""
         tokens_used = response.usage.total_tokens if response.usage else None
+        if response.usage:
+            _PRICE_INPUT = {
+                "gpt-4o-mini": 0.15, "gpt-4o": 2.50,
+                "gpt-4.1-mini": 0.40, "gpt-4.1": 2.00,
+            }
+            _PRICE_OUTPUT = {
+                "gpt-4o-mini": 0.60, "gpt-4o": 10.00,
+                "gpt-4.1-mini": 1.60, "gpt-4.1": 8.00,
+            }
+            in_tok = response.usage.prompt_tokens
+            out_tok = response.usage.completion_tokens
+            rate_in = _PRICE_INPUT.get(OPENAI_MODEL, 1.0)
+            rate_out = _PRICE_OUTPUT.get(OPENAI_MODEL, 4.0)
+            cost_usd = (in_tok * rate_in + out_tok * rate_out) / 1_000_000
+            LOGGER.info(
+                f"[ANALYSIS] tokens: input={in_tok} | output={out_tok} | total={tokens_used} | "
+                f"model={OPENAI_MODEL} | costo_estimado=${cost_usd:.4f} USD"
+            )
     except OpenAIError as e:
         LOGGER.error(f"[ANALYSIS] OpenAI error: {e}")
         raise HTTPException(status_code=502, detail=f"Error al llamar a OpenAI: {e}")

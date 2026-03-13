@@ -12,6 +12,7 @@ class ChatSessionResponse(BaseModel):
     organization_id: int
     user_id: int
     title: str
+    licitacion_id: Optional[int] = None
     created_at: datetime
 
     model_config = {"from_attributes": True}

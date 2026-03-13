@@ -25,7 +25,6 @@ interface FileUploaderProps {
   label?: string;
   accept?: string;
   disabled?: boolean;
-  /** Contenido extra renderizado entre el label y el input (ej: selector de batch) */
   extra?: React.ReactNode;
 }
 
@@ -111,7 +110,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <form onSubmit={handleSubmit} className="rounded-lg border bg-background shadow-sm p-5 space-y-3">
       {extra}
 
       <div className="space-y-1">
@@ -123,6 +122,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
           accept={accept}
           disabled={disabled || uploading}
           onChange={(e) => addFiles(Array.from(e.target.files ?? []))}
+          className="bg-background"
         />
         <p className="text-xs text-muted-foreground">
           Formatos aceptados: {ACCEPTED_EXTENSIONS_DISPLAY}
@@ -142,7 +142,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
             </div>
 
             {files.length > 1 && (
-              <ul className="text-xs space-y-0.5">
+              <ul className="text-xs space-y-0.5 rounded-md bg-background/60 p-2">
                 {files.map((f, i) => (
                   <li key={`${f.name}-${i}`} className="flex items-center justify-between gap-2">
                     <span className="truncate max-w-sm text-muted-foreground">{f.name}</span>

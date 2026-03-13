@@ -2,7 +2,6 @@
 from app.models.organization import Organization
 from app.models.user import User
 from app.models.oauth_account import OAuthAccount
-from app.models.file_batch import FileBatch
 from app.models.licitacion import Licitacion
 from app.models.analisis_licitacion import AnalisisLicitacion
 from app.models.file import FileEntry
@@ -11,6 +10,6 @@ from app.models.chat import ChatSession, ChatMessage
 
 __all__ = [
     "Organization", "User", "OAuthAccount",
-    "FileBatch", "Licitacion", "AnalisisLicitacion", "FileEntry", "DocumentChunk",
+    "Licitacion", "AnalisisLicitacion", "FileEntry", "DocumentChunk",
     "ChatSession", "ChatMessage",
 ]

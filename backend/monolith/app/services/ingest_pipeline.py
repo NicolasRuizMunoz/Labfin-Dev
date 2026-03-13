@@ -26,13 +26,11 @@ def process_and_upload(db: Session, file_id: int, local_path: str, cleanup: bool
         organization_id=fe.organization_id,
         local_filename=original_filename,
         is_processed=False,
-        batch_id=fe.batch_id,
     )
     s3_key_proc = s3_service.build_file_s3_key(
         organization_id=fe.organization_id,
         local_filename=processed_filename,
         is_processed=True,
-        batch_id=fe.batch_id,
     )
 
     ok1 = s3_service.upload_file(local_path, s3_key_orig)

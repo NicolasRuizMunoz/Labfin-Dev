@@ -10,6 +10,7 @@ class ChatSession(Base):
     title = Column(String(255), nullable=False, default="Nueva Conversación")
     organization_id = Column(Integer, nullable=False, index=True)
     user_id = Column(Integer, nullable=False, index=True)
+    licitacion_id = Column(Integer, nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     messages = relationship(

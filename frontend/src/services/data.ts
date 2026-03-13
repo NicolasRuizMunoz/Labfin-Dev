@@ -28,6 +28,10 @@ export const setActive = (fileId: number, is_active: boolean) =>
 export const getDownloadUrl = (fileId: number) =>
   http<{ url: string }>('/data/file/download-url/' + fileId);
 
+// GET /file/preview-url/{id} — inline (no descarga)
+export const getPreviewUrl = (fileId: number) =>
+  http<{ url: string }>('/data/file/preview-url/' + fileId);
+
 // DELETE /file/{id}
 export const deleteFile = (fileId: number) =>
   http('/data/file/' + fileId, { method: 'DELETE' });

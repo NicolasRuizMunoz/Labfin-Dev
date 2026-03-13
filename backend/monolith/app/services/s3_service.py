@@ -1,6 +1,6 @@
 import os
 import tempfile
-from typing import Optional
+from typing import Optional  # used by generate_presigned_download_url return type
 
 import boto3
 import fitz
@@ -47,11 +47,8 @@ def build_file_s3_key(
     organization_id: int,
     local_filename: str,
     is_processed: bool,
-    batch_id: Optional[int] = None,
 ) -> str:
     folder = "processed" if is_processed else "originals"
-    if batch_id:
-        return f"{organization_id}/batches/{batch_id}/{folder}/{local_filename}"
     return f"{organization_id}/files/{folder}/{local_filename}"
 
 
@@ -64,14 +61,15 @@ def delete_file_from_s3(s3_key: str) -> bool:
         return False
 
 
-def generate_presigned_download_url(s3_key: str, original_filename: str, expires_in: int = 3600) -> Optional[str]:
+def generate_presigned_download_url(s3_key: str, original_filename: str, expires_in: int = 3600, inline: bool = False) -> Optional[str]:
+    disposition = "inline" if inline else f'attachment; filename="{original_filename}"'
     try:
         return s3_client.generate_presigned_url(
             "get_object",
             Params={
                 "Bucket": AWS_BUCKET_NAME,
                 "Key": s3_key,
-                "ResponseContentDisposition": f'attachment; filename="{original_filename}"',
+                "ResponseContentDisposition": disposition,
             },
             ExpiresIn=expires_in,
         )

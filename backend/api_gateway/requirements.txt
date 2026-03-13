@@ -1,8 +1,0 @@
-fastapi==0.110.2
-uvicorn[standard]==0.29.0
-httpx[http2]==0.27.0
-pydantic-settings==2.2.1
-pydantic[email]==2.7.1
-python-multipart==0.0.9
-requests==2.31.0
-pyjwt==2.8.0

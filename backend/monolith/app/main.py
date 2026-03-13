@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import CORS_ORIGINS
 from app.startup import run_startup
-from app.routers import auth, upload, batch, file, chat, licitaciones
+from app.routers import auth, upload, file, chat, licitaciones
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -29,11 +29,10 @@ app.add_middleware(
 
 # Mirror the old API-gateway URL structure exactly so the frontend needs no changes:
 #   /api/users/*  → auth routes      (frontend: auth.ts   /users/login, /users/me …)
-#   /api/data/*   → upload/batch/file (frontend: data.ts   /data/upload/, /data/batch/ …)
+#   /api/data/*   → upload/file/licitacion (frontend: data.ts, tenders.ts)
 #   /api/chat/*   → chat routes       (frontend: chat.ts   /api/chat/sessions/…)
 app.include_router(auth.router,         prefix="/api/users")
 app.include_router(upload.router,       prefix="/api/data")
-app.include_router(batch.router,        prefix="/api/data")
 app.include_router(file.router,         prefix="/api/data")
 app.include_router(licitaciones.router, prefix="/api/data")
 app.include_router(chat.router,         prefix="/api")

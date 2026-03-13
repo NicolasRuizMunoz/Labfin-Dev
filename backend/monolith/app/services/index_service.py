@@ -24,7 +24,7 @@ def simple_chunk(text: str, max_tokens: int = 400, overlap: int = 50) -> List[st
 
 
 def _ensure_local_txt(fe) -> str:
-    base = f"{fe.organization_id}__{fe.batch_id or 'no-batch'}__{fe.original_filename}"
+    base = f"{fe.organization_id}__{fe.original_filename}"
     txt_name = os.path.splitext(base)[0] + ".txt"
     local_txt = os.path.join(PROCESSED_DIR, txt_name)
     if os.path.exists(local_txt):

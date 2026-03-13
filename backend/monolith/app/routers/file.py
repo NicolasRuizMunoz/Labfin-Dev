@@ -70,6 +70,10 @@ def set_active(
     current_user: UserTokenData = Depends(get_current_user),
 ):
     org_id = _require_org(current_user)
+    if body.is_active:
+        file = file_service.get_file_by_id(db, file_id, org_id)
+        if file.status != FileStatusEnum.ACTIVE:
+            raise HTTPException(status_code=400, detail="El archivo debe estar confirmado antes de activarlo.")
     file_service.set_file_active_status(db, file_id=file_id, organization_id=org_id, is_active=body.is_active)
     return file_service.get_file_by_id(db, file_id, org_id)
 
@@ -85,6 +89,20 @@ def download_url(
     if not file.s3_key_original:
         raise HTTPException(status_code=400, detail="El archivo aún no ha sido subido a S3.")
     url = s3_service.generate_presigned_download_url(file.s3_key_original, file.original_filename)
+    return {"url": url}
+
+
+@router.get("/preview-url/{file_id}", response_model=dict)
+def preview_url(
+    file_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserTokenData = Depends(get_current_user),
+):
+    org_id = _require_org(current_user)
+    file = file_service.get_file_by_id(db, file_id, org_id)
+    if not file.s3_key_original:
+        raise HTTPException(status_code=400, detail="El archivo aún no ha sido subido a S3.")
+    url = s3_service.generate_presigned_download_url(file.s3_key_original, file.original_filename, inline=True)
     return {"url": url}
 
 
@@ -118,7 +136,7 @@ async def confirm_bulk(
     for fid in body.file_ids:
         try:
             f = file_service.get_file_by_id(db, fid, org_id)
-            saved_name = f"{org_id}__{f.batch_id or 'no-batch'}__{f.original_filename}"
+            saved_name = f"{org_id}__{f.original_filename}"
             local_path = os.path.join(UPLOAD_DIR, saved_name)
             if not os.path.exists(local_path):
                 errors.append({"file_id": fid, "error": "Archivo local no disponible"})
@@ -142,7 +160,7 @@ def confirm_file(
 ):
     org_id = _require_org(current_user)
     f = file_service.get_file_by_id(db, file_id, org_id)
-    saved_name = f"{org_id}__{f.batch_id or 'no-batch'}__{f.original_filename}"
+    saved_name = f"{org_id}__{f.original_filename}"
     local_path = os.path.join(UPLOAD_DIR, saved_name)
     if not os.path.exists(local_path):
         return {"message": "Sin acción: archivo local no disponible", "file_id": f.id}

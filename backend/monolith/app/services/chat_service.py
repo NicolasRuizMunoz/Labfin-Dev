@@ -2,10 +2,13 @@ import asyncio
 import logging
 from typing import List, Optional, Tuple, Dict, Any
 
+from openai import OpenAI
 from sqlalchemy.orm import Session
 from sqlalchemy import asc, desc
 
+from app.config import OPENAI_API_KEY, OPENAI_MODEL
 from app.models.chat import ChatSession, ChatMessage
+from app.models.analisis_licitacion import AnalisisLicitacion
 from app.schemas.chat import ChatSource
 from app.services.file_service import get_file_by_id_raw
 from app.services.vector_store_faiss import FaissStore
@@ -17,12 +20,44 @@ LOGGER = logging.getLogger(__name__)
 
 # ------------ Sessions ------------
 
-def create_session(db: Session, *, organization_id: int, user_id: int, title: Optional[str]) -> ChatSession:
-    session = ChatSession(organization_id=organization_id, user_id=user_id, title=title or "Nueva Conversación")
+def create_session(
+    db: Session, *, organization_id: int, user_id: int, title: Optional[str], licitacion_id: Optional[int] = None
+) -> ChatSession:
+    session = ChatSession(
+        organization_id=organization_id,
+        user_id=user_id,
+        title=title or "Nueva Conversación",
+        licitacion_id=licitacion_id,
+    )
     db.add(session)
     db.commit()
     db.refresh(session)
     return session
+
+
+def get_or_create_licitacion_session(
+    db: Session, *, organization_id: int, user_id: int, licitacion_id: int, title: Optional[str]
+) -> ChatSession:
+    """Returns the most recent chat session for this licitacion, or creates one."""
+    session = (
+        db.query(ChatSession)
+        .filter(
+            ChatSession.organization_id == organization_id,
+            ChatSession.user_id == user_id,
+            ChatSession.licitacion_id == licitacion_id,
+        )
+        .order_by(desc(ChatSession.created_at))
+        .first()
+    )
+    if session:
+        return session
+    return create_session(
+        db,
+        organization_id=organization_id,
+        user_id=user_id,
+        title=title or "Consulta licitación",
+        licitacion_id=licitacion_id,
+    )
 
 
 def get_session_owned(db: Session, *, session_id: int, organization_id: int, user_id: int) -> Optional[ChatSession]:
@@ -86,7 +121,69 @@ def list_messages(
     return q.offset(offset).limit(limit).all()
 
 
-# ------------ RAG reply ------------
+# ------------ Licitacion chat (OpenAI + historial) ------------
+
+def _generate_licitacion_reply(
+    db: Session, session: ChatSession
+) -> Tuple[str, List[ChatSource]]:
+    """
+    Llama a OpenAI con:
+    - System prompt con el análisis más reciente de la licitación
+    - Historial completo de la sesión (ya incluye el mensaje del usuario recién guardado)
+    """
+    # 1. Obtener el análisis más reciente de la licitación
+    analisis = (
+        db.query(AnalisisLicitacion)
+        .filter(
+            AnalisisLicitacion.licitacion_id == session.licitacion_id,
+            AnalisisLicitacion.organization_id == session.organization_id,
+        )
+        .order_by(desc(AnalisisLicitacion.created_at))
+        .first()
+    )
+
+    # 2. System prompt
+    system_content = (
+        "Eres EVA, un asistente experto en análisis de licitaciones públicas y privadas. "
+        "Ayudas al equipo de la empresa a entender, evaluar y responder preguntas sobre licitaciones. "
+        "Responde siempre en español, de forma clara y concisa. "
+        "Si no tienes información suficiente para responder, indícalo honestamente."
+    )
+    if analisis:
+        system_content += (
+            "\n\nCuentas con el siguiente análisis generado automáticamente para esta licitación:\n\n"
+            f"{analisis.analisis}"
+        )
+    else:
+        system_content += (
+            "\n\nAún no hay un análisis EVA generado para esta licitación. "
+            "Responde con la información que el usuario te proporcione en la conversación."
+        )
+
+    # 3. Historial completo de la sesión (ya contiene el mensaje del usuario actual al final)
+    history = (
+        db.query(ChatMessage)
+        .filter(ChatMessage.session_id == session.id)
+        .order_by(asc(ChatMessage.created_at))
+        .all()
+    )
+
+    messages = [{"role": "system", "content": system_content}]
+    for msg in history:
+        messages.append({"role": msg.role, "content": msg.message})
+
+    # 4. Llamar a OpenAI
+    client = OpenAI(api_key=OPENAI_API_KEY)
+    response = client.chat.completions.create(
+        model=OPENAI_MODEL,
+        messages=messages,
+        temperature=0.5,
+    )
+    answer = response.choices[0].message.content or "Sin respuesta."
+    return answer, []
+
+
+# ------------ RAG reply (chats generales sin licitacion) ------------
 
 def _dedupe(results: List[Tuple[float, dict]]) -> List[Tuple[float, dict]]:
     seen, deduped = set(), []
@@ -98,13 +195,8 @@ def _dedupe(results: List[Tuple[float, dict]]) -> List[Tuple[float, dict]]:
     return deduped
 
 
-def generate_assistant_reply(
-    *,
-    db: Session,
-    user_message: str,
-    organization_id: int,
-    user_id: int,
-    session_id: int,
+def _generate_rag_reply(
+    db: Session, user_message: str, organization_id: int
 ) -> Tuple[str, List[ChatSource]]:
     embedder = get_embedder()
     qvec = embedder.embed_query(user_message)
@@ -112,7 +204,7 @@ def generate_assistant_reply(
     store = FaissStore(org_id=organization_id, dim=embedder.dim)
     results = store.search(qvec, top_k=5)
     if not results:
-        return "No relevant fragments found for your query.", []
+        return "No encontré fragmentos relevantes para tu consulta.", []
 
     results = _dedupe(results)
 
@@ -122,38 +214,46 @@ def generate_assistant_reply(
         s3_key_processed = meta.get("s3_key_processed")
         fragment = (meta.get("content_preview") or "").strip()
         uri = f"s3://{s3_key_processed}" if s3_key_processed else ""
-
         fe = get_file_by_id_raw(db, file_id)
         file_name = fe.original_filename if fe else str(file_id)
-
         sources.append(ChatSource(
-            file_id=file_id,
-            file_name=file_name,
-            page=None,
-            score=float(score),
-            fragment=fragment,
-            uri=uri,
-            s3_key_processed=s3_key_processed,
+            file_id=file_id, file_name=file_name, page=None,
+            score=float(score), fragment=fragment, uri=uri, s3_key_processed=s3_key_processed,
         ))
 
-    # Direct call — no HTTP round-trip
     source_dicts: List[Dict[str, Any]] = [
         {"file_name": s.file_name, "score": s.score, "uri": s.uri,
          "fragment": s.fragment, "s3_key_processed": s.s3_key_processed}
         for s in sources
     ]
-    answer = asyncio.get_event_loop().run_until_complete(generate_answer(user_message, source_dicts))
+    answer = asyncio.run(generate_answer(user_message, source_dicts))
 
     if answer:
         return answer, sources
 
-    # Fallback: structured list of sources
-    lines = ["Found the most relevant fragments for your query:"]
+    lines = ["Fragmentos más relevantes encontrados:"]
     for i, s in enumerate(sources, 1):
         lines.append(
             f"\n{i}. **{s.file_name}**\n"
             f"   • Score: {s.score:.4f}\n"
-            f"   • URI: {s.uri}\n"
-            f"   • Fragment: {s.fragment[:300]}{'...' if len(s.fragment) > 300 else ''}"
+            f"   • Fragmento: {s.fragment[:300]}{'...' if len(s.fragment) > 300 else ''}"
         )
     return "\n".join(lines), sources
+
+
+# ------------ Entry point para el router ------------
+
+def generate_assistant_reply(
+    *,
+    db: Session,
+    user_message: str,
+    organization_id: int,
+    user_id: int,
+    session_id: int,
+) -> Tuple[str, List[ChatSource]]:
+    session = db.query(ChatSession).filter(ChatSession.id == session_id).first()
+
+    if session and session.licitacion_id:
+        return _generate_licitacion_reply(db, session)
+
+    return _generate_rag_reply(db, user_message, organization_id)

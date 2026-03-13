@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -35,6 +35,23 @@ def _msg_response(m) -> ChatMessageResponse:
     return ChatMessageResponse(
         id=m.id, role=m.role, message=m.message, sources=sources, created_at=m.created_at,
     )
+
+
+# ---- Licitacion session ----
+
+@router.get("/licitacion/{lic_id}/session", response_model=ChatSessionResponse)
+def get_or_create_licitacion_session(
+    lic_id: int,
+    title: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    current_user: UserTokenData = Depends(get_current_user),
+):
+    org_id = _require_org(current_user)
+    session = chat_service.get_or_create_licitacion_session(
+        db, organization_id=org_id, user_id=current_user.user_id,
+        licitacion_id=lic_id, title=title,
+    )
+    return ChatSessionResponse.model_validate(session, from_attributes=True)
 
 
 # ---- Sessions ----
