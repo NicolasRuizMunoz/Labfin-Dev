@@ -21,5 +21,6 @@ export interface ChatSession {
   organization_id: number;
   user_id: number;
   title: string;
+  licitacion_id?: number | null;
   created_at: string; // ISO
 }

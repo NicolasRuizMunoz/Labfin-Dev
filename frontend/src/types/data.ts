@@ -3,7 +3,7 @@ export type FileStatus = 'PENDING' | 'STAGED' | 'CONFIRMED' | 'UPLOADED' | 'ACTI
 export type FileEntry = {
   id: number;
   organization_id: number;
-  batch_id: number | null;
+  licitacion_id?: number | null;
   original_filename: string;
   status: FileStatus;
   is_active: boolean;
@@ -16,10 +16,3 @@ export type FileEntry = {
 };
 
 export type GroupedFiles = Record<FileStatus, FileEntry[]>;
-
-export type Batch = {
-  id: number;
-  name: string | null; 
-  organization_id: number;
-  files?: FileEntry[];
-};

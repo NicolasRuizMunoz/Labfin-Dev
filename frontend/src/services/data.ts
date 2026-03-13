@@ -1,30 +1,9 @@
 // src/services/data.ts
 import http from '@/lib/http';
-import type { Batch } from '@/types/data';
-
-// -------- Batches --------
-
-// GET /batch/list  -> devuelve FileBatchWithFilesResponse[]
-export const listBatches = () =>
-  http<Batch[]>('/data/batch/list');
-
-// POST /batch/  -> { name?: string }
-export const createBatch = (name?: string) =>
-  http<Batch>('/data/batch/', {
-    method: 'POST',
-    body: JSON.stringify({ name }),
-    headers: { 'Content-Type': 'application/json' },
-  });
-
-// ✅ NEW: DELETE /batch/{id}
-export const deleteBatch = (batchId: number) =>
-  http<{ message: string }>(`/data/batch/${batchId}`, {
-    method: 'DELETE',
-  });
 
 // -------- Upload --------
 
-// POST /upload/  -> multipart: file, batch_id
+// POST /upload/  -> multipart: file, licitacion_id
 export const uploadFile = (form: FormData) =>
   http<{ message: string; file: any }>('/data/upload/', {
     method: 'POST',
@@ -33,7 +12,7 @@ export const uploadFile = (form: FormData) =>
 
 // -------- Files --------
 
-// GET /file/list -> agrupado por estado (si aún lo usas en otras vistas)
+// GET /file/list -> agrupado por estado
 export const listFiles = () =>
   http<Record<string, any[]>>('/data/file/list');
 

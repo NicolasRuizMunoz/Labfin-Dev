@@ -22,6 +22,15 @@ async function http<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
   return null as unknown as T;
 }
 
+// --------- Sesión por licitación (get o crea) ---------
+
+export async function getOrCreateLicitacionSession(licitacionId: number, title?: string): Promise<ChatSession> {
+  const qp = title ? `?title=${encodeURIComponent(title)}` : '';
+  return http<ChatSession>(`${BASE}/licitacion/${licitacionId}/session${qp}`, {
+    headers: { ...authHeader() },
+  });
+}
+
 // --------- Sesiones ---------
 
 export async function createSession(title?: string): Promise<ChatSession> {

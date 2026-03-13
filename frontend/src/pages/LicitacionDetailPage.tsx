@@ -3,9 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   ArrowLeft,
-  CheckSquare,
-  Download,
-  Trash2,
   Loader2,
   RefreshCw,
   Calendar,
@@ -13,22 +10,23 @@ import {
   ChevronDown,
   ChevronUp,
   TrendingUp,
+  FileText,
+  Building2,
+  Truck,
+  ShieldCheck,
+  AlertTriangle,
+  Star,
+  CheckCircle,
+  HelpCircle,
+  MessageSquare,
 } from 'lucide-react';
+import LicitacionChatPanel from '@/components/LicitacionChatPanel';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
 import FileUploader from '@/components/FileUploader';
+import FileTable from '@/components/FileTable';
 import BreakevenChart from '@/components/BreakevenChart';
 import {
   getLicitacion,
@@ -39,150 +37,95 @@ import {
 } from '@/services/tenders';
 import * as dataApi from '@/services/data';
 import http from '@/lib/http';
-import type { FileEntry, FileStatus } from '@/types/data';
-
-// ---- Constantes de estado ----
-const CONFIRMABLE: FileStatus[] = ['PENDING', 'STAGED', 'FAILED'];
-
-const STATUS_LABEL: Record<FileStatus, string> = {
-  PENDING: 'Pendiente',
-  STAGED: 'En cola',
-  CONFIRMED: 'Confirmado',
-  UPLOADED: 'Subido',
-  ACTIVE: 'Listo',
-  FAILED: 'Fallido',
-};
-
-const STATUS_STYLE: Record<FileStatus, string> = {
-  PENDING: 'bg-yellow-100 text-yellow-900',
-  STAGED: 'bg-zinc-100 text-zinc-900',
-  CONFIRMED: 'bg-green-100 text-green-900',
-  UPLOADED: 'bg-blue-100 text-blue-900',
-  ACTIVE: 'bg-indigo-100 text-indigo-900',
-  FAILED: 'bg-red-100 text-red-900',
-};
+import type { FileEntry } from '@/types/data';
 
 // ---- Helpers ----
 const fmt = (n: number | null | undefined, prefix = '') =>
   n != null ? `${prefix}${n.toLocaleString('es-CL')}` : '—';
 
-/** Precio estimado en USD según tokens totales y modelo. */
-const PRICE_PER_M: Record<string, number> = {
-  'gpt-4o-mini': 0.24,
-  'gpt-4o': 4.0,
-  'gpt-4.1-mini': 0.56,
-  'gpt-4.1': 3.2,
-};
-function estimatePrice(model: string, tokens: number | null): string | null {
-  if (!tokens) return null;
-  const rate = PRICE_PER_M[model] ?? 1.0;
-  const usd = (tokens / 1_000_000) * rate;
-  return usd < 0.01 ? '<$0.01 USD' : `~$${usd.toFixed(3)} USD`;
-}
 
-// ---- Breakeven Card ----
-function BreakevenCard({ a }: { a: AnalisisResult }) {
-  const hasBk =
-    a.breakeven_meses_base != null ||
-    a.breakeven_costo_fijo != null ||
-    a.breakeven_unidades != null;
+// ---- Parser de secciones del análisis ----
+const SECTION_KEYS = [
+  'RESUMEN',
+  'FIT CON LA EMPRESA',
+  'LOGÍSTICA Y ABASTECIMIENTO',
+  'ANÁLISIS FINANCIERO',
+  'GARANTÍAS',
+  'RIESGOS',
+  'OPORTUNIDADES',
+  'RECOMENDACIÓN',
+  'PREGUNTAS PARA EL EQUIPO',
+] as const;
 
-  if (!hasBk) return null;
+type SectionKey = typeof SECTION_KEYS[number];
 
-  const total = a.ingreso_total_contrato;
-  const opt = a.breakeven_meses_optimista;
-  const base = a.breakeven_meses_base;
-  const pes = a.breakeven_meses_pesimista;
-  const maxMeses = Math.max(opt ?? 0, base ?? 0, pes ?? 0, 1);
-
-  return (
-    <Card className="border-primary/20 bg-primary/5">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-primary" />
-          Punto de Equilibrio
-          <span className="text-xs font-normal text-muted-foreground ml-1">
-            PE = Costos Fijos / (Precio − Costo Variable)
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Ecuación con valores */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-          <div>
-            <p className="text-xs text-muted-foreground">Costos fijos</p>
-            <p className="font-semibold">{fmt(a.breakeven_costo_fijo, '$')}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Precio / período</p>
-            <p className="font-semibold">{fmt(a.breakeven_precio_unitario, '$')}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Costo variable / período</p>
-            <p className="font-semibold">{fmt(a.breakeven_costo_variable_unitario, '$')}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Períodos para PE</p>
-            <p className="font-semibold">{fmt(a.breakeven_unidades)}</p>
-          </div>
-          {total != null && (
-            <div className="col-span-2 sm:col-span-4">
-              <p className="text-xs text-muted-foreground">Ingreso total estimado del contrato</p>
-              <p className="font-semibold text-base">{fmt(total, '$')}</p>
-            </div>
-          )}
-        </div>
-
-        {/* Timeline de escenarios */}
-        {(opt != null || base != null || pes != null) && (
-          <div className="space-y-2">
-            <p className="text-xs text-muted-foreground font-medium">Tiempo hasta alcanzar PE</p>
-            {[
-              { label: 'Optimista', meses: opt, color: 'bg-green-500' },
-              { label: 'Base', meses: base, color: 'bg-blue-500' },
-              { label: 'Pesimista', meses: pes, color: 'bg-orange-500' },
-            ].map(({ label, meses, color }) =>
-              meses != null ? (
-                <div key={label} className="space-y-0.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">{label}</span>
-                    <span className="font-medium">{meses} {meses === 1 ? 'mes' : 'meses'}</span>
-                  </div>
-                  <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${color}`}
-                      style={{ width: `${Math.min((meses / maxMeses) * 100, 100)}%` }}
-                    />
-                  </div>
-                </div>
-              ) : null
-            )}
-          </div>
-        )}
-
-        {/* Curva de ganancia por escenario */}
-        {a.curvas_data && (
-          <div className="pt-2">
-            <p className="text-xs text-muted-foreground font-medium mb-2">Curva de ganancia acumulada</p>
-            <BreakevenChart curvas={a.curvas_data} />
-            <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-muted-foreground">
-              {(['optimista', 'base', 'pesimista'] as const).map((k) => (
-                <div key={k} className="leading-snug">
-                  <span className="capitalize font-medium text-foreground">{k}: </span>
-                  {a.curvas_data![k].descripcion}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+function parseSections(text: string): Partial<Record<SectionKey, string>> {
+  const result: Partial<Record<SectionKey, string>> = {};
+  const pattern = new RegExp(
+    `(${SECTION_KEYS.map((k) => k.replace(/[()]/g, '\\$&')).join('|')}):`,
+    'g'
   );
+  let lastKey: SectionKey | null = null;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(text)) !== null) {
+    if (lastKey) result[lastKey] = text.slice(lastIndex, match.index).trim();
+    lastKey = match[1] as SectionKey;
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastKey) result[lastKey] = text.slice(lastIndex).trim();
+  return result;
 }
+
+// ---- Card sections config ----
+const CARD_SECTIONS: { key: SectionKey; label: string; Icon: React.FC<{ className?: string }> }[] = [
+  { key: 'RESUMEN', label: 'Resumen', Icon: FileText },
+  { key: 'FIT CON LA EMPRESA', label: 'Fit con la Empresa', Icon: Building2 },
+  { key: 'LOGÍSTICA Y ABASTECIMIENTO', label: 'Logística y Abastecimiento', Icon: Truck },
+  { key: 'ANÁLISIS FINANCIERO', label: 'Análisis Financiero', Icon: TrendingUp },
+  { key: 'GARANTÍAS', label: 'Garantías', Icon: ShieldCheck },
+  { key: 'RIESGOS', label: 'Riesgos', Icon: AlertTriangle },
+  { key: 'OPORTUNIDADES', label: 'Oportunidades', Icon: Star },
+  { key: 'RECOMENDACIÓN', label: 'Recomendación', Icon: CheckCircle },
+];
 
 // ---- Panel de un análisis en el historial ----
-function AnalisisPanel({ a, isLatest }: { a: AnalisisResult; isLatest: boolean }) {
+function AnalisisPanel({
+  a,
+  isLatest,
+  allFilesMap,
+}: {
+  a: AnalisisResult;
+  isLatest: boolean;
+  allFilesMap: Record<number, string>;
+}) {
   const [open, setOpen] = useState(isLatest);
+  const sections = parseSections(a.analisis);
+  const preguntas = sections['PREGUNTAS PARA EL EQUIPO'];
+
+  // Tooltip de archivos usados
+  const licNames = (a.archivos_licitacion_ids ?? [])
+    .map((id) => allFilesMap[id] ?? `#${id}`)
+    .join('\n');
+  const empNames = (a.archivos_empresa_ids ?? [])
+    .map((id) => allFilesMap[id] ?? `#${id}`)
+    .join('\n');
+
+  const hasEquacion =
+    a.breakeven_costo_fijo != null ||
+    a.breakeven_precio_unitario != null ||
+    a.breakeven_unidades != null;
+  const hasTimeline =
+    a.breakeven_meses_optimista != null ||
+    a.breakeven_meses_base != null ||
+    a.breakeven_meses_pesimista != null;
+  const hasChart = !!a.curvas_data;
+  const maxMeses = Math.max(
+    a.breakeven_meses_optimista ?? 0,
+    a.breakeven_meses_base ?? 0,
+    a.breakeven_meses_pesimista ?? 0,
+    1
+  );
 
   return (
     <Card className={isLatest ? 'border-primary/30' : ''}>
@@ -196,29 +139,165 @@ function AnalisisPanel({ a, isLatest }: { a: AnalisisResult; isLatest: boolean }
             <span className="text-muted-foreground">
               {new Date(a.created_at).toLocaleString('es-CL')}
             </span>
-            {estimatePrice(a.model, a.tokens_usados) && (
-              <>
-                <span className="text-muted-foreground text-xs">·</span>
-                <span className="text-xs text-muted-foreground" title="Costo estimado de este análisis">
-                  {estimatePrice(a.model, a.tokens_usados)}
-                </span>
-              </>
-            )}
           </div>
           {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
         </div>
         <div className="flex gap-3 text-xs text-muted-foreground mt-1">
-          <span>{a.archivos_licitacion_ids?.length ?? a.chunks_licitacion} doc(s) licitación</span>
-          <span>{a.archivos_empresa_ids?.length ?? a.chunks_empresa} doc(s) empresa</span>
+          <span
+            title={licNames || undefined}
+            className={licNames ? 'cursor-help underline decoration-dotted' : ''}
+          >
+            {a.archivos_licitacion_ids?.length ?? a.chunks_licitacion} doc(s) licitación
+          </span>
+          <span
+            title={empNames || undefined}
+            className={empNames ? 'cursor-help underline decoration-dotted' : ''}
+          >
+            {a.archivos_empresa_ids?.length ?? a.chunks_empresa} doc(s) empresa
+          </span>
         </div>
       </CardHeader>
 
       {open && (
-        <CardContent className="space-y-4 pt-0">
-          <BreakevenCard a={a} />
-          <div className="prose prose-sm max-w-none dark:prose-invert whitespace-pre-wrap text-sm leading-relaxed border-t pt-4">
-            {a.analisis}
+        <CardContent className="space-y-6 pt-2">
+
+          {/* 1+2. Ecuación y Timeline en dos cards lado a lado */}
+          {(hasEquacion || hasTimeline) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Card izquierda: ecuación / números */}
+              {hasEquacion && (
+                <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 space-y-3">
+                  <p className="text-xs font-semibold text-primary flex items-center gap-1.5">
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    Punto de Equilibrio
+                  </p>
+                  <p className="text-[11px] text-muted-foreground -mt-1">
+                    PE = Costos Fijos / (Ingreso − Costo Variable)
+                  </p>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Costos fijos</p>
+                      <p className="font-semibold">{fmt(a.breakeven_costo_fijo, '$')}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Ingreso / período</p>
+                      <p className="font-semibold">{fmt(a.breakeven_precio_unitario, '$')}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Costo variable / período</p>
+                      <p className="font-semibold">{fmt(a.breakeven_costo_variable_unitario, '$')}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Períodos para PE</p>
+                      <p className="font-semibold">{fmt(a.breakeven_unidades)}</p>
+                    </div>
+                    {a.ingreso_total_contrato != null && (
+                      <div className="col-span-2 border-t border-primary/10 pt-2">
+                        <p className="text-xs text-muted-foreground">Ingreso total estimado</p>
+                        <p className="font-semibold text-base">{fmt(a.ingreso_total_contrato, '$')}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Card derecha: timeline de escenarios */}
+              {hasTimeline && (
+                <div className="rounded-lg bg-muted/40 border border-border/50 p-4 space-y-3">
+                  <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5" />
+                    Tiempo hasta alcanzar el PE
+                  </p>
+                  <div className="space-y-3">
+                    {[
+                      { label: 'Optimista', meses: a.breakeven_meses_optimista, color: 'bg-green-500' },
+                      { label: 'Base', meses: a.breakeven_meses_base, color: 'bg-blue-500' },
+                      { label: 'Pesimista', meses: a.breakeven_meses_pesimista, color: 'bg-orange-500' },
+                    ].map(({ label, meses, color }) =>
+                      meses != null ? (
+                        <div key={label} className="space-y-1">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground">{label}</span>
+                            <span className="font-medium">{meses} {meses === 1 ? 'mes' : 'meses'}</span>
+                          </div>
+                          <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+                            <div
+                              className={`h-full rounded-full ${color}`}
+                              style={{ width: `${Math.min((meses / maxMeses) * 100, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      ) : null
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 3. Gráfico + Preguntas críticas */}
+          {(hasChart || preguntas) && (
+            <div className="grid gap-4" style={{ gridTemplateColumns: hasChart && preguntas ? '3fr 2fr' : '1fr' }}>
+              {hasChart && (
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-2">Curva de ganancia acumulada</p>
+                  <BreakevenChart curvas={a.curvas_data!} />
+                  <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-muted-foreground">
+                    {(['optimista', 'base', 'pesimista'] as const).map((k) => (
+                      <div key={k} className="leading-snug">
+                        <span className="capitalize font-medium text-foreground">{k}: </span>
+                        {a.curvas_data![k].descripcion}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {preguntas && (
+                <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 flex flex-col gap-3 dark:bg-amber-950/20 dark:border-amber-800/40">
+                  <p className="text-xs font-semibold text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
+                    <HelpCircle className="w-3.5 h-3.5 shrink-0" />
+                    Preguntas críticas para el equipo
+                  </p>
+                  <ul className="space-y-2.5">
+                    {preguntas
+                      .split('\n')
+                      .map((l) => l.replace(/^[-•]\s*/, '').trim())
+                      .filter(Boolean)
+                      .map((q, i) => (
+                        <li key={i} className="flex items-start gap-2 text-xs text-amber-900 dark:text-amber-300">
+                          <span className="mt-0.5 shrink-0 w-4 h-4 rounded-full bg-amber-200 dark:bg-amber-800 flex items-center justify-center text-[10px] font-bold text-amber-800 dark:text-amber-300">
+                            {i + 1}
+                          </span>
+                          <span className="leading-relaxed">{q}</span>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 4. Cards de secciones */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {CARD_SECTIONS.map(({ key, label, Icon }) => {
+              const content = sections[key];
+              if (!content) return null;
+              return (
+                <Card key={key} className="bg-muted/30 border-border/50">
+                  <CardHeader className="pb-2 pt-4 px-4">
+                    <CardTitle className="text-xs font-semibold flex items-center gap-1.5 text-muted-foreground uppercase tracking-wide">
+                      <Icon className="w-3.5 h-3.5" />
+                      {label}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-4 pb-4 pt-0">
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{content}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
+
         </CardContent>
       )}
     </Card>
@@ -231,11 +310,9 @@ const LicitacionDetailPage: React.FC = () => {
   const licitacionId = Number(id);
   const navigate = useNavigate();
 
-  const [checkedIds, setCheckedIds] = useState<Record<number, boolean>>({});
-  const [confirmando, setConfirmando] = useState(false);
-  const [confirmProgress, setConfirmProgress] = useState<{ actual: number; total: number } | null>(null);
   const [analizando, setAnalizando] = useState(false);
   const [analisisError, setAnalisisError] = useState<string | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
 
   const { data: licitacion } = useQuery({
     queryKey: ['licitacion', licitacionId],
@@ -252,6 +329,21 @@ const LicitacionDetailPage: React.FC = () => {
     queryFn: () => getAnalisisHistory(licitacionId),
   });
 
+  // Mapa id→nombre para todos los archivos de la organización (empresa + licitación)
+  const { data: allOrgFilesGrouped = {} } = useQuery({
+    queryKey: ['org-files'],
+    queryFn: () => dataApi.listFiles(),
+  });
+  const allOrgFilesMap = React.useMemo(() => {
+    const map: Record<number, string> = {};
+    for (const group of Object.values(allOrgFilesGrouped)) {
+      for (const f of group as any[]) {
+        map[f.id] = f.original_filename;
+      }
+    }
+    return map;
+  }, [allOrgFilesGrouped]);
+
   // ---- Upload via FileUploader ----
   const handleUpload = async (selectedFiles: File[]) => {
     for (const file of selectedFiles) {
@@ -263,48 +355,7 @@ const LicitacionDetailPage: React.FC = () => {
     refetchFiles();
   };
 
-  // ---- Confirmación ----
-  const runConfirm = async (ids: number[]) => {
-    const pending = ids.filter((id) => {
-      const f = files.find((f) => f.id === id);
-      return f && CONFIRMABLE.includes(f.status as FileStatus);
-    });
-    if (!pending.length) return;
-    setConfirmando(true);
-    setConfirmProgress({ actual: 0, total: pending.length });
-    try {
-      for (let i = 0; i < pending.length; i++) {
-        setConfirmProgress({ actual: i + 1, total: pending.length });
-        await dataApi.confirmOne(pending[i]);
-      }
-      setCheckedIds({});
-      refetchFiles();
-    } finally {
-      setConfirmando(false);
-      setConfirmProgress(null);
-    }
-  };
-
-  const confirmSelected = () =>
-    runConfirm(Object.entries(checkedIds).filter(([, v]) => v).map(([k]) => Number(k)));
-
-  const confirmAll = () => runConfirm(files.map((f) => f.id));
-
-  // ---- Otras acciones ----
-  const toggleActive = async (f: FileEntry) => { await dataApi.setActive(f.id, !f.is_active); refetchFiles(); };
-
-  const downloadFile = async (f: FileEntry) => {
-    try { const { url } = await dataApi.getDownloadUrl(f.id); window.open(url, '_blank'); }
-    catch { alert('El archivo aún no está disponible para descarga.'); }
-  };
-
-  const deleteOne = async (f: FileEntry) => {
-    if (!confirm(`¿Eliminar "${f.original_filename}"?`)) return;
-    await dataApi.deleteFile(f.id);
-    refetchFiles();
-  };
-
-  // ---- Análisis IA ----
+  // ---- Análisis EVA ----
   const handleAnalizar = async () => {
     setAnalizando(true);
     setAnalisisError(null);
@@ -317,8 +368,6 @@ const LicitacionDetailPage: React.FC = () => {
       setAnalizando(false);
     }
   };
-
-  const selectedCount = Object.values(checkedIds).filter(Boolean).length;
 
   return (
     <div className="mx-auto max-w-6xl p-4 space-y-6">
@@ -366,95 +415,12 @@ const LicitacionDetailPage: React.FC = () => {
             <RefreshCw className="h-4 w-4 mr-1" /> Actualizar
           </Button>
         </div>
-
-        {loadingFiles ? (
-          <Loader2 className="h-5 w-5 animate-spin" />
-        ) : files.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No hay archivos aún. Sube los documentos de esta licitación y confírmalos para que queden disponibles para el análisis de EVA.
-          </p>
-        ) : (
-          <Card>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-10">Sel.</TableHead>
-                    <TableHead className="w-14">ID</TableHead>
-                    <TableHead>Archivo</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Activo</TableHead>
-                    <TableHead>Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {files.map((f) => (
-                    <TableRow key={f.id}>
-                      <TableCell>
-                        <Checkbox
-                          checked={!!checkedIds[f.id]}
-                          disabled={!CONFIRMABLE.includes(f.status as FileStatus)}
-                          onCheckedChange={(v) => setCheckedIds((p) => ({ ...p, [f.id]: !!v }))}
-                        />
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">{f.id}</TableCell>
-                      <TableCell className="max-w-xs truncate">{f.original_filename}</TableCell>
-                      <TableCell>
-                        <Badge className={STATUS_STYLE[f.status as FileStatus] ?? ''}>
-                          {STATUS_LABEL[f.status as FileStatus] ?? f.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Switch checked={!!f.is_active} onCheckedChange={() => toggleActive(f)} />
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm" onClick={() => downloadFile(f)}>
-                            <Download className="h-4 w-4" />
-                          </Button>
-                          <Button variant="destructive" size="sm" onClick={() => deleteOne(f)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-
-            {confirmando && confirmProgress && (
-              <div className="px-4 py-3 border-t bg-muted/40 flex items-center gap-3">
-                <Loader2 className="h-4 w-4 animate-spin text-primary shrink-0" />
-                <div className="flex-1 space-y-1">
-                  <p className="text-xs text-muted-foreground">
-                    Procesando archivo {confirmProgress.actual} de {confirmProgress.total}…
-                    <span className="ml-1 text-xs font-medium text-foreground">
-                      (puede tardar varios segundos por archivo)
-                    </span>
-                  </p>
-                  <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className="h-full bg-primary rounded-full transition-all duration-300"
-                      style={{ width: `${(confirmProgress.actual / confirmProgress.total) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="p-3 flex items-center gap-2 border-t">
-              <Button size="sm" onClick={confirmSelected} disabled={selectedCount === 0 || confirmando}>
-                {confirmando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckSquare className="h-4 w-4 mr-2" />}
-                Confirmar seleccionados{selectedCount > 0 ? ` (${selectedCount})` : ''}
-              </Button>
-              <Button size="sm" variant="secondary" onClick={confirmAll} disabled={confirmando}>
-                {confirmando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckSquare className="h-4 w-4 mr-2" />}
-                Confirmar todos
-              </Button>
-            </div>
-          </Card>
-        )}
+        <FileTable
+          files={files}
+          loading={loadingFiles}
+          onRefetch={() => refetchFiles()}
+          emptyMessage="No hay archivos aún. Sube los documentos de esta licitación y confírmalos para que queden disponibles para el análisis de EVA."
+        />
       </div>
 
       <Separator />
@@ -490,10 +456,36 @@ const LicitacionDetailPage: React.FC = () => {
           </p>
         ) : (
           historial.map((a, i) => (
-            <AnalisisPanel key={a.id} a={a} isLatest={i === 0} />
+            <AnalisisPanel key={a.id} a={a} isLatest={i === 0} allFilesMap={allOrgFilesMap} />
           ))
         )}
       </div>
+
+      {/* ── Widget flotante de chat ──────────────────────────────────────── */}
+
+      {/* Panel flotante (aparece sobre el botón) */}
+      {chatOpen && (
+        <div className="fixed bottom-24 right-6 z-50 w-[360px] h-[560px] rounded-2xl shadow-2xl border overflow-hidden">
+          <LicitacionChatPanel
+            licitacionId={licitacionId}
+            licitacionNombre={licitacion?.nombre}
+            onClose={() => setChatOpen(false)}
+          />
+        </div>
+      )}
+
+      {/* Botón circular flotante */}
+      <button
+        onClick={() => setChatOpen((v) => !v)}
+        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+          chatOpen
+            ? 'bg-muted text-muted-foreground hover:bg-muted/80'
+            : 'bg-primary text-primary-foreground hover:bg-primary/90'
+        }`}
+        aria-label={chatOpen ? 'Cerrar chat EVA' : 'Abrir chat EVA'}
+      >
+        <MessageSquare className="w-6 h-6" />
+      </button>
     </div>
   );
 };

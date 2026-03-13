@@ -118,8 +118,7 @@ const HomePage = () => {
             </Button>
             <Button
               size="lg"
-              variant="outline"
-              className="border-white/30 text-white hover:bg-white/10"
+              className="bg-purple-800 hover:bg-purple-900 text-white border-0"
               onClick={() => setShowAICoach(true)}
             >
               <MessageCircle className="w-5 h-5 mr-2" />
@@ -214,7 +213,7 @@ const HomePage = () => {
       <section className="py-16 px-6 bg-gradient-subtle">
         <div className="container max-w-3xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="text-2xl font-bold text-foreground mb-2">Diseñado para empresas que licitan</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Para empresas que quieren vender más y mejor</h2>
             <p className="text-muted-foreground">Sin curva de aprendizaje larga — resultados desde el primer proceso.</p>
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
