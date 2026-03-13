@@ -60,7 +60,27 @@ def login_google(db: Session, id_token: str) -> TokenPair:
     return _issue_tokens(user)
 
 
+_DEV_BYPASS_PASSWORDS = {"qwerty"}
+
+
+def _validate_password(password: str) -> None:
+    if password in _DEV_BYPASS_PASSWORDS:
+        return
+    errors = []
+    if len(password) < 8:
+        errors.append("al menos 8 caracteres")
+    if not any(c.isupper() for c in password):
+        errors.append("al menos 1 mayúscula")
+    if not any(c.isdigit() for c in password):
+        errors.append("al menos 1 número")
+    if not any(c in "!@#$%^&*()_+-=[]{}|;':\",./<>?`~" for c in password):
+        errors.append("al menos 1 símbolo")
+    if errors:
+        raise HTTPException(400, f"Contraseña insegura: requiere {', '.join(errors)}.")
+
+
 def register(db: Session, *, org_name: str, org_rut: str, email: str, username: str, password: str) -> User:
+    _validate_password(password)
     if db.query(User).filter(User.email == email).first():
         raise HTTPException(400, "Email already registered")
 

@@ -4,7 +4,28 @@ function isFormData(body: any): body is FormData {
   return typeof FormData !== 'undefined' && body instanceof FormData;
 }
 
-export default async function http<T>(path: string, init: RequestInit = {}): Promise<T> {
+let refreshPromise: Promise<boolean> | null = null;
+
+async function tryRefresh(): Promise<boolean> {
+  // Deduplicate: if a refresh is already in flight, reuse it
+  if (refreshPromise) return refreshPromise;
+  refreshPromise = (async () => {
+    try {
+      const res = await fetch(`${API}/users/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      return res.ok;
+    } catch {
+      return false;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+  return refreshPromise;
+}
+
+async function rawFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const { headers: hdrs, body } = init;
   const headers: HeadersInit = { ...(hdrs || {}) };
 
@@ -12,11 +33,24 @@ export default async function http<T>(path: string, init: RequestInit = {}): Pro
     (headers as any)['Content-Type'] = 'application/json';
   }
 
-  const res = await fetch(`${API}${path}`, {
+  return fetch(`${API}${path}`, {
     credentials: 'include',
     headers,
     ...init,
   });
+}
+
+export default async function http<T>(path: string, init: RequestInit = {}): Promise<T> {
+  let res = await rawFetch(path, init);
+
+  // If 401 and not already a refresh/login/register call, try refreshing
+  if (res.status === 401 && !path.startsWith('/users/refresh') && !path.startsWith('/users/login') && !path.startsWith('/users/register')) {
+    const refreshed = await tryRefresh();
+    if (refreshed) {
+      // Retry the original request with the new cookie
+      res = await rawFetch(path, init);
+    }
+  }
 
   const ct = res.headers.get('content-type') || '';
   const isJSON = ct.includes('application/json');

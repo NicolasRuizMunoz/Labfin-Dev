@@ -74,9 +74,6 @@ const TendersPage = () => {
               <ClipboardList className="w-8 h-8 text-primary" />
               Licitaciones
             </h1>
-            <p className="text-muted-foreground mt-1">
-              Administra y analiza los procesos de licitación de tu empresa.
-            </p>
           </div>
           <Button onClick={() => setOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
