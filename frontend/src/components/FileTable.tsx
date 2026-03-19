@@ -32,12 +32,12 @@ const STATUS_LABEL: Record<FileStatus, string> = {
 };
 
 const STATUS_STYLE: Record<FileStatus, string> = {
-  PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
-  STAGED: 'bg-slate-50 text-slate-600 border-slate-200',
-  CONFIRMED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  UPLOADED: 'bg-sky-50 text-sky-700 border-sky-200',
-  ACTIVE: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-  FAILED: 'bg-red-50 text-red-700 border-red-200',
+  PENDING: 'bg-secondary/10 text-secondary border-secondary/25 dark:bg-secondary/15 dark:text-secondary/90',
+  STAGED: 'bg-muted/60 text-muted-foreground border-border dark:bg-muted/40',
+  CONFIRMED: 'bg-primary/10 text-primary border-primary/25 dark:bg-primary/15 dark:text-primary/90',
+  UPLOADED: 'bg-primary/10 text-primary border-primary/25 dark:bg-primary/15 dark:text-primary/90',
+  ACTIVE: 'bg-primary/15 text-primary border-primary/30 font-semibold dark:bg-primary/20',
+  FAILED: 'bg-destructive/10 text-destructive border-destructive/25 dark:bg-destructive/15',
 };
 
 interface FileTableProps {
@@ -122,17 +122,19 @@ const FileTable: React.FC<FileTableProps> = ({
 
   if (files.length === 0) {
     return (
-      <div className="rounded-lg border bg-background shadow-sm p-8 text-center">
-        <FileText className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
-        <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+      <div className="rounded-lg border-2 border-dashed border-border/50 bg-card p-10 text-center">
+        <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
+          <FileText className="h-6 w-6 text-muted-foreground/50" />
+        </div>
+        <p className="text-sm text-muted-foreground max-w-md mx-auto">{emptyMessage}</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border bg-background shadow-sm overflow-hidden">
+    <div className="rounded-lg border border-border/50 bg-card shadow-card overflow-hidden">
       {/* Header */}
-      <div className="px-5 py-3 border-b bg-muted/30 flex items-center justify-between">
+      <div className="px-5 py-3 border-b bg-gradient-page-header flex items-center justify-between">
         <p className="text-sm font-medium text-foreground">
           {files.length} {files.length === 1 ? 'archivo' : 'archivos'}
         </p>
@@ -141,18 +143,18 @@ const FileTable: React.FC<FileTableProps> = ({
       {/* Tabla */}
       <Table>
         <TableHeader>
-          <TableRow className="bg-muted/20 hover:bg-muted/20">
-            <TableHead>Archivo</TableHead>
-            <TableHead className="w-28">Estado</TableHead>
-            <TableHead className="w-20">Activo</TableHead>
-            <TableHead className="w-36 text-right">Acciones</TableHead>
+          <TableRow className="bg-muted/30 hover:bg-muted/30 border-b border-border/40">
+            <TableHead className="font-semibold text-foreground/80">Archivo</TableHead>
+            <TableHead className="w-28 font-semibold text-foreground/80">Estado</TableHead>
+            <TableHead className="w-20 font-semibold text-foreground/80">Activo</TableHead>
+            <TableHead className="w-36 text-right font-semibold text-foreground/80">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {files.map((f) => {
             const isConfirmable = CONFIRMABLE.includes(f.status as FileStatus);
             return (
-              <TableRow key={f.id} className="hover:bg-muted/10 transition-colors">
+              <TableRow key={f.id} className="hover:bg-muted/20 transition-colors border-b border-border/20 last:border-b-0">
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <FileText className="h-4 w-4 text-muted-foreground/60 shrink-0" />
@@ -242,15 +244,15 @@ const FileTable: React.FC<FileTableProps> = ({
       )}
 
       {/* Acciones en bloque */}
-      <div className="px-5 py-3 border-t bg-muted/20 flex items-center gap-2 flex-wrap">
-        <Button size="sm" variant="secondary" onClick={confirmAll} disabled={confirmando}>
+      <div className="px-5 py-3 border-t border-border/40 bg-muted/15 flex items-center gap-2 flex-wrap">
+        <Button size="sm" onClick={confirmAll} disabled={confirmando} className="gap-1.5">
           {confirmando
-            ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
-            : <CheckSquare className="h-4 w-4 mr-1.5" />}
+            ? <Loader2 className="h-4 w-4 animate-spin" />
+            : <CheckSquare className="h-4 w-4" />}
           Confirmar todos
         </Button>
         <div className="flex-1" />
-        <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive hover:text-destructive-foreground" onClick={deleteAll} disabled={confirmando}>
+        <Button size="sm" variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive" onClick={deleteAll} disabled={confirmando}>
           <Trash2 className="h-4 w-4 mr-1.5" />
           Borrar todos
         </Button>

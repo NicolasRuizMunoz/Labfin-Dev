@@ -24,7 +24,6 @@ import LicitacionChatPanel from '@/components/LicitacionChatPanel';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import FileUploader from '@/components/FileUploader';
 import FileTable from '@/components/FileTable';
 import BreakevenChart from '@/components/BreakevenChart';
@@ -37,7 +36,6 @@ import {
 } from '@/services/tenders';
 import * as dataApi from '@/services/data';
 import http from '@/lib/http';
-import type { FileEntry } from '@/types/data';
 
 // ---- Helpers ----
 const fmt = (n: number | null | undefined, prefix = '') =>
@@ -78,16 +76,22 @@ function parseSections(text: string): Partial<Record<SectionKey, string>> {
 }
 
 // ---- Card sections config ----
-const CARD_SECTIONS: { key: SectionKey; label: string; Icon: React.FC<{ className?: string }> }[] = [
-  { key: 'RESUMEN', label: 'Resumen', Icon: FileText },
-  { key: 'FIT CON LA EMPRESA', label: 'Fit con la Empresa', Icon: Building2 },
-  { key: 'LOGÍSTICA Y ABASTECIMIENTO', label: 'Logística y Abastecimiento', Icon: Truck },
-  { key: 'ANÁLISIS FINANCIERO', label: 'Análisis Financiero', Icon: TrendingUp },
-  { key: 'GARANTÍAS', label: 'Garantías', Icon: ShieldCheck },
-  { key: 'RIESGOS', label: 'Riesgos', Icon: AlertTriangle },
-  { key: 'OPORTUNIDADES', label: 'Oportunidades', Icon: Star },
-  { key: 'RECOMENDACIÓN', label: 'Recomendación', Icon: CheckCircle },
+const CARD_SECTIONS: { key: SectionKey; label: string; Icon: React.FC<{ className?: string }>; accent: 'green' | 'purple' | 'amber' }[] = [
+  { key: 'RESUMEN', label: 'Resumen', Icon: FileText, accent: 'green' },
+  { key: 'FIT CON LA EMPRESA', label: 'Fit con la Empresa', Icon: Building2, accent: 'purple' },
+  { key: 'LOGÍSTICA Y ABASTECIMIENTO', label: 'Logística y Abastecimiento', Icon: Truck, accent: 'green' },
+  { key: 'ANÁLISIS FINANCIERO', label: 'Análisis Financiero', Icon: TrendingUp, accent: 'green' },
+  { key: 'GARANTÍAS', label: 'Garantías', Icon: ShieldCheck, accent: 'purple' },
+  { key: 'RIESGOS', label: 'Riesgos', Icon: AlertTriangle, accent: 'amber' },
+  { key: 'OPORTUNIDADES', label: 'Oportunidades', Icon: Star, accent: 'green' },
+  { key: 'RECOMENDACIÓN', label: 'Recomendación', Icon: CheckCircle, accent: 'purple' },
 ];
+
+const ACCENT_STYLES = {
+  green: { card: 'border-l-primary/40', icon: 'text-primary', header: 'text-primary/80' },
+  purple: { card: 'border-l-secondary/40', icon: 'text-secondary', header: 'text-secondary/80' },
+  amber: { card: 'border-l-amber-500/40', icon: 'text-amber-600 dark:text-amber-400', header: 'text-amber-700/80 dark:text-amber-400/80' },
+};
 
 // ---- Panel de un análisis en el historial ----
 function AnalisisPanel({
@@ -128,9 +132,9 @@ function AnalisisPanel({
   );
 
   return (
-    <Card className={isLatest ? 'border-primary/30' : ''}>
+    <Card className={`border ${isLatest ? 'border-primary/30 shadow-card' : 'border-border/40'}`}>
       <CardHeader
-        className="pb-2 cursor-pointer select-none"
+        className="pb-2 cursor-pointer select-none hover:bg-muted/20 transition-colors rounded-t-lg"
         onClick={() => setOpen((v) => !v)}
       >
         <div className="flex items-center justify-between gap-2">
@@ -166,7 +170,7 @@ function AnalisisPanel({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Card izquierda: ecuación / números */}
               {hasEquacion && (
-                <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 space-y-3">
+                <div className="rounded-xl bg-primary/5 border border-primary/15 p-5 space-y-3">
                   <p className="text-xs font-semibold text-primary flex items-center gap-1.5">
                     <TrendingUp className="w-3.5 h-3.5" />
                     Punto de Equilibrio
@@ -203,8 +207,8 @@ function AnalisisPanel({
 
               {/* Card derecha: timeline de escenarios */}
               {hasTimeline && (
-                <div className="rounded-lg bg-muted/40 border border-border/50 p-4 space-y-3">
-                  <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <div className="rounded-xl bg-secondary/5 border border-secondary/15 p-5 space-y-3">
+                  <p className="text-xs font-semibold text-secondary flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5" />
                     Tiempo hasta alcanzar el PE
                   </p>
@@ -279,14 +283,15 @@ function AnalisisPanel({
 
           {/* 4. Cards de secciones */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {CARD_SECTIONS.map(({ key, label, Icon }) => {
+            {CARD_SECTIONS.map(({ key, label, Icon, accent }) => {
               const content = sections[key];
               if (!content) return null;
+              const styles = ACCENT_STYLES[accent];
               return (
-                <Card key={key} className="bg-muted/30 border-border/50">
+                <Card key={key} className={`bg-card border border-border/40 border-l-[3px] ${styles.card}`}>
                   <CardHeader className="pb-2 pt-4 px-4">
-                    <CardTitle className="text-xs font-semibold flex items-center gap-1.5 text-muted-foreground uppercase tracking-wide">
-                      <Icon className="w-3.5 h-3.5" />
+                    <CardTitle className={`text-xs font-semibold flex items-center gap-1.5 uppercase tracking-wide ${styles.header}`}>
+                      <Icon className={`w-3.5 h-3.5 ${styles.icon}`} />
                       {label}
                     </CardTitle>
                   </CardHeader>
@@ -370,31 +375,37 @@ const LicitacionDetailPage: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto max-w-6xl p-4 space-y-6">
-      {/* Encabezado */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/tenders')}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">{licitacion?.nombre ?? '...'}</h1>
-            {licitacion?.fecha_vencimiento && (
-              <p className="text-sm text-muted-foreground flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" />
-                Vence: {new Date(licitacion.fecha_vencimiento).toLocaleDateString('es-CL')}
-              </p>
-            )}
+    <div className="min-h-screen bg-background">
+      {/* Page header */}
+      <div className="bg-gradient-page-header border-b border-border/30">
+        <div className="mx-auto max-w-6xl px-4 py-6">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="icon" onClick={() => navigate('/tenders')} className="h-9 w-9 shrink-0">
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">{licitacion?.nombre ?? '...'}</h1>
+                {licitacion?.fecha_vencimiento && (
+                  <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                    <Calendar className="w-3.5 h-3.5 text-secondary/70" />
+                    Vence: {new Date(licitacion.fecha_vencimiento).toLocaleDateString('es-CL')}
+                  </p>
+                )}
+              </div>
+            </div>
+            <Button onClick={handleAnalizar} disabled={analizando} className="gap-2 shadow-sm">
+              {analizando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+              {analizando ? 'Analizando...' : 'Analizar con EVA'}
+            </Button>
           </div>
         </div>
-        <Button onClick={handleAnalizar} disabled={analizando} className="gap-2">
-          {analizando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          {analizando ? 'Analizando...' : 'Analizar con EVA'}
-        </Button>
       </div>
 
+      <div className="mx-auto max-w-6xl px-4 py-8 space-y-6">
+
       {/* Subir documentos */}
-      <Card>
+      <Card className="border-border/40">
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Subir documentos</CardTitle>
         </CardHeader>
@@ -403,16 +414,15 @@ const LicitacionDetailPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Separator />
-
       {/* Archivos */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium">
-            Archivos{files.length > 0 ? ` (${files.length})` : ''}
+          <h2 className="text-lg font-medium flex items-center gap-2">
+            Archivos
+            {files.length > 0 && <span className="text-sm font-normal text-muted-foreground">({files.length})</span>}
           </h2>
-          <Button variant="ghost" size="sm" onClick={() => refetchFiles()}>
-            <RefreshCw className="h-4 w-4 mr-1" /> Actualizar
+          <Button variant="outline" size="sm" onClick={() => refetchFiles()} className="gap-1.5">
+            <RefreshCw className="h-3.5 w-3.5" /> Actualizar
           </Button>
         </div>
         <FileTable
@@ -422,8 +432,6 @@ const LicitacionDetailPage: React.FC = () => {
           emptyMessage="No hay archivos aún. Sube los documentos de esta licitación y confírmalos para que queden disponibles para el análisis de EVA."
         />
       </div>
-
-      <Separator />
 
       {/* Historial de análisis EVA */}
       <div className="space-y-3">
@@ -486,6 +494,7 @@ const LicitacionDetailPage: React.FC = () => {
       >
         <MessageSquare className="w-6 h-6" />
       </button>
+      </div>
     </div>
   );
 };

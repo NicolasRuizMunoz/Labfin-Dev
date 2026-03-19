@@ -110,11 +110,11 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-lg border bg-background shadow-sm p-5 space-y-3">
+    <form onSubmit={handleSubmit} className="rounded-xl border border-dashed border-border/60 bg-muted/10 p-5 space-y-3">
       {extra}
 
-      <div className="space-y-1">
-        <Label>{label}</Label>
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">{label}</Label>
         <Input
           ref={inputRef}
           type="file"
@@ -122,7 +122,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
           accept={accept}
           disabled={disabled || uploading}
           onChange={(e) => addFiles(Array.from(e.target.files ?? []))}
-          className="bg-background"
+          className="bg-card border-border/40"
         />
         <p className="text-xs text-muted-foreground">
           Formatos aceptados: {ACCEPTED_EXTENSIONS_DISPLAY}
@@ -161,13 +161,13 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         )}
       </div>
 
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-destructive">{error}</p>}
 
-      <Button type="submit" disabled={files.length === 0 || uploading || disabled}>
+      <Button type="submit" disabled={files.length === 0 || uploading || disabled} className="gap-2">
         {uploading ? (
-          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
-          <UploadIcon className="h-4 w-4 mr-2" />
+          <UploadIcon className="h-4 w-4" />
         )}
         {uploading ? 'Subiendo...' : 'Subir'}
       </Button>

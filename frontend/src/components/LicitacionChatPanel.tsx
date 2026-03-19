@@ -9,6 +9,8 @@ import {
   postUserMessage,
 } from "@/services/chat";
 
+const DOT_PATTERN_STYLE = { backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' } as const;
+
 type Props = {
   licitacionId: number;
   licitacionNombre?: string;
@@ -99,23 +101,20 @@ export default function LicitacionChatPanel({ licitacionId, licitacionNombre, on
   }
 
   return (
-    <aside className="flex flex-col h-full bg-background">
-      {/* ── Placeholder de imagen ──────────────────────────────────────────
-          Para reemplazar con tu imagen: borra este div y pon
-          <img src="/tu-imagen.png" className="w-full h-32 object-cover" />
-      ─────────────────────────────────────────────────────────────────── */}
-      <div className="relative h-32 shrink-0 bg-gradient-to-br from-primary/25 via-primary/10 to-background flex items-center justify-center overflow-hidden border-b">
-        {/* ← swap por <img src="..." className="absolute inset-0 w-full h-full object-cover" /> */}
-        <div className="flex flex-col items-center gap-1 z-10">
-          <div className="w-14 h-14 rounded-full bg-primary/15 border-2 border-primary/30 flex items-center justify-center shadow-sm">
-            <Bot className="w-7 h-7 text-primary/70" />
+    <aside className="flex flex-col h-full bg-card">
+      {/* ── Hero banner ── */}
+      <div className="relative h-28 shrink-0 bg-gradient-hero flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.06]" style={DOT_PATTERN_STYLE} />
+        <div className="flex flex-col items-center gap-1.5 z-10">
+          <div className="w-12 h-12 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+            <Bot className="w-6 h-6 text-white" />
           </div>
-          <span className="text-xs font-medium text-muted-foreground tracking-wide">EVA Assistant</span>
+          <span className="text-xs font-medium text-white/80 tracking-wide">EVA Assistant</span>
         </div>
       </div>
 
-      {/* ── Header ────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-3 py-2 border-b shrink-0">
+      {/* ── Header ── */}
+      <div className="flex items-center justify-between px-3 py-2 border-b border-border/40 shrink-0">
         <div className="min-w-0">
           <p className="text-sm font-semibold truncate">Chat con EVA</p>
           {licitacionNombre && (
@@ -198,13 +197,13 @@ export default function LicitacionChatPanel({ licitacionId, licitacionNombre, on
         </div>
       </ScrollArea>
 
-      {/* ── Input ─────────────────────────────────────────────────────── */}
-      <div className="p-3 border-t shrink-0">
+      {/* ── Input ── */}
+      <div className="p-3 border-t border-border/40 shrink-0 bg-card">
         <div className="flex gap-2 items-end">
           <textarea
             ref={inputRef}
             rows={1}
-            className="flex-1 min-h-[36px] max-h-32 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50"
+            className="flex-1 min-h-[36px] max-h-32 resize-none rounded-lg border border-border/50 bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:opacity-50"
             placeholder="Escribe tu consulta… (Enter para enviar)"
             value={input}
             disabled={!session || pending}

@@ -35,27 +35,27 @@ const Navigation = () => {
   const initials = displayName.slice(0, 2).toUpperCase();
 
   return (
-    <nav className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 max-w-7xl mx-auto items-center px-4 gap-2">
 
         {/* Logo */}
-        <Link to="/" className="flex items-center space-x-2 mr-4 shrink-0">
+        <Link to="/" className="flex items-center space-x-2 mr-6 shrink-0">
           <img src={evaliticsLogo} alt="Evalitics" className="w-7 h-7 object-contain" />
-          <span className="hidden md:inline-block font-bold text-lg text-primary">Evalitics</span>
+          <span className="hidden md:inline-block font-bold text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Evalitics</span>
         </Link>
 
         {/* Desktop nav items — left */}
-        <div className="hidden lg:flex items-center space-x-0.5">
+        <div className="hidden lg:flex items-center space-x-1">
           {navItems.map(({ name, href, icon: Icon }) => (
             <Button
               key={href}
               variant={isActive(href) ? 'default' : 'ghost'}
               size="sm"
-              className={`px-3 py-1 text-xs h-8 ${isActive(href) ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'}`}
+              className={`px-3 py-1 text-xs h-8 ${isActive(href) ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'}`}
               asChild
             >
-              <Link to={href} className="flex items-center space-x-1">
-                <Icon className="w-3 h-3" />
+              <Link to={href} className="flex items-center space-x-1.5">
+                <Icon className="w-3.5 h-3.5" />
                 <span>{name}</span>
               </Link>
             </Button>

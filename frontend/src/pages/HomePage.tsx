@@ -16,6 +16,8 @@ import {
 import { AICoach } from '@/components/AICoach';
 import { useState } from 'react';
 
+const DOT_PATTERN_STYLE = { backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '32px 32px' } as const;
+
 const features = [
   {
     icon: ClipboardList,
@@ -88,19 +90,21 @@ const HomePage = () => {
     <div className="min-h-screen bg-background">
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-hero py-20 px-6">
-        <div className="container max-w-5xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-primary-foreground mb-6">
+      <section className="relative overflow-hidden bg-gradient-hero py-24 px-6">
+        {/* Subtle pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.04]" style={DOT_PATTERN_STYLE} />
+        <div className="container max-w-5xl mx-auto text-center relative">
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight">
             Gana más licitaciones
-            <span className="block bg-gradient-to-r from-green-400 to-purple-400 bg-clip-text text-transparent">
-              con EVA
+            <span className="block mt-1 text-white/90">
+              con <span className="bg-gradient-to-r from-green-300 to-purple-300 bg-clip-text text-transparent">EVA</span>
             </span>
           </h1>
-          <p className="text-xl md:text-2xl text-primary-foreground/90 mb-4 max-w-3xl mx-auto">
+          <p className="text-lg md:text-xl text-white/85 mb-4 max-w-3xl mx-auto leading-relaxed">
             Plataforma integral para que tu empresa gestione todo el proceso de licitación: desde la carga de antecedentes
             hasta el análisis de bases y las estimaciones de adjudicación.
           </p>
-          <p className="text-base text-primary-foreground/70 mb-10 max-w-2xl mx-auto">
+          <p className="text-base text-white/60 mb-10 max-w-2xl mx-auto">
             Reduce el tiempo de análisis, detecta requisitos automáticamente y simula distintos escenarios de oferta
             antes de presentar tu propuesta.
           </p>
@@ -108,7 +112,7 @@ const HomePage = () => {
             <Button
               size="lg"
               variant="secondary"
-              className="bg-white/20 backdrop-blur border-white/30 text-white hover:bg-white/30"
+              className="bg-white/15 backdrop-blur-sm border border-white/25 text-white hover:bg-white/25 transition-all"
               asChild
             >
               <Link to="/tenders">
@@ -118,7 +122,7 @@ const HomePage = () => {
             </Button>
             <Button
               size="lg"
-              className="bg-purple-800 hover:bg-purple-900 text-white border-0"
+              className="bg-secondary hover:bg-secondary/90 text-white border-0 shadow-lg shadow-secondary/25"
               onClick={() => setShowAICoach(true)}
             >
               <MessageCircle className="w-5 h-5 mr-2" />
@@ -162,11 +166,11 @@ const HomePage = () => {
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {steps.map((step) => (
-              <div key={step.number} className="flex flex-col items-start">
-                <span className="text-4xl font-extrabold text-primary/20 mb-3">{step.number}</span>
+            {steps.map((step, i) => (
+              <div key={step.number} className="flex flex-col items-start p-5 rounded-xl bg-card/70 border border-border/30 shadow-card">
+                <span className={`text-3xl font-extrabold mb-3 ${i % 2 === 0 ? 'text-primary/25' : 'text-secondary/25'}`}>{step.number}</span>
                 <h3 className="font-semibold text-foreground mb-1">{step.title}</h3>
-                <p className="text-sm text-muted-foreground">{step.description}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
               </div>
             ))}
           </div>
@@ -183,19 +187,20 @@ const HomePage = () => {
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-6">
-            {features.map((f) => {
+            {features.map((f, i) => {
               const Icon = f.icon;
+              const isPurple = i % 2 === 1;
               return (
-                <Card key={f.title} className="group hover:shadow-elevated transition-all duration-300 bg-gradient-card border-0">
+                <Card key={f.title} className="group hover:shadow-elevated transition-all duration-300 bg-gradient-card border border-border/30">
                   <CardHeader className="space-y-3">
-                    <div className="p-3 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors w-fit">
-                      <Icon className="w-6 h-6 text-primary" />
+                    <div className={`p-3 rounded-lg w-fit transition-colors ${isPurple ? 'bg-secondary/10 group-hover:bg-secondary/20' : 'bg-primary/10 group-hover:bg-primary/20'}`}>
+                      <Icon className={`w-6 h-6 ${isPurple ? 'text-secondary' : 'text-primary'}`} />
                     </div>
-                    <CardTitle className="text-lg group-hover:text-primary transition-colors">{f.title}</CardTitle>
-                    <CardDescription>{f.description}</CardDescription>
+                    <CardTitle className={`text-lg transition-colors ${isPurple ? 'group-hover:text-secondary' : 'group-hover:text-primary'}`}>{f.title}</CardTitle>
+                    <CardDescription className="leading-relaxed">{f.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Button variant="outline" size="sm" className="group-hover:border-primary group-hover:text-primary transition-colors" asChild>
+                    <Button variant="outline" size="sm" className={`transition-colors ${isPurple ? 'group-hover:border-secondary group-hover:text-secondary' : 'group-hover:border-primary group-hover:text-primary'}`} asChild>
                       <Link to={f.href}>
                         {f.cta}
                         <ArrowRight className="w-3 h-3 ml-2" />
@@ -217,10 +222,12 @@ const HomePage = () => {
             <p className="text-muted-foreground">Sin curva de aprendizaje larga — resultados desde el primer proceso.</p>
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
-            {highlights.map(({ icon: Icon, text }) => (
-              <div key={text} className="flex items-start space-x-3 p-4 rounded-lg bg-background border border-border/40">
-                <Icon className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                <span className="text-sm text-foreground">{text}</span>
+            {highlights.map(({ icon: Icon, text }, i) => (
+              <div key={text} className="flex items-start space-x-3 p-4 rounded-lg bg-card border border-border/30 shadow-card">
+                <div className={`p-1.5 rounded-md shrink-0 ${i % 2 === 0 ? 'bg-primary/10' : 'bg-secondary/10'}`}>
+                  <Icon className={`w-4 h-4 ${i % 2 === 0 ? 'text-primary' : 'text-secondary'}`} />
+                </div>
+                <span className="text-sm text-foreground leading-relaxed">{text}</span>
               </div>
             ))}
           </div>

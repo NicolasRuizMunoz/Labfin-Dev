@@ -140,8 +140,8 @@ const AuthPage = () => {
     <div className="min-h-screen bg-background flex items-center justify-center py-8 px-6">
       <div className="container max-w-md mx-auto">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Brain className="w-8 h-8 text-primary" />
+          <div className="w-16 h-16 bg-gradient-hero rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/20">
+            <Brain className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">
             {isLogin ? t('welcomeBack') : 'Únete a Evalitics'}
@@ -151,7 +151,7 @@ const AuthPage = () => {
           </p>
         </div>
 
-        <Card>
+        <Card className="border-border/50 shadow-elevated">
           <CardHeader>
             <CardTitle>{isLogin ? t('signIn') : t('signUp')}</CardTitle>
             <CardDescription>

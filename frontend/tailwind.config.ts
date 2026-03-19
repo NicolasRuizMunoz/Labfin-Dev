@@ -73,6 +73,8 @@ export default {
         "gradient-hero": "var(--gradient-hero)",
         "gradient-success": "var(--gradient-success)",
         "gradient-card": "var(--gradient-card)",
+        "gradient-subtle": "var(--gradient-subtle)",
+        "gradient-page-header": "var(--gradient-page-header)",
       },
       boxShadow: {
         "card": "var(--shadow-card)",
