@@ -15,6 +15,8 @@ import FilesManagerPage from "./pages/FilesManagerPage";
 import TendersPage from "./pages/TendersPage";
 import LicitacionDetailPage from "./pages/LicitacionDetailPage";
 import NotFound from "./pages/NotFound";
+import AdminPage from "./pages/AdminPage";
+import EscenariosPage from "./pages/EscenariosPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,6 +46,8 @@ const App = () => (
                 <Route path="/files" element={<FilesManagerPage />} />
                 <Route path="/tenders" element={<TendersPage />} />
                 <Route path="/tenders/:id" element={<LicitacionDetailPage />} />
+                <Route path="/escenarios" element={<EscenariosPage />} />
+                <Route path="/admin" element={<AdminPage />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

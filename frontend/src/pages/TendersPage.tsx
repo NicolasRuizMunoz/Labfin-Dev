@@ -1,18 +1,8 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ClipboardList, Plus, Trash2, Calendar, FileText, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import {
   listLicitaciones,
@@ -25,31 +15,20 @@ const TendersPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [open, setOpen] = useState(false);
-  const [nombre, setNombre] = useState('');
-  const [fechaVencimiento, setFechaVencimiento] = useState('');
 
   const { data: licitaciones = [], isLoading } = useQuery({
     queryKey: ['licitaciones'],
     queryFn: listLicitaciones,
   });
 
-  const resetForm = () => {
-    setNombre('');
-    setFechaVencimiento('');
-  };
-
   const createMut = useMutation({
     mutationFn: () =>
       createLicitacion({
-        nombre,
-        fecha_vencimiento: fechaVencimiento || null,
+        nombre: 'Nueva licitación',
       }),
-    onSuccess: () => {
+    onSuccess: (lic) => {
       queryClient.invalidateQueries({ queryKey: ['licitaciones'] });
-      setOpen(false);
-      resetForm();
-      toast({ title: 'Licitación creada' });
+      navigate(`/tenders/${lic.id}`);
     },
     onError: () => toast({ title: 'Error al crear licitación', variant: 'destructive' }),
   });
@@ -78,8 +57,8 @@ const TendersPage = () => {
                 <p className="text-sm text-muted-foreground mt-0.5">Gestiona y analiza tus procesos de licitación</p>
               </div>
             </div>
-            <Button onClick={() => setOpen(true)} className="shadow-sm">
-              <Plus className="w-4 h-4 mr-2" />
+            <Button onClick={() => createMut.mutate()} disabled={createMut.isPending} className="shadow-sm">
+              {createMut.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
               Nueva Licitación
             </Button>
           </div>
@@ -107,8 +86,8 @@ const TendersPage = () => {
                 Agrega tu primera licitación para comenzar el análisis. Puedes adjuntar los documentos
                 directamente al crearla.
               </p>
-              <Button onClick={() => setOpen(true)}>
-                <Plus className="w-4 h-4 mr-2" />
+              <Button onClick={() => createMut.mutate()} disabled={createMut.isPending}>
+                {createMut.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
                 Nueva Licitación
               </Button>
             </CardContent>
@@ -155,45 +134,6 @@ const TendersPage = () => {
         )}
       </div>
 
-      {/* Diálogo nueva licitación */}
-      <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Nueva Licitación</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="nombre">Nombre</Label>
-              <Input
-                id="nombre"
-                placeholder="Nombre del proceso"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="fecha">Fecha de vencimiento</Label>
-              <Input
-                id="fecha"
-                type="date"
-                value={fechaVencimiento}
-                onChange={(e) => setFechaVencimiento(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setOpen(false); resetForm(); }}>
-              Cancelar
-            </Button>
-            <Button
-              disabled={!nombre.trim() || createMut.isPending}
-              onClick={() => createMut.mutate()}
-            >
-              {createMut.isPending ? 'Creando...' : 'Crear'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

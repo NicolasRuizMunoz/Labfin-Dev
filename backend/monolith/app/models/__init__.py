@@ -7,9 +7,13 @@ from app.models.analisis_licitacion import AnalisisLicitacion
 from app.models.file import FileEntry
 from app.models.document_chunk import DocumentChunk
 from app.models.chat import ChatSession, ChatMessage
+from app.models.token_usage import TokenUsage
+from app.models.escenario import Escenario
+from app.models.simulacion import Simulacion, SimulacionEscenario, AnalisisSimulacion
 
 __all__ = [
     "Organization", "User", "OAuthAccount",
     "Licitacion", "AnalisisLicitacion", "FileEntry", "DocumentChunk",
-    "ChatSession", "ChatMessage",
+    "ChatSession", "ChatMessage", "TokenUsage",
+    "Escenario", "Simulacion", "SimulacionEscenario", "AnalisisSimulacion",
 ]

@@ -5,7 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import CORS_ORIGINS
 from app.startup import run_startup
-from app.routers import auth, upload, file, chat, licitaciones
+from app.routers import auth, upload, file, chat, licitaciones, admin, escenarios, simulaciones
+from app.middleware.rate_limit import RateLimitMiddleware
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -19,6 +20,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="LabFin", lifespan=lifespan)
 
+app.add_middleware(RateLimitMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
@@ -35,7 +37,10 @@ app.include_router(auth.router,         prefix="/api/users")
 app.include_router(upload.router,       prefix="/api/data")
 app.include_router(file.router,         prefix="/api/data")
 app.include_router(licitaciones.router, prefix="/api/data")
+app.include_router(escenarios.router,    prefix="/api/data")
+app.include_router(simulaciones.router,  prefix="/api/data")
 app.include_router(chat.router,         prefix="/api")
+app.include_router(admin.router,        prefix="/api/admin")
 
 
 @app.get("/health")

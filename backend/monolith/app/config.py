@@ -1,9 +1,15 @@
 import os
+import logging
 from urllib.parse import quote_plus
+
+logger = logging.getLogger(__name__)
 
 if os.getenv("USE_DOTENV", "true").lower() == "true":
     from dotenv import load_dotenv
     load_dotenv(dotenv_path=".env")
+
+# Environment mode
+DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
 
 # Database
 DB_HOST = os.getenv("DB_HOST", "localhost")
@@ -14,10 +20,18 @@ DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 DATABASE_URL = f"mysql+pymysql://{DB_USER}:{quote_plus(DB_PASSWORD)}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
 
 # JWT / Security
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
+_secret = os.getenv("SECRET_KEY", "")
+if not _secret:
+    if DEV_MODE:
+        _secret = "dev-secret-NOT-FOR-PRODUCTION"
+        logger.warning("SECRET_KEY not set — using insecure dev default. Set SECRET_KEY in .env for production.")
+    else:
+        raise RuntimeError("SECRET_KEY environment variable is required in production. Set DEV_MODE=true to use a dev default.")
+SECRET_KEY: str = _secret
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "180"))
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
+SECURE_COOKIES = os.getenv("SECURE_COOKIES", "false" if DEV_MODE else "true").lower() == "true"
 
 # Google OAuth (optional)
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")

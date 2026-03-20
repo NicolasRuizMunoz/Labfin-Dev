@@ -20,3 +20,8 @@ class Licitacion(Base):
         order_by="AnalisisLicitacion.created_at.desc()",
         cascade="all, delete",
     )
+    simulaciones = relationship(
+        "Simulacion",
+        back_populates="licitacion",
+        cascade="all, delete",
+    )

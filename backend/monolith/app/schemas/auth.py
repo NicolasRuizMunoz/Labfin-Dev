@@ -30,6 +30,7 @@ class UserOut(BaseModel):
     email: EmailStr
     username: str
     organization_id: Optional[int]
+    role: str
     is_active: bool
 
     class Config:

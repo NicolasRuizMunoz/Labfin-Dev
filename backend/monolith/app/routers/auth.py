@@ -1,13 +1,17 @@
 import jwt
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy.orm import Session
 
-from app.config import SECRET_KEY, ALGORITHM
+from app.config import (
+    SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS,
+    SECURE_COOKIES,
+)
 from app.database.db import get_db
 from app.dependencies.auth import get_current_user, UserTokenData
 from app.schemas.auth import LoginRequest, GoogleLoginRequest, TokenPair, RegisterRequest, UserOut
 from app.services.auth.auth_service import login_password, login_google, register
-from app.services.auth.security import create_access_token
+from app.services.auth.security import create_access_token, create_refresh_token
+from app.services.auth.token_blacklist import blacklist_token
 from app.models.user import User
 
 # No prefix here — main.py mounts this at /api/users
@@ -17,11 +21,28 @@ _COOKIE_ACCESS = "access_token"
 _COOKIE_REFRESH = "refresh_token"
 
 
+def _cookie_opts() -> dict:
+    return dict(
+        httponly=True,
+        samesite="lax",
+        secure=SECURE_COOKIES,
+        path="/",
+    )
+
+
 def _set_cookies(response: Response, tokens: TokenPair) -> None:
     """Write HTTP-only auth cookies so the browser can authenticate silently."""
-    opts = dict(httponly=True, samesite="lax", path="/")
-    response.set_cookie(_COOKIE_ACCESS,  tokens.access_token,  **opts)
-    response.set_cookie(_COOKIE_REFRESH, tokens.refresh_token, **opts)
+    opts = _cookie_opts()
+    response.set_cookie(
+        _COOKIE_ACCESS, tokens.access_token,
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        **opts,
+    )
+    response.set_cookie(
+        _COOKIE_REFRESH, tokens.refresh_token,
+        max_age=REFRESH_TOKEN_EXPIRE_DAYS * 86400,
+        **opts,
+    )
 
 
 @router.post("/login", response_model=TokenPair)
@@ -60,7 +81,7 @@ def me(current: UserTokenData = Depends(get_current_user), db: Session = Depends
 
 @router.post("/refresh", response_model=dict)
 def refresh(request: Request, response: Response, db: Session = Depends(get_db)):
-    """Use the refresh_token cookie to issue a new access_token."""
+    """Use the refresh_token cookie to issue a new access_token and rotate the refresh_token."""
     raw = request.cookies.get(_COOKIE_REFRESH)
     if not raw:
         raise HTTPException(status_code=401, detail="No refresh token")
@@ -79,15 +100,38 @@ def refresh(request: Request, response: Response, db: Session = Depends(get_db))
     if not user or not user.is_active:
         raise HTTPException(status_code=401, detail="User not found or inactive")
 
-    new_access = create_access_token(user.id, user.organization_id)
+    # Blacklist the old refresh token so it cannot be reused
+    blacklist_token(raw)
+
+    # Issue new token pair (rotation)
+    new_access = create_access_token(user.id, user.organization_id, user.role)
+    new_refresh = create_refresh_token(user.id)
+
+    opts = _cookie_opts()
     response.set_cookie(
-        _COOKIE_ACCESS, new_access, httponly=True, samesite="lax", path="/"
+        _COOKIE_ACCESS, new_access,
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        **opts,
+    )
+    response.set_cookie(
+        _COOKIE_REFRESH, new_refresh,
+        max_age=REFRESH_TOKEN_EXPIRE_DAYS * 86400,
+        **opts,
     )
     return {"access_token": new_access}
 
 
 @router.post("/logout")
-def logout(response: Response):
-    response.delete_cookie(_COOKIE_ACCESS,  path="/")
-    response.delete_cookie(_COOKIE_REFRESH, path="/")
+def logout(request: Request, response: Response):
+    # Blacklist current tokens so they can't be reused
+    access = request.cookies.get(_COOKIE_ACCESS)
+    refresh = request.cookies.get(_COOKIE_REFRESH)
+    if access:
+        blacklist_token(access)
+    if refresh:
+        blacklist_token(refresh)
+
+    opts = _cookie_opts()
+    response.delete_cookie(_COOKIE_ACCESS, path="/", samesite="lax", secure=SECURE_COOKIES)
+    response.delete_cookie(_COOKIE_REFRESH, path="/", samesite="lax", secure=SECURE_COOKIES)
     return {"ok": True}

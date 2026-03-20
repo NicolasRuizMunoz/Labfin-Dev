@@ -169,7 +169,7 @@ def _to_float(val) -> Optional[float]:
         return None
 
 
-def analyze_licitacion(db: Session, org_id: int, licitacion_id: int) -> dict:
+def analyze_licitacion(db: Session, org_id: int, licitacion_id: int, *, user_id: int) -> dict:
     if not OPENAI_API_KEY:
         raise HTTPException(
             status_code=503,
@@ -230,22 +230,16 @@ def analyze_licitacion(db: Session, org_id: int, licitacion_id: int) -> dict:
         raw_answer = response.choices[0].message.content or ""
         tokens_used = response.usage.total_tokens if response.usage else None
         if response.usage:
-            _PRICE_INPUT = {
-                "gpt-4o-mini": 0.15, "gpt-4o": 2.50,
-                "gpt-4.1-mini": 0.40, "gpt-4.1": 2.00,
-            }
-            _PRICE_OUTPUT = {
-                "gpt-4o-mini": 0.60, "gpt-4o": 10.00,
-                "gpt-4.1-mini": 1.60, "gpt-4.1": 8.00,
-            }
-            in_tok = response.usage.prompt_tokens
-            out_tok = response.usage.completion_tokens
-            rate_in = _PRICE_INPUT.get(OPENAI_MODEL, 1.0)
-            rate_out = _PRICE_OUTPUT.get(OPENAI_MODEL, 4.0)
-            cost_usd = (in_tok * rate_in + out_tok * rate_out) / 1_000_000
-            LOGGER.info(
-                f"[ANALYSIS] tokens: input={in_tok} | output={out_tok} | total={tokens_used} | "
-                f"model={OPENAI_MODEL} | costo_estimado=${cost_usd:.4f} USD"
+            from app.services.token_usage_service import record_usage
+            record_usage(
+                db,
+                organization_id=org_id,
+                user_id=user_id,
+                usage_type="analysis",
+                model=OPENAI_MODEL,
+                prompt_tokens=response.usage.prompt_tokens,
+                completion_tokens=response.usage.completion_tokens,
+                total_tokens=tokens_used,
             )
     except OpenAIError as e:
         LOGGER.error(f"[ANALYSIS] OpenAI error: {e}")
@@ -275,7 +269,7 @@ def analyze_licitacion(db: Session, org_id: int, licitacion_id: int) -> dict:
     db.commit()
     db.refresh(registro)
 
-    return {
+    result = {
         "id": registro.id,
         "analisis": registro.analisis,
         "model": registro.model,
@@ -295,6 +289,48 @@ def analyze_licitacion(db: Session, org_id: int, licitacion_id: int) -> dict:
         "curvas_data": registro.curvas_data,
         "created_at": registro.created_at.isoformat(),
     }
+
+    # Post-EVA: analyze active simulaciones
+    from app.models.simulacion import Simulacion
+    from app.services import simulacion_service
+
+    active_sims = (
+        db.query(Simulacion)
+        .filter(
+            Simulacion.licitacion_id == licitacion_id,
+            Simulacion.organization_id == org_id,
+            Simulacion.is_active.is_(True),
+        )
+        .all()
+    )
+
+    sim_results = []
+    sim_errors = []
+    for sim in active_sims:
+        try:
+            analisis_sim = simulacion_service.analyze_simulacion(
+                db, org_id, licitacion_id, sim.id, user_id=user_id,
+            )
+            sim_results.append({
+                "simulacion_id": sim.id,
+                "simulacion_nombre": sim.nombre,
+                "analisis_id": analisis_sim.id,
+                "analisis": analisis_sim.analisis,
+                "curva_data": analisis_sim.curva_data,
+                "tokens_usados": analisis_sim.tokens_usados,
+            })
+        except Exception as e:
+            LOGGER.warning(f"[ANALYSIS] Simulacion {sim.id} failed: {e}")
+            sim_errors.append({
+                "simulacion_id": sim.id,
+                "simulacion_nombre": sim.nombre,
+                "error": str(e),
+            })
+
+    result["simulaciones_analisis"] = sim_results
+    result["simulaciones_errores"] = sim_errors
+
+    return result
 
 
 def get_analisis_history(db: Session, org_id: int, licitacion_id: int) -> list:

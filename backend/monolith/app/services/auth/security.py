@@ -28,10 +28,10 @@ def _create_token(sub: str, extra_claims: dict[str, Any], expires: timedelta) ->
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def create_access_token(user_id: int, org_id: int | None) -> str:
+def create_access_token(user_id: int, org_id: int | None, role: str | None = None) -> str:
     return _create_token(
         sub=str(user_id),
-        extra_claims={"organization_id": org_id},
+        extra_claims={"organization_id": org_id, "role": role or "client"},
         expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     )
 

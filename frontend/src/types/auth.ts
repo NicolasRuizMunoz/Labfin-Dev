@@ -3,6 +3,6 @@ export type Me = {
   email: string;
   username?: string;
   organization_id?: number | null;
-  role_id: number;
+  role: string;
   is_active: boolean;
 };

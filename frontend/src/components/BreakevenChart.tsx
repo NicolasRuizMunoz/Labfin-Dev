@@ -25,8 +25,15 @@ interface CurvasData {
   pesimista: ScenarioParams;
 }
 
+export interface SimulacionLine {
+  nombre: string;
+  color: string;
+  curva_data: ScenarioParams;
+}
+
 interface Props {
   curvas: CurvasData;
+  simulaciones?: SimulacionLine[];
 }
 
 function ganancia(t: number, p: ScenarioParams): number {
@@ -58,15 +65,21 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-const BreakevenChart: React.FC<Props> = ({ curvas }) => {
+const BreakevenChart: React.FC<Props> = ({ curvas, simulaciones = [] }) => {
   const { meses_total, optimista, base, pesimista } = curvas;
 
-  const data = Array.from({ length: meses_total + 1 }, (_, t) => ({
-    mes: t,
-    Optimista: ganancia(t, optimista),
-    Base: ganancia(t, base),
-    Pesimista: ganancia(t, pesimista),
-  }));
+  const data = Array.from({ length: meses_total + 1 }, (_, t) => {
+    const point: Record<string, number> = {
+      mes: t,
+      Optimista: ganancia(t, optimista),
+      Base: ganancia(t, base),
+      Pesimista: ganancia(t, pesimista),
+    };
+    for (const sim of simulaciones) {
+      point[sim.nombre] = ganancia(t, sim.curva_data);
+    }
+    return point;
+  });
 
   return (
     <div className="w-full h-72">
@@ -94,6 +107,17 @@ const BreakevenChart: React.FC<Props> = ({ curvas }) => {
           <Line type="monotone" dataKey="Optimista" stroke="#22c55e" strokeWidth={2} dot={false} />
           <Line type="monotone" dataKey="Base" stroke="#3b82f6" strokeWidth={2} dot={false} />
           <Line type="monotone" dataKey="Pesimista" stroke="#f97316" strokeWidth={2} dot={false} />
+          {simulaciones.map((sim) => (
+            <Line
+              key={sim.nombre}
+              type="monotone"
+              dataKey={sim.nombre}
+              stroke={sim.color}
+              strokeWidth={2}
+              strokeDasharray="5 5"
+              dot={false}
+            />
+          ))}
         </LineChart>
       </ResponsiveContainer>
     </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft,
   Loader2,
@@ -19,21 +19,28 @@ import {
   CheckCircle,
   HelpCircle,
   MessageSquare,
+  Upload,
+  FolderOpen,
+  FlaskConical,
 } from 'lucide-react';
 import LicitacionChatPanel from '@/components/LicitacionChatPanel';
+import SimulacionesPanel from '@/components/SimulacionesPanel';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import FileUploader from '@/components/FileUploader';
 import FileTable from '@/components/FileTable';
-import BreakevenChart from '@/components/BreakevenChart';
+import BreakevenChart, { type SimulacionLine } from '@/components/BreakevenChart';
+import { Input } from '@/components/ui/input';
 import {
   getLicitacion,
   getLicitacionFiles,
   getAnalisisHistory,
   analizarLicitacion,
+  updateLicitacion,
   type AnalisisResult,
 } from '@/services/tenders';
+import { listSimulaciones } from '@/services/simulaciones';
 import * as dataApi from '@/services/data';
 import http from '@/lib/http';
 
@@ -98,10 +105,12 @@ function AnalisisPanel({
   a,
   isLatest,
   allFilesMap,
+  activeSimLines = [],
 }: {
   a: AnalisisResult;
   isLatest: boolean;
   allFilesMap: Record<number, string>;
+  activeSimLines?: SimulacionLine[];
 }) {
   const [open, setOpen] = useState(isLatest);
   const sections = parseSections(a.analisis);
@@ -124,10 +133,21 @@ function AnalisisPanel({
     a.breakeven_meses_base != null ||
     a.breakeven_meses_pesimista != null;
   const hasChart = !!a.curvas_data;
+
+  // Calculate breakeven months for each active simulation
+  const simTimelines = activeSimLines
+    .map((sim) => {
+      const margin = sim.curva_data.ingreso_mensual - sim.curva_data.costo_variable_mensual;
+      const meses = margin > 0 ? Math.ceil(sim.curva_data.costo_fijo / margin) : null;
+      return { nombre: sim.nombre, color: sim.color, meses };
+    })
+    .filter((s): s is { nombre: string; color: string; meses: number } => s.meses != null);
+
   const maxMeses = Math.max(
     a.breakeven_meses_optimista ?? 0,
     a.breakeven_meses_base ?? 0,
     a.breakeven_meses_pesimista ?? 0,
+    ...simTimelines.map((s) => s.meses),
     1
   );
 
@@ -233,6 +253,30 @@ function AnalisisPanel({
                         </div>
                       ) : null
                     )}
+                    {/* Simulation breakeven bars */}
+                    {simTimelines.map((sim) => (
+                      <div key={sim.nombre} className="space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground flex items-center gap-1.5">
+                            <span
+                              className="w-2 h-2 rounded-full inline-block flex-shrink-0"
+                              style={{ backgroundColor: sim.color }}
+                            />
+                            {sim.nombre}
+                          </span>
+                          <span className="font-medium">{sim.meses} {sim.meses === 1 ? 'mes' : 'meses'}</span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className="h-full rounded-full"
+                            style={{
+                              backgroundColor: sim.color,
+                              width: `${Math.min((sim.meses / maxMeses) * 100, 100)}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
@@ -245,7 +289,7 @@ function AnalisisPanel({
               {hasChart && (
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-2">Curva de ganancia acumulada</p>
-                  <BreakevenChart curvas={a.curvas_data!} />
+                  <BreakevenChart curvas={a.curvas_data!} simulaciones={activeSimLines} />
                   <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-muted-foreground">
                     {(['optimista', 'base', 'pesimista'] as const).map((k) => (
                       <div key={k} className="leading-snug">
@@ -315,9 +359,14 @@ const LicitacionDetailPage: React.FC = () => {
   const licitacionId = Number(id);
   const navigate = useNavigate();
 
+  const queryClient = useQueryClient();
   const [analizando, setAnalizando] = useState(false);
   const [analisisError, setAnalisisError] = useState<string | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [draftName, setDraftName] = useState('');
+  const [draftFecha, setDraftFecha] = useState('');
+  const [filesOpen, setFilesOpen] = useState(false);
 
   const { data: licitacion } = useQuery({
     queryKey: ['licitacion', licitacionId],
@@ -334,6 +383,23 @@ const LicitacionDetailPage: React.FC = () => {
     queryFn: () => getAnalisisHistory(licitacionId),
   });
 
+  const { data: simulaciones = [] } = useQuery({
+    queryKey: ['simulaciones', licitacionId],
+    queryFn: () => listSimulaciones(licitacionId),
+  });
+
+  const activeSimLines: SimulacionLine[] = React.useMemo(
+    () =>
+      simulaciones
+        .filter((s) => s.is_active && s.ultimo_analisis?.curva_data)
+        .map((s) => ({
+          nombre: s.nombre,
+          color: s.color || '#6b7280',
+          curva_data: s.ultimo_analisis!.curva_data!,
+        })),
+    [simulaciones]
+  );
+
   // Mapa id→nombre para todos los archivos de la organización (empresa + licitación)
   const { data: allOrgFilesGrouped = {} } = useQuery({
     queryKey: ['org-files'],
@@ -348,6 +414,23 @@ const LicitacionDetailPage: React.FC = () => {
     }
     return map;
   }, [allOrgFilesGrouped]);
+
+  // ---- Inline edit name / date ----
+  const saveName = async () => {
+    if (!draftName.trim() || draftName === licitacion?.nombre) {
+      setEditingName(false);
+      return;
+    }
+    await updateLicitacion(licitacionId, { nombre: draftName.trim() });
+    queryClient.invalidateQueries({ queryKey: ['licitacion', licitacionId] });
+    setEditingName(false);
+  };
+
+  const saveFecha = async (value: string) => {
+    setDraftFecha(value);
+    await updateLicitacion(licitacionId, { fecha_vencimiento: value || null });
+    queryClient.invalidateQueries({ queryKey: ['licitacion', licitacionId] });
+  };
 
   // ---- Upload via FileUploader ----
   const handleUpload = async (selectedFiles: File[]) => {
@@ -367,6 +450,7 @@ const LicitacionDetailPage: React.FC = () => {
     try {
       await analizarLicitacion(licitacionId);
       refetchHistorial();
+      queryClient.invalidateQueries({ queryKey: ['simulaciones', licitacionId] });
     } catch (err: any) {
       setAnalisisError(err?.message ?? 'Error al generar el análisis');
     } finally {
@@ -384,14 +468,35 @@ const LicitacionDetailPage: React.FC = () => {
               <Button variant="outline" size="icon" onClick={() => navigate('/tenders')} className="h-9 w-9 shrink-0">
                 <ArrowLeft className="w-4 h-4" />
               </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">{licitacion?.nombre ?? '...'}</h1>
-                {licitacion?.fecha_vencimiento && (
-                  <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                    <Calendar className="w-3.5 h-3.5 text-secondary/70" />
-                    Vence: {new Date(licitacion.fecha_vencimiento).toLocaleDateString('es-CL')}
-                  </p>
+              <div className="space-y-1">
+                {editingName ? (
+                  <Input
+                    autoFocus
+                    value={draftName}
+                    onChange={(e) => setDraftName(e.target.value)}
+                    onBlur={saveName}
+                    onKeyDown={(e) => { if (e.key === 'Enter') saveName(); if (e.key === 'Escape') setEditingName(false); }}
+                    className="text-2xl font-bold h-auto py-0.5 px-1 -ml-1 border-primary/40"
+                  />
+                ) : (
+                  <h1
+                    className="text-2xl font-bold text-foreground cursor-pointer hover:text-primary/80 transition-colors"
+                    onClick={() => { setDraftName(licitacion?.nombre ?? ''); setEditingName(true); }}
+                    title="Haz click para editar el nombre"
+                  >
+                    {licitacion?.nombre ?? '...'}
+                  </h1>
                 )}
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <Calendar className="w-3.5 h-3.5 text-secondary/70" />
+                  <span>Vence:</span>
+                  <Input
+                    type="date"
+                    value={draftFecha || licitacion?.fecha_vencimiento?.split('T')[0] || ''}
+                    onChange={(e) => saveFecha(e.target.value)}
+                    className="h-6 w-36 text-xs px-1 py-0 border-transparent hover:border-border focus:border-primary/40"
+                  />
+                </div>
               </div>
             </div>
             <Button onClick={handleAnalizar} disabled={analizando} className="gap-2 shadow-sm">
@@ -404,34 +509,58 @@ const LicitacionDetailPage: React.FC = () => {
 
       <div className="mx-auto max-w-6xl px-4 py-8 space-y-6">
 
-      {/* Subir documentos */}
+      {/* Documentos (collapsible) */}
       <Card className="border-border/40">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Subir documentos</CardTitle>
+        <CardHeader
+          className="pb-3 cursor-pointer select-none hover:bg-muted/20 transition-colors"
+          onClick={() => setFilesOpen((v) => !v)}
+        >
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <FolderOpen className="w-4 h-4 text-muted-foreground" />
+              Documentos
+              {files.length > 0 && (
+                <Badge variant="secondary" className="text-xs">{files.length}</Badge>
+              )}
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              {!filesOpen && (
+                <span className="text-xs text-muted-foreground">
+                  {files.length === 0 ? 'Sube archivos para analizar' : `${files.length} archivo${files.length !== 1 ? 's' : ''}`}
+                </span>
+              )}
+              {filesOpen ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+            </div>
+          </div>
         </CardHeader>
-        <CardContent>
-          <FileUploader onUpload={handleUpload} label="Documentos de la licitación" />
-        </CardContent>
+        {filesOpen && (
+          <CardContent className="space-y-4 pt-0">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
+                <Upload className="w-3.5 h-3.5" /> Subir documentos
+              </p>
+              <FileUploader onUpload={handleUpload} label="Documentos de la licitación" />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-muted-foreground">Archivos subidos</p>
+                <Button variant="ghost" size="sm" onClick={() => refetchFiles()} className="h-6 text-xs gap-1">
+                  <RefreshCw className="h-3 w-3" /> Actualizar
+                </Button>
+              </div>
+              <FileTable
+                files={files}
+                loading={loadingFiles}
+                onRefetch={() => refetchFiles()}
+                emptyMessage="No hay archivos aún. Sube los documentos de esta licitación y confírmalos para que queden disponibles para el análisis de EVA."
+              />
+            </div>
+          </CardContent>
+        )}
       </Card>
 
-      {/* Archivos */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium flex items-center gap-2">
-            Archivos
-            {files.length > 0 && <span className="text-sm font-normal text-muted-foreground">({files.length})</span>}
-          </h2>
-          <Button variant="outline" size="sm" onClick={() => refetchFiles()} className="gap-1.5">
-            <RefreshCw className="h-3.5 w-3.5" /> Actualizar
-          </Button>
-        </div>
-        <FileTable
-          files={files}
-          loading={loadingFiles}
-          onRefetch={() => refetchFiles()}
-          emptyMessage="No hay archivos aún. Sube los documentos de esta licitación y confírmalos para que queden disponibles para el análisis de EVA."
-        />
-      </div>
+      {/* Simulaciones */}
+      <SimulacionesPanel licitacionId={licitacionId} />
 
       {/* Historial de análisis EVA */}
       <div className="space-y-3">
@@ -464,10 +593,52 @@ const LicitacionDetailPage: React.FC = () => {
           </p>
         ) : (
           historial.map((a, i) => (
-            <AnalisisPanel key={a.id} a={a} isLatest={i === 0} allFilesMap={allOrgFilesMap} />
+            <AnalisisPanel key={a.id} a={a} isLatest={i === 0} allFilesMap={allOrgFilesMap} activeSimLines={i === 0 ? activeSimLines : []} />
           ))
         )}
       </div>
+
+      {/* Analisis de simulaciones */}
+      {simulaciones.some(s => s.ultimo_analisis) && (
+        <div className="space-y-3">
+          <h2 className="text-lg font-medium flex items-center gap-2">
+            <FlaskConical className="w-5 h-5 text-secondary" />
+            Analisis de Simulaciones
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {simulaciones
+              .filter(s => s.ultimo_analisis)
+              .map(sim => (
+                <Card key={sim.id} className="border border-border/40 border-l-[3px]" style={{ borderLeftColor: sim.color || '#6b7280' }}>
+                  <CardHeader className="pb-2 pt-4 px-4">
+                    <CardTitle className="text-xs font-semibold flex items-center gap-1.5 uppercase tracking-wide" style={{ color: sim.color || '#6b7280' }}>
+                      <span
+                        className="w-2.5 h-2.5 rounded-full inline-block flex-shrink-0"
+                        style={{ backgroundColor: sim.color || '#6b7280' }}
+                      />
+                      {sim.nombre}
+                    </CardTitle>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {new Date(sim.ultimo_analisis!.created_at).toLocaleString('es-CL')}
+                      {sim.ultimo_analisis!.curva_data && (
+                        <span className="ml-2">
+                          CF: ${sim.ultimo_analisis!.curva_data.costo_fijo?.toLocaleString('es-CL') ?? '—'}
+                          {' · '}Ing: ${sim.ultimo_analisis!.curva_data.ingreso_mensual?.toLocaleString('es-CL') ?? '—'}
+                          {' · '}CV: ${sim.ultimo_analisis!.curva_data.costo_variable_mensual?.toLocaleString('es-CL') ?? '—'}
+                        </span>
+                      )}
+                    </p>
+                  </CardHeader>
+                  <CardContent className="px-4 pb-4 pt-0">
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap max-h-40 overflow-y-auto">
+                      {sim.ultimo_analisis!.analisis}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Widget flotante de chat ──────────────────────────────────────── */}
 

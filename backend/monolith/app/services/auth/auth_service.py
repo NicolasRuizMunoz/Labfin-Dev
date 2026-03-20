@@ -1,7 +1,9 @@
+import logging
+
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from app.config import GOOGLE_CLIENT_ID
+from app.config import GOOGLE_CLIENT_ID, DEV_MODE
 from app.services.auth.security import (
     hash_password, verify_password, create_access_token, create_refresh_token,
 )
@@ -10,9 +12,11 @@ from app.models.organization import Organization
 from app.models.oauth_account import OAuthAccount
 from app.schemas.auth import TokenPair
 
+logger = logging.getLogger(__name__)
+
 
 def _issue_tokens(user: User) -> TokenPair:
-    access = create_access_token(user.id, user.organization_id)
+    access = create_access_token(user.id, user.organization_id, user.role)
     refresh = create_refresh_token(user.id)
     return TokenPair(access_token=access, refresh_token=refresh)
 
@@ -37,7 +41,8 @@ def login_google(db: Session, id_token: str) -> TokenPair:
         sub = payload.get("sub")
         if not email or not sub:
             raise ValueError("Invalid Google token")
-    except Exception:
+    except Exception as exc:
+        logger.warning("Google OAuth token verification failed: %s", exc)
         raise HTTPException(status_code=401, detail="Invalid Google ID token")
 
     acct = db.query(OAuthAccount).filter(
@@ -49,7 +54,7 @@ def login_google(db: Session, id_token: str) -> TokenPair:
     else:
         user = db.query(User).filter(User.email == email).first()
         if not user:
-            user = User(email=email, username=email.split("@")[0], hashed_password=None, is_active=True)
+            user = User(email=email, username=email.split("@")[0], hashed_password=None, role="client", is_active=True)
             db.add(user)
             db.flush()
         acct = OAuthAccount(provider="google", subject=sub, email=email, user_id=user.id)
@@ -60,11 +65,11 @@ def login_google(db: Session, id_token: str) -> TokenPair:
     return _issue_tokens(user)
 
 
-_DEV_BYPASS_PASSWORDS = {"qwerty"}
+_DEV_BYPASS_PASSWORDS = {"qwerty"} if DEV_MODE else set()
 
 
 def _validate_password(password: str) -> None:
-    if password in _DEV_BYPASS_PASSWORDS:
+    if _DEV_BYPASS_PASSWORDS and password in _DEV_BYPASS_PASSWORDS:
         return
     errors = []
     if len(password) < 8:
@@ -93,6 +98,7 @@ def register(db: Session, *, org_name: str, org_rut: str, email: str, username: 
         username=username,
         hashed_password=hash_password(password),
         organization_id=org.id,
+        role="client",
         is_active=True,
     )
     db.add(user)

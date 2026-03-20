@@ -1,9 +1,9 @@
 export const ROLES = {
-  LABFIN: 0,         // ajusta IDs cuando definamos semilla
-  ADMIN: 1,
-  USER:  2,
-};
+  EVALITICS: 'evalitics',
+  CLIENT: 'client',
+} as const;
 
-// guards de UI (cuando conectemos /users/me real y tengamos role_id)
-export const isAdmin = (roleId: number) => roleId === ROLES.ADMIN;
-export const isLabfin = (roleId: number) => roleId === ROLES.LABFIN;
+export type Role = (typeof ROLES)[keyof typeof ROLES];
+
+export const isEvalitics = (role: string) => role === ROLES.EVALITICS;
+export const isClient = (role: string) => role === ROLES.CLIENT;

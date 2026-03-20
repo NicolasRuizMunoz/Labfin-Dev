@@ -124,7 +124,7 @@ def list_messages(
 # ------------ Licitacion chat (OpenAI + historial) ------------
 
 def _generate_licitacion_reply(
-    db: Session, session: ChatSession
+    db: Session, session: ChatSession, *, user_id: int
 ) -> Tuple[str, List[ChatSource]]:
     """
     Llama a OpenAI con:
@@ -180,6 +180,21 @@ def _generate_licitacion_reply(
         temperature=0.5,
     )
     answer = response.choices[0].message.content or "Sin respuesta."
+
+    # Track token usage
+    if response.usage:
+        from app.services.token_usage_service import record_usage
+        record_usage(
+            db,
+            organization_id=session.organization_id,
+            user_id=user_id,
+            usage_type="chat",
+            model=OPENAI_MODEL,
+            prompt_tokens=response.usage.prompt_tokens,
+            completion_tokens=response.usage.completion_tokens,
+            total_tokens=response.usage.total_tokens,
+        )
+
     return answer, []
 
 
@@ -254,6 +269,6 @@ def generate_assistant_reply(
     session = db.query(ChatSession).filter(ChatSession.id == session_id).first()
 
     if session and session.licitacion_id:
-        return _generate_licitacion_reply(db, session)
+        return _generate_licitacion_reply(db, session, user_id=user_id)
 
     return _generate_rag_reply(db, user_message, organization_id)

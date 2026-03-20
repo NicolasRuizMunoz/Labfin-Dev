@@ -10,7 +10,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
-const DEV_BYPASS_PASSWORDS = new Set(['qwerty']);
+const DEV_BYPASS_PASSWORDS = import.meta.env.DEV ? new Set(['qwerty']) : new Set<string>();
 
 const PASSWORD_RULES = [
   { key: 'length', label: 'Al menos 8 caracteres', test: (p: string) => p.length >= 8 },

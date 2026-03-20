@@ -74,7 +74,7 @@ def analizar_licitacion(
     current_user: UserTokenData = Depends(get_current_user),
 ):
     org_id = _require_org(current_user)
-    return analysis_service.analyze_licitacion(db, org_id, lic_id)
+    return analysis_service.analyze_licitacion(db, org_id, lic_id, user_id=current_user.user_id)
 
 
 @router.patch("/{lic_id}", response_model=LicitacionResponse)

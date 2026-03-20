@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -11,15 +11,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Home, FileText, ClipboardList, Menu, LogIn, LogOut, User, Building2 } from 'lucide-react';
+import { Home, FileText, ClipboardList, Menu, LogIn, LogOut, User, Building2, ShieldCheck, FlaskConical } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { isEvalitics } from '@/auth/roles';
 
 const evaliticsLogo = '/evalitics-logo.png';
 
-const navItems = [
+const baseNavItems = [
   { name: 'Home', href: '/', icon: Home },
   { name: 'File Manager', href: '/files', icon: FileText },
   { name: 'Licitaciones', href: '/tenders', icon: ClipboardList },
+  { name: 'Escenarios', href: '/escenarios', icon: FlaskConical },
 ];
 
 const Navigation = () => {
@@ -27,6 +29,14 @@ const Navigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+
+  const navItems = useMemo(() => {
+    const items = [...baseNavItems];
+    if (user && isEvalitics(user.role)) {
+      items.push({ name: 'Admin', href: '/admin', icon: ShieldCheck });
+    }
+    return items;
+  }, [user]);
 
   const isActive = (href: string) =>
     href === '/' ? location.pathname === '/' : location.pathname.startsWith(href);
