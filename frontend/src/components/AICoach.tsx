@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, Brain, User, Target, Clock, TrendingUp, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { sanitizeInput, INPUT_LIMITS } from '@/lib/sanitize';
 
 interface UserProfile {
   goal: 'save' | 'invest' | 'pay_debt' | null;
@@ -37,7 +38,7 @@ interface AICoachProps {
   disableAssessment?: boolean;
 }
 
-export const AICoach = ({ isOpen, onClose, webhookUrl = 'https://n8n.srv1004834.hstgr.cloud/webhook/a7721317-edd1-4ffe-bcb7-3fa1e6845f82', disableAssessment = false }: AICoachProps) => {
+export const AICoach = ({ isOpen, onClose, webhookUrl = import.meta.env.VITE_AICOACH_WEBHOOK_URL ?? '', disableAssessment = false }: AICoachProps) => {
   const [profile, setProfile] = useState<UserProfile>({
     goal: null,
     horizon: null,
@@ -169,12 +170,20 @@ export const AICoach = ({ isOpen, onClose, webhookUrl = 'https://n8n.srv1004834.
   const handleSendMessage = async () => {
     if (!currentMessage.trim()) return;
 
-    const userMessage = currentMessage.trim();
+    const userMessage = sanitizeInput(currentMessage.trim(), INPUT_LIMITS.CHAT_MESSAGE);
+    if (!userMessage) return;
     setCurrentMessage('');
     addMessage(userMessage, 'user');
     setIsLoading(true);
 
     try {
+      // If no webhook configured, fall back to local response immediately
+      if (!webhookUrl) {
+        generateLocalResponse(userMessage);
+        setIsLoading(false);
+        return;
+      }
+
       // Send to n8n webhook
       const payload = disableAssessment ? {
         userId: 'demo-user-' + Date.now(),
@@ -408,6 +417,7 @@ export const AICoach = ({ isOpen, onClose, webhookUrl = 'https://n8n.srv1004834.
         <div className="flex space-x-2">
           <Input
             value={currentMessage}
+            maxLength={INPUT_LIMITS.CHAT_MESSAGE}
             onChange={(e) => setCurrentMessage(e.target.value)}
             placeholder="Ask me anything about personal finance..."
             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}

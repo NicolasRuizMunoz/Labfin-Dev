@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Local secrets — never bake these into the image
+.env
+.env.*
+
+# Local data dirs — mount these as volumes in production
+uploaded_files/
+processed_files/
+data/
+
+# Dev/editor artifacts
+.git/
+.gitignore
+*.md
+.DS_Store

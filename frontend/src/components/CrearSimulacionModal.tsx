@@ -10,6 +10,7 @@ import { Loader2, X, Search } from 'lucide-react';
 import { listEscenarios, type Escenario } from '@/services/escenarios';
 import { createSimulacion, updateSimulacion, type Simulacion } from '@/services/simulaciones';
 import { toast } from 'sonner';
+import { sanitizeInput, INPUT_LIMITS } from '@/lib/sanitize';
 
 const COLOR_PALETTE = ['#f97316', '#06b6d4', '#a855f7', '#ec4899', '#14b8a6', '#eab308'];
 
@@ -54,7 +55,7 @@ const CrearSimulacionModal: React.FC<Props> = ({ open, onOpenChange, licitacionI
 
   const mutation = useMutation({
     mutationFn: () => {
-      const data = { nombre, color, escenario_ids: Array.from(selectedIds) };
+      const data = { nombre: sanitizeInput(nombre, INPUT_LIMITS.NAME), color, escenario_ids: Array.from(selectedIds) };
       return isEdit
         ? updateSimulacion(licitacionId, simulacion!.id, data)
         : createSimulacion(licitacionId, data);
@@ -92,7 +93,7 @@ const CrearSimulacionModal: React.FC<Props> = ({ open, onOpenChange, licitacionI
         <div className="space-y-4">
           <div>
             <Label>Nombre</Label>
-            <Input value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Ej: Retraso + costos altos" />
+            <Input value={nombre} maxLength={INPUT_LIMITS.NAME} onChange={e => setNombre(e.target.value)} placeholder="Ej: Retraso + costos altos" />
           </div>
 
           <div>

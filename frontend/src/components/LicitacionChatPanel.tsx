@@ -8,6 +8,7 @@ import {
   listMessages,
   postUserMessage,
 } from "@/services/chat";
+import { sanitizeInput, INPUT_LIMITS } from "@/lib/sanitize";
 
 const DOT_PATTERN_STYLE = { backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' } as const;
 
@@ -60,7 +61,7 @@ export default function LicitacionChatPanel({ licitacionId, licitacionNombre, on
 
   async function handleSend() {
     if (!session || !canSend) return;
-    const text = input.trim();
+    const text = sanitizeInput(input.trim(), INPUT_LIMITS.CHAT_MESSAGE);
 
     const tempUser: ChatMessage = {
       id: Date.now(),
@@ -206,6 +207,7 @@ export default function LicitacionChatPanel({ licitacionId, licitacionNombre, on
             className="flex-1 min-h-[36px] max-h-32 resize-none rounded-lg border border-border/50 bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:opacity-50"
             placeholder="Escribe tu consulta… (Enter para enviar)"
             value={input}
+            maxLength={INPUT_LIMITS.CHAT_MESSAGE}
             disabled={!session || pending}
             onChange={(e) => {
               setInput(e.target.value);

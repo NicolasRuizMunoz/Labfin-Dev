@@ -22,9 +22,11 @@ _COOKIE_REFRESH = "refresh_token"
 
 
 def _cookie_opts() -> dict:
+    # SameSite=None required for cross-origin fetch with credentials (frontend on different domain).
+    # Requires Secure=True, which is enforced in production via SECURE_COOKIES=true.
     return dict(
         httponly=True,
-        samesite="lax",
+        samesite="none",
         secure=SECURE_COOKIES,
         path="/",
     )

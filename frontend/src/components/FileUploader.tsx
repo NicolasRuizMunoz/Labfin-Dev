@@ -3,6 +3,7 @@ import { Loader2, Upload as UploadIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { validateFileMime, MAX_FILE_SIZE_BYTES } from '@/lib/sanitize';
 
 const ALLOWED_EXTENSIONS = ['pdf', 'txt', 'csv', 'docx', 'xlsx', 'xls', 'pptx'];
 const ACCEPTED_EXTENSIONS_DISPLAY = ALLOWED_EXTENSIONS.join(', ');
@@ -40,13 +41,17 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const validateFiles = (picked: File[]): { valid: File[]; rejected: { name: string; ext: string }[] } => {
+  const validateFiles = (picked: File[]): { valid: File[]; rejected: { name: string; reason: string }[] } => {
     const valid: File[] = [];
-    const rejected: { name: string; ext: string }[] = [];
+    const rejected: { name: string; reason: string }[] = [];
     for (const f of picked) {
       const ext = getExtension(f.name);
       if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) {
-        rejected.push({ name: f.name, ext: ext || '(sin extensión)' });
+        rejected.push({ name: f.name, reason: `extensión .${ext || '(ninguna)'} no permitida` });
+      } else if (f.size > MAX_FILE_SIZE_BYTES) {
+        rejected.push({ name: f.name, reason: `supera el límite de ${MAX_FILE_SIZE_BYTES / 1024 / 1024} MB` });
+      } else if (!validateFileMime(f, ext)) {
+        rejected.push({ name: f.name, reason: 'tipo de archivo no coincide con la extensión' });
       } else {
         valid.push(f);
       }
@@ -58,10 +63,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({
     const { valid, rejected } = validateFiles(picked);
 
     if (rejected.length > 0) {
-      const names = rejected.map((r) => `"${r.name}" (.${r.ext})`).join(', ');
+      const names = rejected.map((r) => `"${r.name}" (${r.reason})`).join(', ');
       setError(
-        `${rejected.length === 1 ? 'El archivo' : 'Los archivos'} ${names} ${rejected.length === 1 ? 'tiene' : 'tienen'} una extensión no permitida. ` +
-        `Formatos aceptados: ${ACCEPTED_EXTENSIONS_DISPLAY}.`
+        `${rejected.length === 1 ? 'El archivo' : 'Los archivos'} ${names} ${rejected.length === 1 ? 'fue rechazado' : 'fueron rechazados'}. ` +
+        `Formatos aceptados: ${ACCEPTED_EXTENSIONS_DISPLAY}. Tamaño máximo: ${MAX_FILE_SIZE_BYTES / 1024 / 1024} MB.`
       );
     } else {
       setError(null);

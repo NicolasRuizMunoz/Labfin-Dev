@@ -40,6 +40,7 @@ import {
   type Escenario,
   type EscenarioCreate,
 } from '@/services/escenarios';
+import { sanitizeInput, INPUT_LIMITS } from '@/lib/sanitize';
 import { listLicitaciones, type Licitacion } from '@/services/tenders';
 import { listSimulaciones, type Simulacion } from '@/services/simulaciones';
 import { Link } from 'react-router-dom';
@@ -61,8 +62,12 @@ const EscenarioModal: React.FC<EscenarioModalProps> = ({ open, onOpenChange, esc
 
   const mutation = useMutation({
     mutationFn: () => {
-      const data: EscenarioCreate = { nombre, descripcion };
-      if (tipo.trim()) data.tipo = tipo.trim();
+      const data: EscenarioCreate = {
+        nombre: sanitizeInput(nombre, INPUT_LIMITS.NAME),
+        descripcion: sanitizeInput(descripcion, INPUT_LIMITS.DESCRIPTION),
+      };
+      const tipoClean = sanitizeInput(tipo.trim(), INPUT_LIMITS.TYPE_FIELD);
+      if (tipoClean) data.tipo = tipoClean;
       return isEdit ? updateEscenario(escenario!.id, data) : createEscenario(data);
     },
     onSuccess: () => {
@@ -88,6 +93,7 @@ const EscenarioModal: React.FC<EscenarioModalProps> = ({ open, onOpenChange, esc
             <Label>Nombre</Label>
             <Input
               value={nombre}
+              maxLength={INPUT_LIMITS.NAME}
               onChange={(e) => setNombre(e.target.value)}
               placeholder="Ej: Retraso 2 meses en entrega"
             />
@@ -96,6 +102,7 @@ const EscenarioModal: React.FC<EscenarioModalProps> = ({ open, onOpenChange, esc
             <Label>Descripcion</Label>
             <Textarea
               value={descripcion}
+              maxLength={INPUT_LIMITS.DESCRIPTION}
               onChange={(e) => setDescripcion(e.target.value)}
               placeholder="Describe el escenario hipotetico en detalle..."
               rows={3}
@@ -105,6 +112,7 @@ const EscenarioModal: React.FC<EscenarioModalProps> = ({ open, onOpenChange, esc
             <Label>Tipo (opcional)</Label>
             <Input
               value={tipo}
+              maxLength={INPUT_LIMITS.TYPE_FIELD}
               onChange={(e) => setTipo(e.target.value)}
               placeholder="Ej: riesgo, oportunidad, costo"
             />
