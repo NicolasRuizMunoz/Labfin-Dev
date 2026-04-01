@@ -44,6 +44,7 @@ import { sanitizeInput, INPUT_LIMITS } from '@/lib/sanitize';
 import { listLicitaciones, type Licitacion } from '@/services/tenders';
 import { listSimulaciones, type Simulacion } from '@/services/simulaciones';
 import { Link } from 'react-router-dom';
+import CrearSimulacionModal from '@/components/CrearSimulacionModal';
 
 // ---- Escenario Form Modal ----
 interface EscenarioModalProps {
@@ -134,6 +135,11 @@ const EscenarioModal: React.FC<EscenarioModalProps> = ({ open, onOpenChange, esc
 
 // ---- Simulaciones Tab Content ----
 const SimulacionesTab = () => {
+  const queryClient = useQueryClient();
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedLicId, setSelectedLicId] = useState<number | null>(null);
+  const [showLicPicker, setShowLicPicker] = useState(false);
+
   const { data: licitaciones = [], isLoading: loadingLic } = useQuery({
     queryKey: ['licitaciones'],
     queryFn: listLicitaciones,
@@ -162,75 +168,127 @@ const SimulacionesTab = () => {
   const entries = Object.values(simsByLic);
   const loading = loadingLic || loadingSims;
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-16 text-muted-foreground">
-        <Loader2 className="w-5 h-5 animate-spin mr-2" />
-        Cargando simulaciones...
-      </div>
-    );
-  }
+  const handleNewSimulacion = () => {
+    if (licitaciones.length === 0) {
+      toast.error('Primero crea una licitacion');
+      return;
+    }
+    if (licitaciones.length === 1) {
+      setSelectedLicId(licitaciones[0].id);
+      setShowCreateModal(true);
+    } else {
+      setShowLicPicker(true);
+    }
+  };
 
-  if (entries.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-        <Layers className="w-10 h-10 mb-3 opacity-40" />
-        <p className="text-sm font-medium">No hay simulaciones</p>
-        <p className="text-xs mt-1">
-          Las simulaciones se crean desde la vista de cada licitacion.
-        </p>
-      </div>
-    );
-  }
+  const pickLicitacion = (licId: number) => {
+    setSelectedLicId(licId);
+    setShowLicPicker(false);
+    setShowCreateModal(true);
+  };
 
   return (
-    <div className="space-y-4">
-      {entries.map(({ licitacion, simulaciones }) => (
-        <Card key={licitacion.id} className="border-border/40">
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium">{licitacion.nombre}</CardTitle>
-              <Link to={`/tenders/${licitacion.id}`}>
-                <Button variant="ghost" size="sm" className="text-xs">
-                  Ver licitacion
-                </Button>
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-2">
-              {simulaciones.map((sim) => (
-                <div
-                  key={sim.id}
-                  className="flex items-center gap-3 bg-muted/20 rounded-lg px-3 py-2"
-                >
-                  <div
-                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: sim.color || '#6b7280' }}
-                  />
-                  <span className="text-sm font-medium flex-1">{sim.nombre}</span>
-                  <div className="flex flex-wrap gap-1">
-                    {sim.escenarios.map((esc) => (
-                      <span
-                        key={esc.id}
-                        className="text-[10px] text-muted-foreground bg-background px-1.5 py-0.5 rounded"
-                      >
-                        {esc.nombre}
-                      </span>
-                    ))}
-                  </div>
-                  <span
-                    className={`text-xs flex-shrink-0 ${sim.ultimo_analisis ? 'text-green-500' : 'text-yellow-500'}`}
-                  >
-                    {sim.ultimo_analisis ? 'Analizado' : 'Sin analizar'}
-                  </span>
+    <>
+      <div className="flex items-center justify-end mb-4">
+        <Button onClick={handleNewSimulacion} size="sm">
+          <Plus className="w-4 h-4 mr-1" /> Nueva simulacion
+        </Button>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-16 text-muted-foreground">
+          <Loader2 className="w-5 h-5 animate-spin mr-2" />
+          Cargando simulaciones...
+        </div>
+      ) : entries.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+          <Layers className="w-10 h-10 mb-3 opacity-40" />
+          <p className="text-sm font-medium">No hay simulaciones</p>
+          <p className="text-xs mt-1">Crea tu primera simulacion con el boton de arriba.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {entries.map(({ licitacion, simulaciones }) => (
+            <Card key={licitacion.id} className="border-border/40">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-medium">{licitacion.nombre}</CardTitle>
+                  <Link to={`/tenders/${licitacion.id}`}>
+                    <Button variant="ghost" size="sm" className="text-xs">
+                      Ver licitacion
+                    </Button>
+                  </Link>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-2">
+                  {simulaciones.map((sim) => (
+                    <div
+                      key={sim.id}
+                      className="flex items-center gap-3 bg-muted/20 rounded-lg px-3 py-2"
+                    >
+                      <div
+                        className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: sim.color || '#6b7280' }}
+                      />
+                      <span className="text-sm font-medium flex-1">{sim.nombre}</span>
+                      <div className="flex flex-wrap gap-1">
+                        {sim.escenarios.map((esc) => (
+                          <span
+                            key={esc.id}
+                            className="text-[10px] text-muted-foreground bg-background px-1.5 py-0.5 rounded"
+                          >
+                            {esc.nombre}
+                          </span>
+                        ))}
+                      </div>
+                      <span
+                        className={`text-xs flex-shrink-0 ${sim.ultimo_analisis ? 'text-green-500' : 'text-yellow-500'}`}
+                      >
+                        {sim.ultimo_analisis ? 'Analizado' : 'Sin analizar'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Licitacion picker dialog */}
+      <Dialog open={showLicPicker} onOpenChange={setShowLicPicker}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Selecciona una licitacion</DialogTitle>
+          </DialogHeader>
+          <div className="border rounded-md max-h-64 overflow-y-auto">
+            {licitaciones.map((lic) => (
+              <button
+                key={lic.id}
+                type="button"
+                onClick={() => pickLicitacion(lic.id)}
+                className="w-full text-left px-4 py-3 hover:bg-muted/40 border-b last:border-b-0 transition-colors"
+              >
+                <p className="text-sm font-medium">{lic.nombre}</p>
+              </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create simulacion modal (reuses existing component) */}
+      {showCreateModal && selectedLicId && (
+        <CrearSimulacionModal
+          open={showCreateModal}
+          onOpenChange={setShowCreateModal}
+          licitacionId={selectedLicId}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['all-simulaciones'] });
+          }}
+        />
+      )}
+    </>
   );
 };
 

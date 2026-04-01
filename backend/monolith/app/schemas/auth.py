@@ -25,6 +25,20 @@ class RegisterRequest(BaseModel):
     password: str
 
 
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+
+class PasswordResetVerify(BaseModel):
+    email: EmailStr
+    code: str
+
+
+class PasswordResetConfirm(BaseModel):
+    token: str
+    password: str
+
+
 class UserOut(BaseModel):
     id: int
     email: EmailStr

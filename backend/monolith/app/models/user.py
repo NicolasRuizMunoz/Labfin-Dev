@@ -24,5 +24,8 @@ class User(Base):
 
     organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=True)
 
+    reset_code_hash = Column(String(255), nullable=True)
+    reset_code_expires_at = Column(DateTime, nullable=True)
+
     organization = relationship("Organization", back_populates="users")
     oauth_accounts = relationship("OAuthAccount", back_populates="user")

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -15,6 +16,7 @@ const DEV_BYPASS_PASSWORDS = import.meta.env.DEV ? new Set(['qwerty']) : new Set
 const PASSWORD_RULES = [
   { key: 'length', label: 'Al menos 8 caracteres', test: (p: string) => p.length >= 8 },
   { key: 'upper', label: 'Al menos 1 mayúscula', test: (p: string) => /[A-Z]/.test(p) },
+  { key: 'upper', label: 'Al menos 1 BorjaComment', test: (p: string) => /[A-Z]/.test(p) },
   { key: 'number', label: 'Al menos 1 número', test: (p: string) => /[0-9]/.test(p) },
   { key: 'symbol', label: 'Al menos 1 símbolo', test: (p: string) => /[!@#$%^&*()_+\-=\[\]{}|;':",.\/<>?`~]/.test(p) },
 ];
@@ -153,10 +155,7 @@ const AuthPage = () => {
 
         <Card className="border-border/50 shadow-elevated">
           <CardHeader>
-            <CardTitle>{isLogin ? t('signIn') : t('signUp')}</CardTitle>
-            <CardDescription>
-              {isLogin ? t('enterCredentials') : t('fillDetailsToCreate')}
-            </CardDescription>
+            <CardTitle>{isLogin ? t('enterCredentials') : t('fillDetailsToCreate')}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -263,6 +262,14 @@ const AuthPage = () => {
                   </button>
                 </div>
                 {validationErrors.password && <p className="text-sm text-destructive mt-1">{validationErrors.password}</p>}
+
+                {isLogin && (
+                  <div className="text-right">
+                    <Link to="/forgot-password" className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                      {t('forgotPassword')}
+                    </Link>
+                  </div>
+                )}
 
                 {/* Password strength rules (solo en signup, con foco, ocultas si bypass dev) */}
                 {!isLogin && passwordFocused && password.length > 0 && !isDevBypass && (

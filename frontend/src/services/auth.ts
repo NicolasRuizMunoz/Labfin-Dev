@@ -15,3 +15,12 @@ export const signup = (p: { org_name: string; org_rut: string; email: string; pa
 
 export const me     = () => http<Me>('/users/me');
 export const logout = () => http<void>('/users/logout', { method: 'POST' });
+
+export const requestPasswordReset = (p: { email: string }) =>
+  http<void>('/users/password-reset/request', { method: 'POST', body: JSON.stringify(p) });
+
+export const verifyResetCode = (p: { email: string; code: string }) =>
+  http<{ token: string }>('/users/password-reset/verify', { method: 'POST', body: JSON.stringify(p) });
+
+export const resetPassword = (p: { token: string; password: string }) =>
+  http<void>('/users/password-reset/confirm', { method: 'POST', body: JSON.stringify(p) });

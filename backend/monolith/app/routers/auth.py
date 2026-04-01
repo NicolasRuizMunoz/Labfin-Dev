@@ -8,8 +8,14 @@ from app.config import (
 )
 from app.database.db import get_db
 from app.dependencies.auth import get_current_user, UserTokenData
-from app.schemas.auth import LoginRequest, GoogleLoginRequest, TokenPair, RegisterRequest, UserOut
-from app.services.auth.auth_service import login_password, login_google, register
+from app.schemas.auth import (
+    LoginRequest, GoogleLoginRequest, TokenPair, RegisterRequest, UserOut,
+    PasswordResetRequest, PasswordResetVerify, PasswordResetConfirm,
+)
+from app.services.auth.auth_service import (
+    login_password, login_google, register,
+    request_password_reset, verify_reset_code, confirm_password_reset,
+)
 from app.services.auth.security import create_access_token, create_refresh_token
 from app.services.auth.token_blacklist import blacklist_token
 from app.models.user import User
@@ -22,11 +28,11 @@ _COOKIE_REFRESH = "refresh_token"
 
 
 def _cookie_opts() -> dict:
-    # SameSite=None required for cross-origin fetch with credentials (frontend on different domain).
-    # Requires Secure=True, which is enforced in production via SECURE_COOKIES=true.
+    # Production (HTTPS, cross-origin): SameSite=None + Secure=True
+    # Development (HTTP, Vite proxy same-origin): SameSite=Lax + Secure=False
     return dict(
         httponly=True,
-        samesite="none",
+        samesite="none" if SECURE_COOKIES else "lax",
         secure=SECURE_COOKIES,
         path="/",
     )
@@ -123,6 +129,24 @@ def refresh(request: Request, response: Response, db: Session = Depends(get_db))
     return {"access_token": new_access}
 
 
+@router.post("/password-reset/request", status_code=200)
+def password_reset_request(payload: PasswordResetRequest, db: Session = Depends(get_db)):
+    request_password_reset(db, payload.email)
+    return {"ok": True}
+
+
+@router.post("/password-reset/verify")
+def password_reset_verify(payload: PasswordResetVerify, db: Session = Depends(get_db)):
+    token = verify_reset_code(db, payload.email, payload.code)
+    return {"token": token}
+
+
+@router.post("/password-reset/confirm", status_code=200)
+def password_reset_confirm(payload: PasswordResetConfirm, db: Session = Depends(get_db)):
+    confirm_password_reset(db, payload.token, payload.password)
+    return {"ok": True}
+
+
 @router.post("/logout")
 def logout(request: Request, response: Response):
     # Blacklist current tokens so they can't be reused
@@ -134,6 +158,6 @@ def logout(request: Request, response: Response):
         blacklist_token(refresh)
 
     opts = _cookie_opts()
-    response.delete_cookie(_COOKIE_ACCESS, path="/", samesite="lax", secure=SECURE_COOKIES)
-    response.delete_cookie(_COOKIE_REFRESH, path="/", samesite="lax", secure=SECURE_COOKIES)
+    response.delete_cookie(_COOKIE_ACCESS, **opts)
+    response.delete_cookie(_COOKIE_REFRESH, **opts)
     return {"ok": True}

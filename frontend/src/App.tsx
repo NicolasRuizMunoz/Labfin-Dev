@@ -10,6 +10,7 @@ import Navigation from "@/components/Navigation";
 import ProtectedRoute from "@/auth/ProtectedRoute";
 
 import AuthPage from "./pages/AuthPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import HomePage from "./pages/HomePage";
 import FilesManagerPage from "./pages/FilesManagerPage";
 import TendersPage from "./pages/TendersPage";
@@ -40,6 +41,7 @@ const App = () => (
 
             <Routes>
               <Route path="/auth" element={<AuthPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
               <Route element={<ProtectedRoute />}>
                 <Route path="/" element={<HomePage />} />

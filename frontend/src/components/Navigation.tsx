@@ -54,9 +54,9 @@ const Navigation = () => {
           <span className="hidden md:inline-block font-bold text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Evalitics</span>
         </Link>
 
-        {/* Desktop nav items — left */}
+        {/* Desktop nav items — left (solo si está autenticado) */}
         <div className="hidden lg:flex items-center space-x-1">
-          {navItems.map(({ name, href, icon: Icon }) => (
+          {user && navItems.map(({ name, href, icon: Icon }) => (
             <Button
               key={href}
               variant={isActive(href) ? 'default' : 'ghost'}
@@ -139,7 +139,7 @@ const Navigation = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-64 z-50">
               <div className="flex flex-col space-y-2 mt-6">
-                {navItems.map(({ name, href, icon: Icon }) => (
+                {user && navItems.map(({ name, href, icon: Icon }) => (
                   <Button
                     key={href}
                     variant={isActive(href) ? 'default' : 'ghost'}
