@@ -1,26 +1,45 @@
 """
-Configuration — reads from environment variables.
+Configuration — dual-mode: local (.env) or production (ECS + Secrets Manager).
 
-How env vars are loaded:
-  - Local dev : USE_DOTENV=true  (default) → loads .env file via python-dotenv
-  - Docker/prod: USE_DOTENV=false (set in Dockerfile) → reads OS env vars directly.
-      In ECS, Secrets Manager secrets are injected as env vars in the task definition,
-      so the app reads them through os.getenv() with no extra code.
+How it works:
+  ┌─────────────────────────────────────────────────────────────────────────────┐
+  │  LOCAL DEV                                                                  │
+  │  .env file present → python-dotenv loads it → DEV_MODE=true                │
+  │  Backend: http://localhost:8000                                             │
+  │  Frontend: http://localhost:5173  (Vite proxy handles /api)                │
+  │  Cookies: SameSite=Lax, Secure=False                                       │
+  ├─────────────────────────────────────────────────────────────────────────────┤
+  │  PRODUCTION (ECS Fargate)                                                  │
+  │  No .env → USE_DOTENV=false in Dockerfile → env vars from Secrets Manager  │
+  │  ECS Task Definition references Secrets Manager ARNs directly              │
+  │  → they appear as normal env vars to the app. No boto3 needed.             │
+  │  Cookies: SameSite=None, Secure=True (HTTPS required)                      │
+  └─────────────────────────────────────────────────────────────────────────────┘
 
-To switch between local and production: only USE_DOTENV needs to change.
+To switch: the ONLY difference is whether .env exists.
+  - With .env    → local dev mode, all defaults point to localhost
+  - Without .env → production mode, env vars MUST be set externally (ECS/Secrets)
 """
 import os
 import logging
+from pathlib import Path
 from urllib.parse import quote_plus
 
 logger = logging.getLogger(__name__)
 
-if os.getenv("USE_DOTENV", "true").lower() == "true":
+# Auto-detect: if .env exists we're in dev, otherwise production.
+_env_file = Path(__file__).resolve().parent.parent / ".env"
+_use_dotenv = os.getenv("USE_DOTENV", "true" if _env_file.exists() else "false").lower() == "true"
+
+if _use_dotenv:
     from dotenv import load_dotenv
-    load_dotenv(dotenv_path=".env")
+    load_dotenv(dotenv_path=str(_env_file))
+    logger.info("Loaded .env file — running in LOCAL DEV mode")
+else:
+    logger.info("No .env file — running in PRODUCTION mode (env vars from ECS/Secrets Manager)")
 
 # ── Runtime mode ──────────────────────────────────────────────────────────────
-DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
+DEV_MODE = os.getenv("DEV_MODE", "true" if _use_dotenv else "false").lower() == "true"
 
 # ── Database ──────────────────────────────────────────────────────────────────
 DB_HOST = os.getenv("DB_HOST", "localhost")

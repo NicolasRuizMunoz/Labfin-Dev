@@ -13,8 +13,6 @@ import {
   ShieldCheck,
   Sparkles,
 } from 'lucide-react';
-import { AICoach } from '@/components/AICoach';
-import { useState } from 'react';
 
 const DOT_PATTERN_STYLE = { backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '32px 32px' } as const;
 
@@ -84,8 +82,6 @@ const highlights = [
 ];
 
 const HomePage = () => {
-  const [showAICoach, setShowAICoach] = useState(false);
-
   return (
     <div className="min-h-screen bg-background">
 
@@ -123,10 +119,12 @@ const HomePage = () => {
             <Button
               size="lg"
               className="bg-secondary hover:bg-secondary/90 text-white border-0 shadow-lg shadow-secondary/25"
-              onClick={() => setShowAICoach(true)}
+              asChild
             >
-              <MessageCircle className="w-5 h-5 mr-2" />
-              Consultar a EVA
+              <Link to="/tenders">
+                <MessageCircle className="w-5 h-5 mr-2" />
+                Consultar a EVA
+              </Link>
             </Button>
           </div>
         </div>
@@ -234,17 +232,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* EVA floating button */}
-      <Button
-        onClick={() => setShowAICoach(true)}
-        className="fixed bottom-6 right-6 rounded-full w-14 h-14 shadow-elevated bg-gradient-hero hover:shadow-glow transition-all duration-300 z-50"
-        size="icon"
-        title="Consultar a EVA"
-      >
-        <Sparkles className="w-6 h-6" />
-      </Button>
-
-      {showAICoach && <AICoach isOpen={showAICoach} onClose={() => setShowAICoach(false)} />}
     </div>
   );
 };

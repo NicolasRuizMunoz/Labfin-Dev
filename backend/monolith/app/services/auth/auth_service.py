@@ -71,6 +71,25 @@ def login_google(db: Session, id_token: str) -> TokenPair:
 _DEV_BYPASS_PASSWORDS = {"qwerty"} if DEV_MODE else set()
 
 
+def _validate_rut(rut: str) -> str:
+    """Validate a Chilean RUT and return it normalized (XX.XXX.XXX-X). Raises HTTPException on error."""
+    clean = rut.replace('.', '').replace('-', '').replace(' ', '').upper()
+    if len(clean) < 2 or not clean[:-1].isdigit() or clean[-1] not in '0123456789K':
+        raise HTTPException(400, "RUT inválido.")
+    body, dv = clean[:-1], clean[-1]
+    total, mul = 0, 2
+    for digit in reversed(body):
+        total += int(digit) * mul
+        mul = mul + 1 if mul < 7 else 2
+    rem = 11 - (total % 11)
+    expected = '0' if rem == 11 else 'K' if rem == 10 else str(rem)
+    if dv != expected:
+        raise HTTPException(400, "RUT inválido: dígito verificador incorrecto.")
+    # Normalize to XX.XXX.XXX-X
+    dotted = '{:,}'.format(int(body)).replace(',', '.')
+    return f"{dotted}-{dv}"
+
+
 def _validate_password(password: str) -> None:
     if _DEV_BYPASS_PASSWORDS and password in _DEV_BYPASS_PASSWORDS:
         return
@@ -162,10 +181,11 @@ def confirm_password_reset(db: Session, token: str, new_password: str) -> None:
 
 def register(db: Session, *, org_name: str, org_rut: str, email: str, username: str, password: str) -> User:
     _validate_password(password)
+    normalized_rut = _validate_rut(org_rut)
     if db.query(User).filter(User.email == email).first():
         raise HTTPException(400, "Email already registered")
 
-    org = Organization(name=org_name, rut=org_rut, is_active=True)
+    org = Organization(name=org_name, rut=normalized_rut, is_active=True)
     db.add(org)
     db.flush()
 

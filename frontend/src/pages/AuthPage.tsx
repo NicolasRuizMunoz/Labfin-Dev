@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -15,11 +15,38 @@ const DEV_BYPASS_PASSWORDS = import.meta.env.DEV ? new Set(['qwerty']) : new Set
 
 const PASSWORD_RULES = [
   { key: 'length', label: 'Al menos 8 caracteres', test: (p: string) => p.length >= 8 },
-  { key: 'upper', label: 'Al menos 1 mayúscula', test: (p: string) => /[A-Z]/.test(p) },
-  { key: 'upper', label: 'Al menos 1 BorjaComment', test: (p: string) => /[A-Z]/.test(p) },
-  { key: 'number', label: 'Al menos 1 número', test: (p: string) => /[0-9]/.test(p) },
-  { key: 'symbol', label: 'Al menos 1 símbolo', test: (p: string) => /[!@#$%^&*()_+\-=\[\]{}|;':",.\/<>?`~]/.test(p) },
+  { key: 'upper',  label: 'Al menos 1 mayúscula',  test: (p: string) => /[A-Z]/.test(p) },
+  { key: 'number', label: 'Al menos 1 número',     test: (p: string) => /[0-9]/.test(p) },
+  { key: 'symbol', label: 'Al menos 1 símbolo',    test: (p: string) => /[!@#$%^&*()_+\-=\[\]{}|;':",.\/<>?`~]/.test(p) },
 ];
+
+// ── RUT helpers ──────────────────────────────────────────────────────────────
+function validateRut(rut: string): boolean {
+  const clean = rut.replace(/[.\-\s]/g, '').toUpperCase();
+  if (clean.length < 2) return false;
+  const body = clean.slice(0, -1);
+  const dv   = clean.slice(-1);
+  if (!/^\d+$/.test(body)) return false;
+  let sum = 0, mul = 2;
+  for (let i = body.length - 1; i >= 0; i--) {
+    sum += parseInt(body[i]) * mul;
+    mul = mul < 7 ? mul + 1 : 2;
+  }
+  const rem = 11 - (sum % 11);
+  const expected = rem === 11 ? '0' : rem === 10 ? 'K' : String(rem);
+  return dv === expected;
+}
+
+function formatRut(raw: string): string {
+  // Keep only digits and K
+  const clean = raw.replace(/[^0-9kK]/g, '').toUpperCase();
+  if (clean.length <= 1) return clean;
+  const body = clean.slice(0, -1);
+  const dv   = clean.slice(-1);
+  // Insert dots every 3 digits from right
+  const dotted = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return `${dotted}-${dv}`;
+}
 
 const loginSchema = z.object({
   email: z.string().trim().min(1, 'Email is required').email('Invalid email address').max(255),
@@ -42,9 +69,9 @@ const signupSchema = z.object({
   org_name: z.string().trim().min(2, 'Organization name is required').max(100),
   org_rut: z.string()
     .trim()
-    .min(3, 'RUT is required')
+    .min(3, 'El RUT es requerido')
     .max(20)
-    .regex(/^[0-9kK.\-A-Za-z]+$/, 'Invalid RUT format'),
+    .refine(validateRut, 'RUT inválido — verifica el dígito verificador'),
 }).refine((data) => DEV_BYPASS_PASSWORDS.has(data.password) || data.password === data.confirmPassword, {
   message: 'Las contraseñas no coinciden',
   path: ['confirmPassword'],
@@ -188,14 +215,34 @@ const AuthPage = () => {
                       <Input
                         id="org_rut"
                         type="text"
-                        placeholder={t('enterRut') || '12.345.678-9'}
+                        placeholder="12.345.678-9"
                         value={orgRut}
-                        onChange={(e) => { setOrgRut(e.target.value); clearFieldError('org_rut'); }}
-                        className={`pl-10 ${validationErrors.org_rut ? 'border-destructive' : ''}`}
+                        onChange={(e) => {
+                          setOrgRut(formatRut(e.target.value));
+                          clearFieldError('org_rut');
+                        }}
+                        className={`pl-10 ${
+                          validationErrors.org_rut
+                            ? 'border-destructive'
+                            : orgRut.length > 3 && validateRut(orgRut)
+                            ? 'border-emerald-500'
+                            : ''
+                        }`}
+                        maxLength={12}
                         required={!isLogin}
                       />
                     </div>
-                    {validationErrors.org_rut && <p className="text-sm text-destructive mt-1">{validationErrors.org_rut}</p>}
+                    {validationErrors.org_rut ? (
+                      <p className="text-xs text-destructive mt-1 flex items-center gap-1">
+                        <X className="h-3 w-3" />{validationErrors.org_rut}
+                      </p>
+                    ) : orgRut.length > 3 && (
+                      <p className={`text-xs mt-1 flex items-center gap-1 ${validateRut(orgRut) ? 'text-emerald-600' : 'text-destructive'}`}>
+                        {validateRut(orgRut)
+                          ? <><Check className="h-3 w-3" /> RUT válido</>
+                          : <><X className="h-3 w-3" /> RUT inválido</>}
+                      </p>
+                    )}
                   </div>
 
                   {/* Username */}
