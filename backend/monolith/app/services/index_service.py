@@ -2,11 +2,8 @@ import os
 import logging
 from typing import List
 
-import numpy as np
 from sqlalchemy.orm import Session
 
-from app.services.embedding import get_embedder
-from app.services.vector_store_faiss import FaissStore
 from app.services import file_service, s3_service
 from app.models.document_chunk import DocumentChunk
 from app.config import PROCESSED_DIR
@@ -40,6 +37,9 @@ def _ensure_local_txt(fe) -> str:
 
 def index_file(db: Session, file_id: int) -> int:
     """Chunk, embed and index a file into FAISS. Returns number of chunks created."""
+    import numpy as np  # noqa: F401
+    from app.services.embedding import get_embedder
+    from app.services.vector_store_faiss import FaissStore
     fe = file_service.get_file_by_id_raw(db, file_id)
     if not fe:
         raise ValueError(f"FileEntry {file_id} not found")
@@ -87,6 +87,9 @@ def index_file(db: Session, file_id: int) -> int:
 
 
 def rebuild_org_index(db: Session, organization_id: int) -> int:
+    import numpy as np
+    from app.services.embedding import get_embedder
+    from app.services.vector_store_faiss import FaissStore
     rows = db.query(DocumentChunk).filter(DocumentChunk.organization_id == organization_id).all()
     embedder = get_embedder()
     store = FaissStore(org_id=organization_id, dim=embedder.dim)
