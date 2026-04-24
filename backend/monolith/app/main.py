@@ -20,7 +20,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="LabFin", lifespan=lifespan)
 
-app.add_middleware(RateLimitMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
@@ -28,6 +27,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(RateLimitMiddleware)
 
 # Mirror the old API-gateway URL structure exactly so the frontend needs no changes:
 #   /api/users/*  → auth routes      (frontend: auth.ts   /users/login, /users/me …)
