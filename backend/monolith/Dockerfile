@@ -10,11 +10,6 @@ WORKDIR /build
 COPY requirements.txt .
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
-# Pre-bake the embedding model so the container doesn't download it at runtime.
-# If EMBED_MODEL changes, update the string below to match.
-RUN PYTHONPATH=/install/lib/python3.11/site-packages \
-    python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('intfloat/multilingual-e5-small')"
-
 
 # ── Stage 2: runtime ─────────────────────────────────────────────────────────
 FROM python:3.11-slim
