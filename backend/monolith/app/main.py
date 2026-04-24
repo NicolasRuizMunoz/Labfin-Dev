@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import CORS_ORIGINS
 from app.startup import run_startup
-from app.routers import auth, upload, file, chat, licitaciones, admin, escenarios, simulaciones
+from app.routers import auth, upload, file, chat, licitaciones, admin, escenarios, simulaciones, contact
 from app.middleware.rate_limit import RateLimitMiddleware
 
 import logging
@@ -41,6 +41,7 @@ app.include_router(escenarios.router,    prefix="/api/data")
 app.include_router(simulaciones.router,  prefix="/api/data")
 app.include_router(chat.router,         prefix="/api")
 app.include_router(admin.router,        prefix="/api/admin")
+app.include_router(contact.router,      prefix="/api/contact")
 
 
 @app.get("/health")

@@ -40,11 +40,11 @@ const App = () => (
             <Navigation />
 
             <Routes>
+              <Route path="/" element={<HomePage />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
               <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<HomePage />} />
                 <Route path="/files" element={<FilesManagerPage />} />
                 <Route path="/tenders" element={<TendersPage />} />
                 <Route path="/tenders/:id" element={<LicitacionDetailPage />} />

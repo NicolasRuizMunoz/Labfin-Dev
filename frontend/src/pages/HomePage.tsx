@@ -1,20 +1,25 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   FileText,
   ClipboardList,
   BarChart3,
   CheckCircle,
   MessageCircle,
-  ArrowRight,
   Search,
   TrendingUp,
   ShieldCheck,
   Sparkles,
+  CalendarCheck,
 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import DemoFormDialog from '@/components/DemoFormDialog';
 
-const DOT_PATTERN_STYLE = { backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '32px 32px' } as const;
+const DOT_PATTERN_STYLE = {
+  backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
+  backgroundSize: '32px 32px',
+} as const;
 
 const features = [
   {
@@ -22,32 +27,24 @@ const features = [
     title: 'Gestión de Licitaciones',
     description:
       'Administra todas tus licitaciones en un solo lugar. Sube bases, registra antecedentes y da seguimiento a cada etapa del proceso.',
-    href: '/tenders',
-    cta: 'Ir a Licitaciones',
   },
   {
     icon: FileText,
     title: 'Documentos de la Empresa',
     description:
       'Centraliza los archivos y antecedentes de tu empresa. Tus documentos quedan indexados y disponibles para que EVA los consulte en cada análisis.',
-    href: '/files',
-    cta: 'Gestionar Archivos',
   },
   {
     icon: Search,
     title: 'Análisis con EVA',
     description:
       'EVA lee las bases de la licitación y los antecedentes de tu empresa para detectar requisitos clave, evaluar garantías, analizar logística y entregarte una recomendación fundamentada.',
-    href: '/tenders',
-    cta: 'Ver Análisis',
   },
   {
     icon: BarChart3,
     title: 'Estimaciones y Métricas',
     description:
       'Obtén estimaciones de costos, plazos y punto de equilibrio para distintos escenarios antes de presentar tu oferta.',
-    href: '/tenders',
-    cta: 'Ver Estimaciones',
   },
 ];
 
@@ -82,51 +79,47 @@ const highlights = [
 ];
 
 const HomePage = () => {
+  const { user } = useAuth();
+
   return (
     <div className="min-h-screen bg-background">
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-hero py-24 px-6">
-        {/* Subtle pattern overlay */}
         <div className="absolute inset-0 opacity-[0.04]" style={DOT_PATTERN_STYLE} />
         <div className="container max-w-5xl mx-auto text-center relative">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight">
-            Gana más licitaciones
+            Planifica y gestiona tus licitaciones
             <span className="block mt-1 text-white/90">
-              con <span className="bg-gradient-to-r from-green-300 to-purple-300 bg-clip-text text-transparent">EVA</span>
+              con{' '}
+              <span className="bg-gradient-to-r from-green-300 to-purple-300 bg-clip-text text-transparent">
+                inteligencia artificial
+              </span>
             </span>
           </h1>
           <p className="text-lg md:text-xl text-white/85 mb-4 max-w-3xl mx-auto leading-relaxed">
-            Plataforma integral para que tu empresa gestione todo el proceso de licitación: desde la carga de antecedentes
-            hasta el análisis de bases y las estimaciones de adjudicación.
+            Evalitics centraliza todo el ciclo de licitación — desde la carga de antecedentes
+            hasta el análisis de bases y la toma de decisión — para que tu equipo opere con
+            más control y menos incertidumbre.
           </p>
           <p className="text-base text-white/60 mb-10 max-w-2xl mx-auto">
-            Reduce el tiempo de análisis, detecta requisitos automáticamente y simula distintos escenarios de oferta
-            antes de presentar tu propuesta.
+            Reduce tiempos de análisis, detecta requisitos automáticamente y evalúa escenarios
+            antes de postular.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
-              variant="secondary"
-              className="bg-white/15 backdrop-blur-sm border border-white/25 text-white hover:bg-white/25 transition-all"
-              asChild
-            >
-              <Link to="/tenders">
-                <ClipboardList className="w-5 h-5 mr-2" />
-                Ver Licitaciones
-              </Link>
-            </Button>
-            <Button
-              size="lg"
-              className="bg-secondary hover:bg-secondary/90 text-white border-0 shadow-lg shadow-secondary/25"
-              asChild
-            >
-              <Link to="/tenders">
-                <MessageCircle className="w-5 h-5 mr-2" />
-                Consultar a EVA
-              </Link>
-            </Button>
-          </div>
+          {user && (
+            <div className="flex justify-center">
+              <Button
+                size="lg"
+                className="bg-white text-primary hover:bg-white/90 shadow-lg"
+                asChild
+              >
+                <Link to="/tenders">
+                  <ClipboardList className="w-5 h-5 mr-2" />
+                  Ir a Licitaciones
+                </Link>
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -166,7 +159,9 @@ const HomePage = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {steps.map((step, i) => (
               <div key={step.number} className="flex flex-col items-start p-5 rounded-xl bg-card/70 border border-border/30 shadow-card">
-                <span className={`text-3xl font-extrabold mb-3 ${i % 2 === 0 ? 'text-primary/25' : 'text-secondary/25'}`}>{step.number}</span>
+                <span className={`text-3xl font-extrabold mb-3 ${i % 2 === 0 ? 'text-primary/25' : 'text-secondary/25'}`}>
+                  {step.number}
+                </span>
                 <h3 className="font-semibold text-foreground mb-1">{step.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
               </div>
@@ -175,7 +170,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Feature cards */}
+      {/* Feature cards — informational, no CTAs */}
       <section className="py-20 px-6">
         <div className="container max-w-5xl mx-auto">
           <div className="text-center mb-12">
@@ -191,20 +186,24 @@ const HomePage = () => {
               return (
                 <Card key={f.title} className="group hover:shadow-elevated transition-all duration-300 bg-gradient-card border border-border/30">
                   <CardHeader className="space-y-3">
-                    <div className={`p-3 rounded-lg w-fit transition-colors ${isPurple ? 'bg-secondary/10 group-hover:bg-secondary/20' : 'bg-primary/10 group-hover:bg-primary/20'}`}>
+                    <div
+                      className={`p-3 rounded-lg w-fit transition-colors ${
+                        isPurple
+                          ? 'bg-secondary/10 group-hover:bg-secondary/20'
+                          : 'bg-primary/10 group-hover:bg-primary/20'
+                      }`}
+                    >
                       <Icon className={`w-6 h-6 ${isPurple ? 'text-secondary' : 'text-primary'}`} />
                     </div>
-                    <CardTitle className={`text-lg transition-colors ${isPurple ? 'group-hover:text-secondary' : 'group-hover:text-primary'}`}>{f.title}</CardTitle>
+                    <CardTitle
+                      className={`text-lg transition-colors ${
+                        isPurple ? 'group-hover:text-secondary' : 'group-hover:text-primary'
+                      }`}
+                    >
+                      {f.title}
+                    </CardTitle>
                     <CardDescription className="leading-relaxed">{f.description}</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <Button variant="outline" size="sm" className={`transition-colors ${isPurple ? 'group-hover:border-secondary group-hover:text-secondary' : 'group-hover:border-primary group-hover:text-primary'}`} asChild>
-                      <Link to={f.href}>
-                        {f.cta}
-                        <ArrowRight className="w-3 h-3 ml-2" />
-                      </Link>
-                    </Button>
-                  </CardContent>
                 </Card>
               );
             })}
@@ -216,12 +215,19 @@ const HomePage = () => {
       <section className="py-16 px-6 bg-gradient-subtle">
         <div className="container max-w-3xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="text-2xl font-bold text-foreground mb-2">Para empresas que quieren vender más y mejor</h2>
-            <p className="text-muted-foreground">Sin curva de aprendizaje larga — resultados desde el primer proceso.</p>
+            <h2 className="text-2xl font-bold text-foreground mb-2">
+              Para equipos que gestionan licitaciones con rigor
+            </h2>
+            <p className="text-muted-foreground">
+              Herramientas diseñadas para planificar, analizar y decidir mejor en cada proceso.
+            </p>
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             {highlights.map(({ icon: Icon, text }, i) => (
-              <div key={text} className="flex items-start space-x-3 p-4 rounded-lg bg-card border border-border/30 shadow-card">
+              <div
+                key={text}
+                className="flex items-start space-x-3 p-4 rounded-lg bg-card border border-border/30 shadow-card"
+              >
                 <div className={`p-1.5 rounded-md shrink-0 ${i % 2 === 0 ? 'bg-primary/10' : 'bg-secondary/10'}`}>
                   <Icon className={`w-4 h-4 ${i % 2 === 0 ? 'text-primary' : 'text-secondary'}`} />
                 </div>
@@ -231,6 +237,27 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* Bottom CTA — non-auth only */}
+      {!user && (
+        <section className="py-20 px-6">
+          <div className="container max-w-2xl mx-auto text-center">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              ¿Listo para transformar tu gestión de licitaciones?
+            </h2>
+            <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
+              Agenda una demo personalizada y descubre cómo Evalitics puede ayudar a tu equipo
+              a operar con más control.
+            </p>
+            <DemoFormDialog>
+              <Button size="lg" className="shadow-lg">
+                <CalendarCheck className="w-5 h-5 mr-2" />
+                Agenda tu demo
+              </Button>
+            </DemoFormDialog>
+          </div>
+        </section>
+      )}
 
     </div>
   );
