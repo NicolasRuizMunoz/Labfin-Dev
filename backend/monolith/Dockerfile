@@ -18,8 +18,6 @@ WORKDIR /app
 
 # Copy installed packages from builder
 COPY --from=builder /install /usr/local
-# Copy the HuggingFace model cache from builder
-COPY --from=builder /root/.cache /root/.cache
 
 # Application code
 COPY app/ app/
@@ -29,7 +27,7 @@ RUN mkdir -p uploaded_files processed_files data/faiss
 
 # Non-root user
 RUN adduser --disabled-password --gecos '' appuser \
-    && chown -R appuser:appuser /app /root/.cache
+    && chown -R appuser:appuser /app
 USER appuser
 
 # In Docker, load config from environment variables — not from .env file
