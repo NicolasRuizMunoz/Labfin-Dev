@@ -29,4 +29,7 @@ class AnalisisLicitacionResponse(BaseModel):
     # Parámetros por escenario para gráfico de curvas
     curvas_data: Optional[Any]
 
+    # Bloque JSON estructurado emitido por EVA (scoring, alertas, factores externos, meta)
+    extra_data: Optional[Any] = None
+
     model_config = {"from_attributes": True}

@@ -22,6 +22,10 @@ import {
   Upload,
   FolderOpen,
   FlaskConical,
+  Target,
+  Globe2,
+  History,
+  Wallet,
 } from 'lucide-react';
 import LicitacionChatPanel from '@/components/LicitacionChatPanel';
 import SimulacionesPanel from '@/components/SimulacionesPanel';
@@ -39,6 +43,9 @@ import {
   analizarLicitacion,
   updateLicitacion,
   type AnalisisResult,
+  type AnalisisExtraData,
+  type ScoringCriterion,
+  type FactorExterno,
 } from '@/services/tenders';
 import { listSimulaciones } from '@/services/simulaciones';
 import * as dataApi from '@/services/data';
@@ -51,25 +58,28 @@ const fmt = (n: number | null | undefined, prefix = '') =>
 
 // ---- Parser de secciones del análisis ----
 const SECTION_KEYS = [
+  'VERSIÓN DEL ANÁLISIS',
   'RESUMEN',
   'FIT CON LA EMPRESA',
   'LOGÍSTICA Y ABASTECIMIENTO',
   'ANÁLISIS FINANCIERO',
   'GARANTÍAS',
+  'FACTOR EXTERNO INESPERADO',
   'RIESGOS',
   'OPORTUNIDADES',
+  'SCORING GO / NO-GO',
+  'SCORE FINAL PONDERADO',
   'RECOMENDACIÓN',
   'PREGUNTAS PARA EL EQUIPO',
+  'CAMBIOS RESPECTO AL ANÁLISIS ANTERIOR',
 ] as const;
 
 type SectionKey = typeof SECTION_KEYS[number];
 
 function parseSections(text: string): Partial<Record<SectionKey, string>> {
   const result: Partial<Record<SectionKey, string>> = {};
-  const pattern = new RegExp(
-    `(${SECTION_KEYS.map((k) => k.replace(/[()]/g, '\\$&')).join('|')}):`,
-    'g'
-  );
+  const escaped = SECTION_KEYS.map((k) => k.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&'));
+  const pattern = new RegExp(`(${escaped.join('|')}):`, 'g');
   let lastKey: SectionKey | null = null;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -82,7 +92,7 @@ function parseSections(text: string): Partial<Record<SectionKey, string>> {
   return result;
 }
 
-// ---- Card sections config ----
+// ---- Card sections config (para texto plano del análisis) ----
 const CARD_SECTIONS: { key: SectionKey; label: string; Icon: React.FC<{ className?: string }>; accent: 'green' | 'purple' | 'amber' }[] = [
   { key: 'RESUMEN', label: 'Resumen', Icon: FileText, accent: 'green' },
   { key: 'FIT CON LA EMPRESA', label: 'Fit con la Empresa', Icon: Building2, accent: 'purple' },
@@ -100,6 +110,206 @@ const ACCENT_STYLES = {
   amber: { card: 'border-l-amber-500/40', icon: 'text-amber-600 dark:text-amber-400', header: 'text-amber-700/80 dark:text-amber-400/80' },
 };
 
+// ---- Helpers para extra_data estructurado ----
+const SCORING_CRITERIA: { key: keyof NonNullable<AnalisisExtraData['scoring']>; label: string }[] = [
+  { key: 'margen_estimado', label: 'Margen estimado' },
+  { key: 'fit_tecnico', label: 'Fit técnico y experiencia' },
+  { key: 'capacidad_financiera', label: 'Capacidad financiera y caja' },
+  { key: 'plazo_entrega', label: 'Plazo de entrega vs. bases' },
+  { key: 'riesgo_boleta', label: 'Riesgo boleta y penalizaciones' },
+  { key: 'probabilidad_adjudicacion', label: 'Probabilidad de adjudicación' },
+  { key: 'factor_externo', label: 'Factor externo' },
+];
+
+function recomendacionStyle(rec?: string, score?: number): { bg: string; text: string; border: string; label: string } {
+  const upper = (rec || '').toUpperCase();
+  if (upper.includes('CONFIANZA') || (score != null && score >= 4.0)) {
+    return { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-300', border: 'border-emerald-400/50', label: rec || 'Postular con confianza' };
+  }
+  if (upper.includes('NO POSTULAR') || (score != null && score < 2.0)) {
+    return { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-800 dark:text-red-300', border: 'border-red-400/50', label: rec || 'No postular' };
+  }
+  if (upper.includes('CAUTELA') || (score != null && score < 3.0)) {
+    return { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-800 dark:text-orange-300', border: 'border-orange-400/50', label: rec || 'Postular con cautela' };
+  }
+  return { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-800 dark:text-amber-300', border: 'border-amber-400/50', label: rec || 'Evaluar con el equipo' };
+}
+
+function alertaStyle(alerta: string): { bg: string; text: string; border: string } {
+  const upper = alerta.toUpperCase();
+  if (upper.includes('CRÍTICO') || upper.includes('CRITICO') || upper.includes('NO RECOMENDADO')) {
+    return { bg: 'bg-red-50 dark:bg-red-950/30', text: 'text-red-800 dark:text-red-300', border: 'border-red-300 dark:border-red-800' };
+  }
+  if (upper.includes('ALTO') || upper.includes('ALERTA')) {
+    return { bg: 'bg-orange-50 dark:bg-orange-950/30', text: 'text-orange-800 dark:text-orange-300', border: 'border-orange-300 dark:border-orange-800' };
+  }
+  return { bg: 'bg-amber-50 dark:bg-amber-950/30', text: 'text-amber-800 dark:text-amber-300', border: 'border-amber-300 dark:border-amber-800' };
+}
+
+function impactoStyle(impacto?: string): { bg: string; text: string } {
+  const v = (impacto || '').toLowerCase();
+  if (v === 'positivo') return { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-300' };
+  if (v === 'negativo') return { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-300' };
+  return { bg: 'bg-muted', text: 'text-muted-foreground' };
+}
+
+function severidadStyle(sev?: string): { bg: string; text: string } {
+  const v = (sev || '').toLowerCase();
+  if (v === 'alta') return { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-300' };
+  if (v === 'media') return { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-300' };
+  return { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-300' };
+}
+
+// ---- Componentes de extra_data ----
+
+function AlertasBanner({ alertas }: { alertas: string[] }) {
+  if (!alertas?.length) return null;
+  return (
+    <div className="flex flex-wrap gap-2">
+      {alertas.map((a, i) => {
+        const s = alertaStyle(a);
+        return (
+          <div
+            key={i}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs font-medium ${s.bg} ${s.text} ${s.border}`}
+          >
+            <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+            {a}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ScoringPanel({ scoring }: { scoring: NonNullable<AnalisisExtraData['scoring']> }) {
+  const score = scoring.score_total;
+  const recStyle = recomendacionStyle(scoring.recomendacion, score);
+  return (
+    <div className="rounded-xl border border-primary/15 bg-gradient-to-br from-primary/5 to-secondary/5 p-5 space-y-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-2">
+          <Target className="w-4 h-4 text-primary" />
+          <p className="text-xs font-semibold text-primary uppercase tracking-wide">
+            Scoring Go / No-Go
+          </p>
+        </div>
+        {score != null && (
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Score total</p>
+              <p className="text-2xl font-bold tabular-nums">{score.toFixed(2)}<span className="text-xs text-muted-foreground"> / 5</span></p>
+            </div>
+            <div className={`px-3 py-2 rounded-lg border ${recStyle.bg} ${recStyle.text} ${recStyle.border}`}>
+              <p className="text-[10px] uppercase tracking-wide opacity-80">Recomendación</p>
+              <p className="text-xs font-bold">{recStyle.label}</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-2.5">
+        {SCORING_CRITERIA.map(({ key, label }) => {
+          const c = scoring[key] as ScoringCriterion | undefined;
+          if (!c) return null;
+          const pct = ((c.puntuacion ?? 0) / 5) * 100;
+          const barColor =
+            (c.puntuacion ?? 0) >= 4 ? 'bg-emerald-500' :
+            (c.puntuacion ?? 0) >= 3 ? 'bg-amber-500' :
+            (c.puntuacion ?? 0) >= 2 ? 'bg-orange-500' : 'bg-red-500';
+          return (
+            <div key={key} className="space-y-1">
+              <div className="flex items-center justify-between text-xs gap-2">
+                <span className="text-foreground font-medium">{label}</span>
+                <span className="text-muted-foreground tabular-nums shrink-0">
+                  <span className="font-bold text-foreground">{c.puntuacion ?? '—'}</span>/5
+                  <span className="ml-1.5 opacity-60">· {((c.peso ?? 0) * 100).toFixed(0)}%</span>
+                </span>
+              </div>
+              <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
+              </div>
+              {c.justificacion && (
+                <p className="text-[11px] text-muted-foreground leading-snug pl-0.5">{c.justificacion}</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function FactoresExternosCard({ factores }: { factores: FactorExterno[] }) {
+  if (!factores?.length) return null;
+  return (
+    <div className="rounded-xl border border-secondary/15 bg-secondary/5 p-5 space-y-3">
+      <div className="flex items-center gap-2">
+        <Globe2 className="w-4 h-4 text-secondary" />
+        <p className="text-xs font-semibold text-secondary uppercase tracking-wide">Factores externos</p>
+      </div>
+      <div className="space-y-3">
+        {factores.map((f, i) => {
+          const imp = impactoStyle(f.impacto);
+          const sev = severidadStyle(f.severidad);
+          return (
+            <div key={i} className="rounded-lg border border-border/40 bg-card p-3 space-y-1.5">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <p className="text-sm font-semibold text-foreground">{f.nombre}</p>
+                <div className="flex gap-1.5 shrink-0">
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium uppercase tracking-wide ${imp.bg} ${imp.text}`}>
+                    {f.impacto || 'incierto'}
+                  </span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium uppercase tracking-wide ${sev.bg} ${sev.text}`}>
+                    Sev. {f.severidad || 'baja'}
+                  </span>
+                </div>
+              </div>
+              {f.descripcion && (
+                <p className="text-xs text-muted-foreground leading-relaxed">{f.descripcion}</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function VersionInfo({ meta, cambios }: { meta?: AnalisisExtraData['meta']; cambios?: string }) {
+  const version = meta?.version;
+  const desc = meta?.cambios_desde_version_anterior;
+  if (!version && !cambios && !desc) return null;
+  const isUpdate = version && version !== '1.0';
+  return (
+    <div className="flex items-start gap-2 text-xs">
+      {version && (
+        <Badge variant="outline" className={`shrink-0 ${isUpdate ? 'border-secondary/50 text-secondary' : 'border-primary/40 text-primary'}`}>
+          <History className="w-3 h-3 mr-1" />
+          v{version}
+        </Badge>
+      )}
+      {(desc || cambios) && (
+        <p className="text-muted-foreground leading-snug">{desc || cambios}</p>
+      )}
+    </div>
+  );
+}
+
+function FlujoCajaInicial({ extra }: { extra: AnalisisExtraData }) {
+  const flujo = extra.breakeven?.flujo_caja_inicial_requerido;
+  if (flujo == null) return null;
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800">
+      <Wallet className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0" />
+      <div className="text-xs">
+        <span className="text-muted-foreground">Flujo de caja inicial requerido: </span>
+        <span className="font-semibold text-amber-800 dark:text-amber-300">{fmt(Number(flujo), '$')}</span>
+      </div>
+    </div>
+  );
+}
+
 // ---- Panel de un análisis en el historial ----
 function AnalisisPanel({
   a,
@@ -115,6 +325,12 @@ function AnalisisPanel({
   const [open, setOpen] = useState(isLatest);
   const sections = parseSections(a.analisis);
   const preguntas = sections['PREGUNTAS PARA EL EQUIPO'];
+  const extra = a.extra_data || undefined;
+  const hasScoring = !!extra?.scoring && Object.keys(extra.scoring).length > 0;
+  const hasFactores = !!extra?.factores_externos && extra.factores_externos.length > 0;
+  const hasAlertas = !!extra?.alertas && extra.alertas.length > 0;
+  const hasFlujo = extra?.breakeven?.flujo_caja_inicial_requerido != null;
+  const cambios = sections['CAMBIOS RESPECTO AL ANÁLISIS ANTERIOR'];
 
   // Tooltip de archivos usados
   const licNames = (a.archivos_licitacion_ids ?? [])
@@ -184,6 +400,17 @@ function AnalisisPanel({
 
       {open && (
         <CardContent className="space-y-6 pt-2">
+
+          {/* 0a. Versión + descripción de cambios */}
+          {(extra?.meta || cambios) && (
+            <VersionInfo meta={extra?.meta} cambios={cambios} />
+          )}
+
+          {/* 0b. Alertas activas */}
+          {hasAlertas && <AlertasBanner alertas={extra!.alertas!} />}
+
+          {/* 0c. Flujo de caja inicial (destacado, no redundante con PE) */}
+          {hasFlujo && <FlujoCajaInicial extra={extra!} />}
 
           {/* 1+2. Ecuación y Timeline en dos cards lado a lado */}
           {(hasEquacion || hasTimeline) && (
@@ -325,7 +552,46 @@ function AnalisisPanel({
             </div>
           )}
 
-          {/* 4. Cards de secciones */}
+          {/* 3.5. Scoring estructurado + Factores externos */}
+          {(hasScoring || hasFactores) && (
+            <div className={`grid gap-4 ${hasScoring && hasFactores ? 'lg:grid-cols-[3fr_2fr]' : 'grid-cols-1'}`}>
+              {hasScoring && <ScoringPanel scoring={extra!.scoring!} />}
+              {hasFactores && <FactoresExternosCard factores={extra!.factores_externos!} />}
+            </div>
+          )}
+
+          {/* 3.6. Fallbacks de texto si no llegó extra_data pero el texto sí trae las secciones */}
+          {!hasScoring && sections['SCORING GO / NO-GO'] && (
+            <Card className="bg-card border border-border/40 border-l-[3px] border-l-primary/40">
+              <CardHeader className="pb-2 pt-4 px-4">
+                <CardTitle className="text-xs font-semibold flex items-center gap-1.5 uppercase tracking-wide text-primary/80">
+                  <Target className="w-3.5 h-3.5 text-primary" />
+                  Scoring Go / No-Go
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 pb-4 pt-0">
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                  {sections['SCORING GO / NO-GO']}
+                  {sections['SCORE FINAL PONDERADO'] && `\n\n${sections['SCORE FINAL PONDERADO']}`}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+          {!hasFactores && sections['FACTOR EXTERNO INESPERADO'] && (
+            <Card className="bg-card border border-border/40 border-l-[3px] border-l-secondary/40">
+              <CardHeader className="pb-2 pt-4 px-4">
+                <CardTitle className="text-xs font-semibold flex items-center gap-1.5 uppercase tracking-wide text-secondary/80">
+                  <Globe2 className="w-3.5 h-3.5 text-secondary" />
+                  Factor externo inesperado
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 pb-4 pt-0">
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">{sections['FACTOR EXTERNO INESPERADO']}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 4. Cards de secciones (texto) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {CARD_SECTIONS.map(({ key, label, Icon, accent }) => {
               const content = sections[key];

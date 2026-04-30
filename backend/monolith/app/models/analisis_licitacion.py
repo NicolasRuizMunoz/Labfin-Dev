@@ -41,4 +41,8 @@ class AnalisisLicitacion(Base):
     # }
     curvas_data = Column(JSON, nullable=True)
 
+    # JSON crudo emitido por EVA: meta, scoring (7 criterios + score_total + recomendacion),
+    # factores_externos, alertas, flujo_caja_inicial_requerido, etc.
+    extra_data = Column(JSON, nullable=True)
+
     licitacion = relationship("Licitacion", back_populates="analisis")

@@ -1,6 +1,5 @@
-import asyncio
 import logging
-from typing import List, Optional, Tuple, Dict, Any
+from typing import List, Optional, Tuple
 
 from openai import OpenAI
 from sqlalchemy.orm import Session
@@ -9,13 +8,14 @@ from sqlalchemy import asc, desc
 from app.config import OPENAI_API_KEY, OPENAI_MODEL
 from app.models.chat import ChatSession, ChatMessage
 from app.models.analisis_licitacion import AnalisisLicitacion
+from app.models.document_chunk import DocumentChunk
+from app.models.file import FileEntry
 from app.schemas.chat import ChatSource
-from app.services.file_service import get_file_by_id_raw
-from app.services.vector_store_faiss import FaissStore
-from app.services.embedding import get_embedder
-from app.services.rag.rag_service import generate_answer
 
 LOGGER = logging.getLogger(__name__)
+
+# Tope de caracteres del contexto de chunks que se inyecta al chat genérico
+_CHAT_MAX_CONTEXT_CHARS = 12000
 
 
 # ------------ Sessions ------------
@@ -198,62 +198,101 @@ def _generate_licitacion_reply(
     return answer, []
 
 
-# ------------ RAG reply (chats generales sin licitacion) ------------
+# ------------ Reply para chats sin licitacion (context-stuffing de chunks) ------------
 
-def _dedupe(results: List[Tuple[float, dict]]) -> List[Tuple[float, dict]]:
-    seen, deduped = set(), []
-    for score, meta in results:
-        key = meta.get("s3_key_processed") or f"file:{meta.get('file_id')}"
-        if key not in seen:
-            seen.add(key)
-            deduped.append((score, meta))
-    return deduped
-
-
-def _generate_rag_reply(
-    db: Session, user_message: str, organization_id: int
+def _generate_generic_reply(
+    db: Session, session: ChatSession, *, user_id: int
 ) -> Tuple[str, List[ChatSource]]:
-    embedder = get_embedder()
-    qvec = embedder.embed_query(user_message)
-
-    store = FaissStore(org_id=organization_id, dim=embedder.dim)
-    results = store.search(qvec, top_k=5)
-    if not results:
-        return "No encontré fragmentos relevantes para tu consulta.", []
-
-    results = _dedupe(results)
-
-    sources: List[ChatSource] = []
-    for score, meta in results:
-        file_id = int(meta.get("file_id"))
-        s3_key_processed = meta.get("s3_key_processed")
-        fragment = (meta.get("content_preview") or "").strip()
-        uri = f"s3://{s3_key_processed}" if s3_key_processed else ""
-        fe = get_file_by_id_raw(db, file_id)
-        file_name = fe.original_filename if fe else str(file_id)
-        sources.append(ChatSource(
-            file_id=file_id, file_name=file_name, page=None,
-            score=float(score), fragment=fragment, uri=uri, s3_key_processed=s3_key_processed,
-        ))
-
-    source_dicts: List[Dict[str, Any]] = [
-        {"file_name": s.file_name, "score": s.score, "uri": s.uri,
-         "fragment": s.fragment, "s3_key_processed": s.s3_key_processed}
-        for s in sources
-    ]
-    answer = asyncio.run(generate_answer(user_message, source_dicts))
-
-    if answer:
-        return answer, sources
-
-    lines = ["Fragmentos más relevantes encontrados:"]
-    for i, s in enumerate(sources, 1):
-        lines.append(
-            f"\n{i}. **{s.file_name}**\n"
-            f"   • Score: {s.score:.4f}\n"
-            f"   • Fragmento: {s.fragment[:300]}{'...' if len(s.fragment) > 300 else ''}"
+    """
+    Chat sin licitacion_id. Sin embeddings ni búsqueda vectorial: se inyecta
+    como contexto el contenido de los chunks activos de la organización
+    (truncado a _CHAT_MAX_CONTEXT_CHARS) y se delega a OpenAI.
+    """
+    chunks = (
+        db.query(DocumentChunk, FileEntry)
+        .join(FileEntry, FileEntry.id == DocumentChunk.file_entry_id)
+        .filter(
+            DocumentChunk.organization_id == session.organization_id,
+            FileEntry.is_active.is_(True),
         )
-    return "\n".join(lines), sources
+        .order_by(DocumentChunk.file_entry_id, DocumentChunk.id)
+        .all()
+    )
+
+    context_parts: List[str] = []
+    sources_seen: dict = {}
+    total_chars = 0
+    for chunk, fe in chunks:
+        text = (chunk.content_text or "").strip()
+        if not text:
+            continue
+        block = f"[{fe.original_filename}]\n{text}"
+        if total_chars + len(block) > _CHAT_MAX_CONTEXT_CHARS:
+            remaining = _CHAT_MAX_CONTEXT_CHARS - total_chars
+            if remaining > 200:
+                context_parts.append(block[:remaining])
+            break
+        context_parts.append(block)
+        total_chars += len(block)
+        if fe.id not in sources_seen:
+            sources_seen[fe.id] = ChatSource(
+                file_id=fe.id,
+                file_name=fe.original_filename,
+                page=None,
+                score=1.0,
+                fragment=text[:300],
+                uri="",
+                s3_key_processed=fe.s3_key_processed,
+            )
+
+    system_content = (
+        "Eres EVA, un asistente experto en análisis de licitaciones públicas y privadas. "
+        "Responde siempre en español, de forma clara y concisa. "
+        "Si la información en el contexto no alcanza para responder, indícalo honestamente."
+    )
+    if context_parts:
+        system_content += (
+            "\n\nContexto de los documentos de la organización:\n\n"
+            + "\n\n---\n\n".join(context_parts)
+        )
+    else:
+        system_content += (
+            "\n\nNo hay documentos indexados para esta organización. "
+            "Responde con la información que el usuario te proporcione en la conversación."
+        )
+
+    history = (
+        db.query(ChatMessage)
+        .filter(ChatMessage.session_id == session.id)
+        .order_by(asc(ChatMessage.created_at))
+        .all()
+    )
+    messages = [{"role": "system", "content": system_content}]
+    for msg in history:
+        messages.append({"role": msg.role, "content": msg.message})
+
+    client = OpenAI(api_key=OPENAI_API_KEY)
+    response = client.chat.completions.create(
+        model=OPENAI_MODEL,
+        messages=messages,
+        temperature=0.5,
+    )
+    answer = response.choices[0].message.content or "Sin respuesta."
+
+    if response.usage:
+        from app.services.token_usage_service import record_usage
+        record_usage(
+            db,
+            organization_id=session.organization_id,
+            user_id=user_id,
+            usage_type="chat",
+            model=OPENAI_MODEL,
+            prompt_tokens=response.usage.prompt_tokens,
+            completion_tokens=response.usage.completion_tokens,
+            total_tokens=response.usage.total_tokens,
+        )
+
+    return answer, list(sources_seen.values())
 
 
 # ------------ Entry point para el router ------------
@@ -271,4 +310,4 @@ def generate_assistant_reply(
     if session and session.licitacion_id:
         return _generate_licitacion_reply(db, session, user_id=user_id)
 
-    return _generate_rag_reply(db, user_message, organization_id)
+    return _generate_generic_reply(db, session, user_id=user_id)

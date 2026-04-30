@@ -286,18 +286,22 @@ def _get_chunks_text(db: Session, file_ids: list[int], org_id: int, max_chars: i
     return "\n\n".join(parts)
 
 
-def _extract_data(text: str) -> tuple[str, dict, dict]:
-    """Extrae el bloque JSON del texto del LLM. Devuelve (texto_limpio, breakeven, curvas)."""
+def _extract_data(text: str) -> tuple[str, dict, dict, dict]:
+    """Extrae el bloque JSON del texto del LLM.
+
+    Devuelve (texto_limpio, breakeven, curvas, full_payload).
+    full_payload trae además meta, scoring, factores_externos y alertas.
+    """
     pattern = r"```json\s*(\{.*?\})\s*```"
     match = re.search(pattern, text, re.DOTALL)
     if not match:
-        return text, {}, {}
+        return text, {}, {}, {}
     clean_text = text[: match.start()].rstrip()
     try:
         data = json.loads(match.group(1))
-        return clean_text, data.get("breakeven", {}), data.get("curvas", {})
+        return clean_text, data.get("breakeven", {}), data.get("curvas", {}), data
     except json.JSONDecodeError:
-        return clean_text, {}, {}
+        return clean_text, {}, {}, {}
 
 
 def _to_float(val) -> Optional[float]:
@@ -383,7 +387,7 @@ def analyze_licitacion(db: Session, org_id: int, licitacion_id: int, *, user_id:
         LOGGER.error(f"[ANALYSIS] OpenAI error: {e}")
         raise HTTPException(status_code=502, detail=f"Error al llamar a OpenAI: {e}")
 
-    clean_answer, bk, curvas = _extract_data(raw_answer)
+    clean_answer, bk, curvas, full_payload = _extract_data(raw_answer)
 
     registro = AnalisisLicitacion(
         licitacion_id=licitacion_id,
@@ -402,6 +406,7 @@ def analyze_licitacion(db: Session, org_id: int, licitacion_id: int, *, user_id:
         breakeven_meses_pesimista=_to_float(bk.get("meses_pesimista")),
         ingreso_total_contrato=_to_float(bk.get("ingreso_total_contrato")),
         curvas_data=curvas if curvas else None,
+        extra_data=full_payload if full_payload else None,
     )
     db.add(registro)
     db.commit()
@@ -425,6 +430,7 @@ def analyze_licitacion(db: Session, org_id: int, licitacion_id: int, *, user_id:
         "breakeven_meses_pesimista": registro.breakeven_meses_pesimista,
         "ingreso_total_contrato": registro.ingreso_total_contrato,
         "curvas_data": registro.curvas_data,
+        "extra_data": registro.extra_data,
         "created_at": registro.created_at.isoformat(),
     }
 

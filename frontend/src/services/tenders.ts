@@ -25,6 +25,46 @@ export interface LicitacionUpdate {
   fecha_vencimiento?: string | null;
 }
 
+export type ScoringCriterion = {
+  puntuacion: number;
+  peso: number;
+  justificacion: string;
+};
+
+export type FactorExterno = {
+  nombre: string;
+  descripcion: string;
+  impacto: 'positivo' | 'negativo' | 'incierto' | string;
+  severidad: 'alta' | 'media' | 'baja' | string;
+};
+
+export type AnalisisExtraData = {
+  meta?: {
+    version?: string;
+    fecha_analisis?: string;
+    licitacion_id?: string;
+    organismo_comprador?: string;
+    moneda?: string;
+    cambios_desde_version_anterior?: string | null;
+  };
+  scoring?: {
+    margen_estimado?: ScoringCriterion;
+    fit_tecnico?: ScoringCriterion;
+    capacidad_financiera?: ScoringCriterion;
+    plazo_entrega?: ScoringCriterion;
+    riesgo_boleta?: ScoringCriterion;
+    probabilidad_adjudicacion?: ScoringCriterion;
+    factor_externo?: ScoringCriterion;
+    score_total?: number;
+    recomendacion?: string;
+  };
+  breakeven?: {
+    flujo_caja_inicial_requerido?: number | null;
+  } & Record<string, unknown>;
+  factores_externos?: FactorExterno[];
+  alertas?: string[];
+};
+
 export interface AnalisisResult {
   id: number;
   analisis: string;
@@ -48,6 +88,7 @@ export interface AnalisisResult {
     base: { costo_fijo: number; ingreso_mensual: number; costo_variable_mensual: number; descripcion: string };
     pesimista: { costo_fijo: number; ingreso_mensual: number; costo_variable_mensual: number; descripcion: string };
   } | null;
+  extra_data: AnalisisExtraData | null;
   created_at: string;
 }
 

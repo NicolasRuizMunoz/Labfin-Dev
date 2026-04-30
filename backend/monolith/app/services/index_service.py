@@ -36,10 +36,11 @@ def _ensure_local_txt(fe) -> str:
 
 
 def index_file(db: Session, file_id: int) -> int:
-    """Chunk, embed and index a file into FAISS. Returns number of chunks created."""
-    import numpy as np  # noqa: F401
-    from app.services.embedding import get_embedder
-    from app.services.vector_store_faiss import FaissStore
+    """Chunk a file and persist its chunks in DocumentChunk.
+
+    No embeddings or FAISS — el análisis EVA y el chat de licitación
+    leen content_text directamente desde MySQL.
+    """
     fe = file_service.get_file_by_id_raw(db, file_id)
     if not fe:
         raise ValueError(f"FileEntry {file_id} not found")
@@ -55,25 +56,16 @@ def index_file(db: Session, file_id: int) -> int:
     if not chunks:
         return 0
 
-    embedder = get_embedder()
-    vectors = embedder.embed_passages(chunks)
-    store = FaissStore(org_id=fe.organization_id, dim=embedder.dim)
-
-    metas = [
-        {
+    for i, chunk in enumerate(chunks):
+        meta = {
             "file_id": fe.id,
             "organization_id": fe.organization_id,
             "chunk_index": i,
             "content_preview": chunk[:300],
             "s3_key_processed": fe.s3_key_processed,
         }
-        for i, chunk in enumerate(chunks)
-    ]
-    store.add(vectors, metas)
-
-    for i, (meta, chunk) in enumerate(zip(metas, chunks)):
         dc = DocumentChunk(
-            vector_id=str(len(store.meta) - len(metas) + i),
+            vector_id=f"{fe.id}:{i}",
             file_entry_id=fe.id,
             organization_id=fe.organization_id,
             content_text=chunk[:2000],
@@ -82,26 +74,14 @@ def index_file(db: Session, file_id: int) -> int:
         db.add(dc)
     db.commit()
 
-    LOGGER.info(f"[INDEX] file_id={file_id} -> {len(chunks)} chunks")
+    LOGGER.info(f"[INDEX] file_id={file_id} -> {len(chunks)} chunks (no embeddings)")
     return len(chunks)
 
 
 def rebuild_org_index(db: Session, organization_id: int) -> int:
-    import numpy as np
-    from app.services.embedding import get_embedder
-    from app.services.vector_store_faiss import FaissStore
-    rows = db.query(DocumentChunk).filter(DocumentChunk.organization_id == organization_id).all()
-    embedder = get_embedder()
-    store = FaissStore(org_id=organization_id, dim=embedder.dim)
-    if not rows:
-        store.rebuild(np.zeros((0, embedder.dim), dtype="float32"), [])
-        return 0
-
-    texts = [r.content_text or (r.metadata_json or {}).get("content_preview") or "" for r in rows]
-    metas = [r.metadata_json or {} for r in rows]
-    vectors = embedder.embed_passages(texts)
-    store.rebuild(vectors, metas)
-    return len(metas)
+    """No-op — los embeddings y FAISS están desactivados."""
+    LOGGER.info(f"[INDEX] rebuild_org_index({organization_id}) skipped — embeddings disabled")
+    return 0
 
 
 def delete_file_chunks(db: Session, file_id: int, organization_id: int) -> int:
@@ -110,6 +90,5 @@ def delete_file_chunks(db: Session, file_id: int, organization_id: int) -> int:
         DocumentChunk.file_entry_id == file_id,
     ).delete(synchronize_session=False)
     db.commit()
-    rebuild_org_index(db, organization_id)
-    LOGGER.info(f"[INDEX] Deleted chunks for file_id={file_id}, rebuilt org={organization_id}")
+    LOGGER.info(f"[INDEX] Deleted {n} chunks for file_id={file_id}")
     return n
