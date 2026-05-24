@@ -1,11 +1,13 @@
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
 from app.config import (
     SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS,
-    SECURE_COOKIES,
+    SECURE_COOKIES, GOOGLE_CALENDAR_POPUP_RETURN,
 )
+from app.services import google_calendar_service as gcal
 from app.database.db import get_db
 from app.dependencies.auth import get_current_user, UserTokenData
 from app.schemas.auth import (
@@ -145,6 +147,79 @@ def password_reset_verify(payload: PasswordResetVerify, db: Session = Depends(ge
 def password_reset_confirm(payload: PasswordResetConfirm, db: Session = Depends(get_db)):
     confirm_password_reset(db, payload.token, payload.password)
     return {"ok": True}
+
+
+# ── Google Calendar connection (independent of login) ────────────────────────
+
+@router.get("/google/calendar/status")
+def google_calendar_status(
+    current: UserTokenData = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    acct = gcal.get_calendar_account(db, current.user_id)
+    return {"connected": acct is not None, "email": acct.email if acct else None}
+
+
+@router.get("/google/calendar/connect")
+def google_calendar_connect(current: UserTokenData = Depends(get_current_user)):
+    """Return the Google consent URL the frontend should open in a popup."""
+    return {"url": gcal.build_consent_url(current.user_id)}
+
+
+@router.get("/google/calendar/callback")
+def google_calendar_callback(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """OAuth redirect target. Exchanges the code, stores tokens, and returns a
+    tiny HTML page that postMessages the opener and closes the popup."""
+    code = request.query_params.get("code")
+    state = request.query_params.get("state")
+    error = request.query_params.get("error")
+    if error:
+        return _popup_close_html(success=False, message=error)
+    if not code or not state:
+        return _popup_close_html(success=False, message="Faltan parámetros")
+
+    try:
+        user_id = gcal.decode_state(state)
+        token_payload = gcal.exchange_code(code)
+        gcal.store_tokens_from_exchange(db, user_id, token_payload)
+    except HTTPException as exc:
+        return _popup_close_html(success=False, message=exc.detail)
+    except Exception as exc:  # noqa: BLE001
+        return _popup_close_html(success=False, message=str(exc))
+
+    return _popup_close_html(success=True, message="Conectado")
+
+
+@router.delete("/google/calendar/disconnect", status_code=204)
+def google_calendar_disconnect(
+    current: UserTokenData = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    gcal.disconnect(db, current.user_id)
+    return Response(status_code=204)
+
+
+def _popup_close_html(success: bool, message: str) -> HTMLResponse:
+    payload = {"type": "gcal-connect", "success": success, "message": message}
+    import json
+    payload_json = json.dumps(payload)
+    return_url = GOOGLE_CALENDAR_POPUP_RETURN
+    html = f"""<!doctype html>
+<html><body style="font-family: system-ui; padding: 24px; text-align: center;">
+<p>{'✅ Google Calendar conectado.' if success else '❌ ' + message}</p>
+<p>Esta ventana se cerrará en un segundo…</p>
+<script>
+  try {{ window.opener && window.opener.postMessage({payload_json}, '*'); }} catch(e) {{}}
+  setTimeout(function() {{
+    try {{ window.close(); }} catch(e) {{}}
+    window.location.href = {return_url!r};
+  }}, 800);
+</script>
+</body></html>"""
+    return HTMLResponse(html)
 
 
 @router.post("/logout")

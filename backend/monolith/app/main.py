@@ -5,8 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import CORS_ORIGINS
 from app.startup import run_startup
-from app.routers import auth, upload, file, chat, licitaciones, admin, escenarios, simulaciones, contact
+from app.routers import auth, upload, file, chat, licitaciones, admin, escenarios, simulaciones, contact, etiquetas, organizations
 from app.middleware.rate_limit import RateLimitMiddleware
+from app.scheduler import start_scheduler, shutdown_scheduler
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -15,7 +16,11 @@ logging.basicConfig(level=logging.INFO)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     run_startup()
-    yield
+    start_scheduler()
+    try:
+        yield
+    finally:
+        shutdown_scheduler()
 
 
 app = FastAPI(title="LabFin", lifespan=lifespan)
@@ -37,6 +42,8 @@ app.include_router(auth.router,         prefix="/api/users")
 app.include_router(upload.router,       prefix="/api/data")
 app.include_router(file.router,         prefix="/api/data")
 app.include_router(licitaciones.router, prefix="/api/data")
+app.include_router(etiquetas.router,    prefix="/api/data")
+app.include_router(organizations.router, prefix="/api")
 app.include_router(escenarios.router,    prefix="/api/data")
 app.include_router(simulaciones.router,  prefix="/api/data")
 app.include_router(chat.router,         prefix="/api")

@@ -4,48 +4,48 @@
 
 /* ═══════════════════════════════════════════════════════════════
    Evalitics Design System
-   Brand: Forest Green (#2d7a4f) + Royal Purple (#6b3fa0) + Warm Gray
+   Brand: Vivid Purple (#9800b8) + Bright Green (#00ac00) + Cream (#f3eedb)
    ═══════════════════════════════════════════════════════════════ */
 
 @layer base {
   :root {
     /* Core Background & Text */
-    --background: 33 20% 88%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 47 50% 91%;
+    --foreground: 285 25% 10%;
 
-    /* Card System */
+    /* Card System — pure white surfaces float over the cream */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 285 25% 10%;
 
     /* Popover System */
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 285 25% 10%;
 
-    /* Primary - Evalitics Green */
-    --primary: 142 48% 31%;
+    /* Primary — Vivid Purple #9800b8 */
+    --primary: 290 100% 36%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 142 48% 41%;
+    --primary-glow: 290 95% 50%;
 
-    /* Secondary - Evalitics Purple */
-    --secondary: 264 41% 38%;
+    /* Secondary — Bright Green #00ac00 */
+    --secondary: 120 100% 34%;
     --secondary-foreground: 0 0% 100%;
 
-    /* Financial Green - Growth & Success */
-    --financial: 142 48% 31%;
+    /* Financial Green — keeps green semantics for money/growth */
+    --financial: 120 100% 34%;
     --financial-foreground: 0 0% 100%;
-    --financial-glow: 142 48% 41%;
+    --financial-glow: 120 90% 45%;
 
     /* Risk Colors */
-    --risk-low: 142 48% 31%;
+    --risk-low: 120 100% 34%;
     --risk-medium: 35 90% 55%;
     --risk-high: 0 85% 60%;
 
-    /* Muted Tones */
-    --muted: 33 15% 85%;
-    --muted-foreground: 222.2 45% 25%;
+    /* Muted Tones — tinted to the cream family */
+    --muted: 47 35% 85%;
+    --muted-foreground: 285 15% 32%;
 
-    /* Accent - Evalitics Purple */
-    --accent: 264 41% 38%;
+    /* Accent — Bright Green */
+    --accent: 120 100% 34%;
     --accent-foreground: 0 0% 100%;
 
     /* Destructive */
@@ -53,131 +53,137 @@
     --destructive-foreground: 0 0% 100%;
 
     /* UI Elements */
-    --border: 33 15% 80%;
-    --input: 33 15% 85%;
-    --ring: 142 48% 31%;
+    --border: 47 30% 78%;
+    --input: 47 30% 85%;
+    --ring: 290 100% 36%;
 
     /* ── Brand Tonal Palette ── */
-    /* Greens (tints of primary) */
-    --green-50: 140 40% 96%;
-    --green-100: 141 40% 90%;
-    --green-200: 141 42% 78%;
-    --green-500: 142 48% 31%;
-    --green-600: 142 50% 25%;
-    --green-700: 142 52% 20%;
+    /* Purples (tints of primary) */
+    --purple-50: 290 80% 96%;
+    --purple-100: 290 75% 90%;
+    --purple-200: 290 70% 78%;
+    --purple-500: 290 100% 36%;
+    --purple-600: 290 100% 28%;
+    --purple-700: 290 100% 22%;
 
-    /* Purples (tints of secondary) */
-    --purple-50: 264 35% 96%;
-    --purple-100: 264 35% 90%;
-    --purple-200: 264 36% 80%;
-    --purple-500: 264 41% 38%;
-    --purple-600: 264 43% 30%;
-    --purple-700: 264 45% 24%;
+    /* Greens (tints of secondary) */
+    --green-50: 120 60% 95%;
+    --green-100: 120 60% 88%;
+    --green-200: 120 65% 75%;
+    --green-500: 120 100% 34%;
+    --green-600: 120 100% 26%;
+    --green-700: 120 100% 20%;
 
-    /* Neutral Grays (warm tinted) */
-    --gray-50: 33 15% 97%;
-    --gray-100: 33 12% 93%;
-    --gray-200: 33 10% 86%;
-    --gray-300: 33 8% 76%;
-    --gray-400: 33 6% 56%;
-    --gray-500: 33 5% 40%;
-    --gray-600: 33 6% 28%;
-    --gray-700: 33 8% 18%;
+    /* Neutral creams (warm tinted to background) */
+    --gray-50: 47 50% 97%;
+    --gray-100: 47 45% 93%;
+    --gray-200: 47 40% 86%;
+    --gray-300: 47 30% 76%;
+    --gray-400: 47 18% 56%;
+    --gray-500: 47 12% 40%;
+    --gray-600: 47 14% 28%;
+    --gray-700: 285 20% 18%;
 
     /* ── Gradients ── */
-    --gradient-hero: linear-gradient(135deg, hsl(142 48% 28%), hsl(264 41% 34%));
-    --gradient-success: linear-gradient(135deg, hsl(142 48% 31%), hsl(142 48% 41%));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(33 15% 95%));
-    --gradient-subtle: linear-gradient(180deg, hsl(33 15% 92%), hsl(33 20% 88%));
-    --gradient-page-header: linear-gradient(135deg, hsl(142 48% 31% / 0.06), hsl(264 41% 38% / 0.06));
+    --gradient-hero: linear-gradient(135deg, hsl(290 100% 36%), hsl(120 100% 34%));
+    --gradient-success: linear-gradient(135deg, hsl(120 100% 34%), hsl(120 90% 45%));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(47 50% 96%));
+    --gradient-subtle: linear-gradient(180deg, hsl(47 50% 94%), hsl(47 50% 91%));
+    --gradient-page-header: linear-gradient(135deg, hsl(290 100% 36% / 0.08), hsl(120 100% 34% / 0.06));
 
     /* ── Shadows ── */
-    --shadow-card: 0 4px 24px -8px hsl(210 40% 8% / 0.08);
-    --shadow-elevated: 0 8px 40px -12px hsl(210 40% 8% / 0.12);
-    --shadow-glow: 0 0 30px hsl(var(--primary) / 0.2);
+    --shadow-card: 0 4px 24px -8px hsl(290 60% 15% / 0.10);
+    --shadow-elevated: 0 8px 40px -12px hsl(290 60% 15% / 0.14);
+    --shadow-glow: 0 0 30px hsl(var(--primary) / 0.25);
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 47 50% 96%;
+    --sidebar-foreground: 285 20% 22%;
+    --sidebar-primary: 290 100% 36%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 47 40% 90%;
+    --sidebar-accent-foreground: 285 25% 14%;
+    --sidebar-border: 47 30% 82%;
+    --sidebar-ring: 290 100% 36%;
   }
 
   .dark {
-    --background: 220 20% 7%;
-    --foreground: 210 40% 96%;
+    --background: 285 25% 7%;
+    --foreground: 47 40% 94%;
 
-    --card: 220 18% 10%;
-    --card-foreground: 210 40% 96%;
+    --card: 285 22% 11%;
+    --card-foreground: 47 40% 94%;
 
-    --popover: 220 18% 10%;
-    --popover-foreground: 210 40% 96%;
+    --popover: 285 22% 11%;
+    --popover-foreground: 47 40% 94%;
 
-    /* Keep brand green in dark mode */
-    --primary: 142 45% 42%;
+    /* Lighter, more vivid purple in dark mode */
+    --primary: 290 80% 62%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 142 48% 52%;
+    --primary-glow: 290 85% 72%;
 
-    /* Keep brand purple in dark mode */
-    --secondary: 264 38% 50%;
+    /* Lighter green in dark mode */
+    --secondary: 120 65% 48%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 16% 16%;
-    --muted-foreground: 215 20% 65%;
+    --financial: 120 65% 48%;
+    --financial-foreground: 0 0% 100%;
+    --financial-glow: 120 70% 58%;
 
-    --accent: 264 38% 50%;
+    --risk-low: 120 65% 48%;
+
+    --muted: 285 18% 17%;
+    --muted-foreground: 47 20% 70%;
+
+    --accent: 120 65% 48%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 45%;
+    --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 14% 18%;
-    --input: 220 14% 18%;
-    --ring: 142 45% 42%;
+    --border: 285 18% 20%;
+    --input: 285 18% 20%;
+    --ring: 290 80% 62%;
 
     /* Dark tonal palette */
-    --green-50: 142 30% 12%;
-    --green-100: 142 32% 16%;
-    --green-200: 142 35% 22%;
-    --green-500: 142 45% 42%;
-    --green-600: 142 48% 48%;
-    --green-700: 142 50% 55%;
+    --purple-50: 290 30% 14%;
+    --purple-100: 290 32% 18%;
+    --purple-200: 290 35% 26%;
+    --purple-500: 290 80% 62%;
+    --purple-600: 290 82% 68%;
+    --purple-700: 290 85% 76%;
 
-    --purple-50: 264 25% 13%;
-    --purple-100: 264 28% 18%;
-    --purple-200: 264 32% 26%;
-    --purple-500: 264 38% 50%;
-    --purple-600: 264 40% 56%;
-    --purple-700: 264 42% 62%;
+    --green-50: 120 30% 12%;
+    --green-100: 120 32% 16%;
+    --green-200: 120 35% 22%;
+    --green-500: 120 65% 48%;
+    --green-600: 120 68% 54%;
+    --green-700: 120 70% 62%;
 
-    --gray-50: 220 16% 12%;
-    --gray-100: 220 14% 16%;
-    --gray-200: 220 12% 22%;
-    --gray-300: 220 10% 30%;
-    --gray-400: 220 8% 44%;
-    --gray-500: 220 6% 56%;
-    --gray-600: 220 8% 72%;
-    --gray-700: 220 10% 84%;
+    --gray-50: 285 18% 12%;
+    --gray-100: 285 16% 16%;
+    --gray-200: 285 14% 22%;
+    --gray-300: 285 12% 30%;
+    --gray-400: 285 10% 44%;
+    --gray-500: 285 8% 56%;
+    --gray-600: 285 10% 72%;
+    --gray-700: 285 12% 84%;
 
-    --gradient-hero: linear-gradient(135deg, hsl(142 45% 18%), hsl(264 38% 22%));
-    --gradient-success: linear-gradient(135deg, hsl(142 45% 30%), hsl(142 48% 40%));
-    --gradient-card: linear-gradient(180deg, hsl(220 18% 10%), hsl(220 16% 12%));
-    --gradient-subtle: linear-gradient(180deg, hsl(220 18% 9%), hsl(220 20% 7%));
-    --gradient-page-header: linear-gradient(135deg, hsl(142 45% 42% / 0.08), hsl(264 38% 50% / 0.08));
+    --gradient-hero: linear-gradient(135deg, hsl(290 65% 24%), hsl(120 50% 22%));
+    --gradient-success: linear-gradient(135deg, hsl(120 65% 38%), hsl(120 70% 48%));
+    --gradient-card: linear-gradient(180deg, hsl(285 22% 11%), hsl(285 22% 13%));
+    --gradient-subtle: linear-gradient(180deg, hsl(285 25% 9%), hsl(285 25% 7%));
+    --gradient-page-header: linear-gradient(135deg, hsl(290 80% 62% / 0.12), hsl(120 65% 48% / 0.10));
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 142 45% 42%;
+    --sidebar-background: 285 25% 8%;
+    --sidebar-foreground: 47 30% 90%;
+    --sidebar-primary: 290 80% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 142 45% 42%;
+    --sidebar-accent: 285 18% 16%;
+    --sidebar-accent-foreground: 47 30% 90%;
+    --sidebar-border: 285 18% 20%;
+    --sidebar-ring: 290 80% 62%;
   }
 }
 
@@ -200,5 +206,14 @@
   }
   .bg-gradient-page-header {
     background: var(--gradient-page-header);
+  }
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
+  }
+  .bg-gradient-success {
+    background: var(--gradient-success);
+  }
+  .bg-gradient-card {
+    background: var(--gradient-card);
   }
 }

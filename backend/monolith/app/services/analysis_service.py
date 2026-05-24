@@ -52,14 +52,26 @@ Costo estimado del producto o servicio: indica el costo unitario o mensual estim
 
 Margen estimado: calcula el margen bruto sobre el precio de licitación como porcentaje. Si el margen es inferior al 12%, señálalo como MARGEN BAJO. Si es inferior al 5%, señálalo como MARGEN CRÍTICO — NO RECOMENDADO.
 
+Margen al que compites (margen de referencia del mercado): Estima en qué margen porcentual probablemente postularán los principales competidores en esta licitación. Considera el precio piso histórico de licitaciones similares del mismo organismo comprador, la presión competitiva habitual del rubro, los costos de insumos del mercado actual y el comportamiento típico de los oferentes. Indica el rango estimado (ej. "8% a 12%") y un valor central. Si el margen al que compites es inferior al margen mínimo aceptable de la empresa, señálalo como ALERTA MARGEN COMPETITIVO INSUFICIENTE. En 1-2 oraciones explica el racional de la estimación.
+
 Punto de equilibrio (PE): usa la fórmula PE = Costos Fijos / (Ingreso mensual - Costo variable mensual). Expresa el resultado en meses. Si el PE supera el 60% de la duración del contrato, señálalo como RIESGO FINANCIERO ALTO.
 
 Flujo de caja inicial: estima cuánto dinero necesita la empresa en los primeros 30-60 días antes de recibir el primer pago. Esto es crítico para saber si hay capacidad de financiamiento.
 
-Proyecciones por escenario (1-2 oraciones cada una):
-Optimista: supone precios de insumos controlados, adjudicación al precio ofertado, sin imprevistos.
-Base: supone variaciones normales de costo de hasta 10%, pagos en el plazo estipulado.
-Pesimista: supone sobrecostos del 15-20%, pagos retrasados, penalizaciones menores.
+Proyecciones por escenario (descripción + puntuación + recomendación):
+Para cada escenario asigna una puntuación de 1 a 5 según rentabilidad y riesgo, y una recomendación corta (máximo 6 palabras).
+
+Escala de puntuación por escenario:
+5: muy rentable y bajo riesgo — postular con confianza
+4: rentable con riesgo controlable
+3: rentable pero ajustado, requiere validación interna
+2: margen muy bajo o riesgo significativo
+1: no rentable o inviable bajo este escenario
+
+Formato por escenario (1-2 oraciones de descripción, luego puntuación y recomendación):
+Optimista: supone precios de insumos controlados, adjudicación al precio ofertado, sin imprevistos. Puntuación: X/5. Recomendación: <texto breve>.
+Base: supone variaciones normales de costo de hasta 10%, pagos en el plazo estipulado. Puntuación: X/5. Recomendación: <texto breve>.
+Pesimista: supone sobrecostos del 15-20%, pagos retrasados, penalizaciones menores. Puntuación: X/5. Recomendación: <texto breve>.
 
 GARANTÍAS:
 Indica si las bases exigen boleta de garantía u otra caución. Para cada garantía menciona: tipo (boleta bancaria, póliza, vale vista), monto o porcentaje del contrato, plazo de vigencia (debe cubrir x días después del término del contrato), y las condiciones exactas de ejecución (cuándo se pierde). Si no se menciona, indicarlo explícitamente. Estima el costo financiero de mantener esa garantía inmovilizada (costo de oportunidad).
@@ -194,25 +206,37 @@ Al final del texto incluye exactamente el siguiente bloque JSON. No lo omitas. S
     "ingreso_total_contrato": <número o null>,
     "flujo_caja_inicial_requerido": <número o null>
   },
+  "mercado": {
+    "margen_competencia_min": <porcentaje 0-100 o null>,
+    "margen_competencia_max": <porcentaje 0-100 o null>,
+    "margen_competencia_central": <porcentaje 0-100 o null>,
+    "comentario": "<racional breve de la estimación, máximo 2 oraciones>"
+  },
   "curvas": {
     "meses_total": <duración del contrato en meses>,
     "optimista": {
       "costo_fijo": <número>,
       "ingreso_mensual": <número>,
       "costo_variable_mensual": <número>,
-      "descripcion": "<supuesto principal>"
+      "descripcion": "<supuesto principal>",
+      "puntuacion": <1-5>,
+      "recomendacion": "<máximo 6 palabras>"
     },
     "base": {
       "costo_fijo": <número>,
       "ingreso_mensual": <número>,
       "costo_variable_mensual": <número>,
-      "descripcion": "<supuesto principal>"
+      "descripcion": "<supuesto principal>",
+      "puntuacion": <1-5>,
+      "recomendacion": "<máximo 6 palabras>"
     },
     "pesimista": {
       "costo_fijo": <número>,
       "ingreso_mensual": <número>,
       "costo_variable_mensual": <número>,
-      "descripcion": "<supuesto principal>"
+      "descripcion": "<supuesto principal>",
+      "puntuacion": <1-5>,
+      "recomendacion": "<máximo 6 palabras>"
     }
   },
   "factores_externos": [

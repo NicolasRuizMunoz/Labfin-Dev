@@ -11,6 +11,7 @@ def create(db: Session, org_id: int, data: LicitacionCreate) -> Licitacion:
         organization_id=org_id,
         nombre=data.nombre,
         fecha_vencimiento=data.fecha_vencimiento,
+        fecha_vencimiento_preguntas=data.fecha_vencimiento_preguntas,
     )
     db.add(lic)
     db.commit()
@@ -41,10 +42,10 @@ def get_one(db: Session, org_id: int, lic_id: int) -> Licitacion:
 
 def update(db: Session, org_id: int, lic_id: int, data: LicitacionUpdate) -> Licitacion:
     lic = get_one(db, org_id, lic_id)
-    if data.nombre is not None:
-        lic.nombre = data.nombre
-    if data.fecha_vencimiento is not None:
-        lic.fecha_vencimiento = data.fecha_vencimiento
+    payload = data.model_dump(exclude_unset=True)
+    for field in ("nombre", "fecha_vencimiento", "fecha_vencimiento_preguntas"):
+        if field in payload:
+            setattr(lic, field, payload[field])
     db.commit()
     db.refresh(lic)
     return lic

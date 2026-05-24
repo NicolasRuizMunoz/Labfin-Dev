@@ -11,18 +11,34 @@ export interface Licitacion {
   organization_id: number;
   nombre: string;
   fecha_vencimiento: string | null;
+  fecha_vencimiento_preguntas: string | null;
   created_at: string;
+  google_calendar_event_id: string | null;
+  google_calendar_event_id_preguntas: string | null;
   files: LicitacionFile[];
+  // MercadoPúblico-sourced fields (fuente === 'mercadopublico')
+  codigo_externo?: string | null;
+  link_externo?: string | null;
+  organismo?: string | null;
+  region?: string | null;
+  monto_estimado?: number | string | null;
+  moneda?: string | null;
+  descripcion?: string | null;
+  categoria?: string | null;
+  estado_mp?: string | null;
+  fuente?: 'manual' | 'mercadopublico';
 }
 
 export interface LicitacionCreate {
   nombre: string;
   fecha_vencimiento?: string | null;
+  fecha_vencimiento_preguntas?: string | null;
 }
 
 export interface LicitacionUpdate {
   nombre?: string;
   fecha_vencimiento?: string | null;
+  fecha_vencimiento_preguntas?: string | null;
 }
 
 export type ScoringCriterion = {
@@ -36,6 +52,13 @@ export type FactorExterno = {
   descripcion: string;
   impacto: 'positivo' | 'negativo' | 'incierto' | string;
   severidad: 'alta' | 'media' | 'baja' | string;
+};
+
+export type MercadoCompetencia = {
+  margen_competencia_min?: number | null;
+  margen_competencia_max?: number | null;
+  margen_competencia_central?: number | null;
+  comentario?: string | null;
 };
 
 export type AnalisisExtraData = {
@@ -61,6 +84,7 @@ export type AnalisisExtraData = {
   breakeven?: {
     flujo_caja_inicial_requerido?: number | null;
   } & Record<string, unknown>;
+  mercado?: MercadoCompetencia;
   factores_externos?: FactorExterno[];
   alertas?: string[];
 };
@@ -84,9 +108,9 @@ export interface AnalisisResult {
   ingreso_total_contrato: number | null;
   curvas_data: {
     meses_total: number;
-    optimista: { costo_fijo: number; ingreso_mensual: number; costo_variable_mensual: number; descripcion: string };
-    base: { costo_fijo: number; ingreso_mensual: number; costo_variable_mensual: number; descripcion: string };
-    pesimista: { costo_fijo: number; ingreso_mensual: number; costo_variable_mensual: number; descripcion: string };
+    optimista: { costo_fijo: number; ingreso_mensual: number; costo_variable_mensual: number; descripcion: string; puntuacion?: number | null; recomendacion?: string | null };
+    base: { costo_fijo: number; ingreso_mensual: number; costo_variable_mensual: number; descripcion: string; puntuacion?: number | null; recomendacion?: string | null };
+    pesimista: { costo_fijo: number; ingreso_mensual: number; costo_variable_mensual: number; descripcion: string; puntuacion?: number | null; recomendacion?: string | null };
   } | null;
   extra_data: AnalisisExtraData | null;
   created_at: string;
@@ -123,6 +147,26 @@ export const getAnalisisHistory = (id: number) =>
 
 export const analizarLicitacion = (id: number) =>
   http<AnalisisResult>(`/data/licitacion/${id}/analizar`, { method: 'POST' });
+
+export const syncCalendarEvent = (id: number, options?: { include_meet?: boolean }) =>
+  http<{ event_id: string }>(`/data/licitacion/${id}/calendar/sync`, {
+    method: 'POST',
+    body: JSON.stringify({ include_meet: !!options?.include_meet }),
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+export const removeCalendarEvent = (id: number) =>
+  http<void>(`/data/licitacion/${id}/calendar/sync`, { method: 'DELETE' });
+
+export const syncCalendarEventPreguntas = (id: number, options?: { include_meet?: boolean }) =>
+  http<{ event_id: string }>(`/data/licitacion/${id}/calendar/sync-preguntas`, {
+    method: 'POST',
+    body: JSON.stringify({ include_meet: !!options?.include_meet }),
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+export const removeCalendarEventPreguntas = (id: number) =>
+  http<void>(`/data/licitacion/${id}/calendar/sync-preguntas`, { method: 'DELETE' });
 
 export const uploadFilesToLicitacion = async (licitacionId: number, files: File[]) => {
   for (const file of files) {

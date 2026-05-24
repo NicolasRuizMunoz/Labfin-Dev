@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Home, FileText, ClipboardList, Menu, LogIn, LogOut, User, Building2, ShieldCheck, FlaskConical, CalendarCheck } from 'lucide-react';
+import { Home, FileText, ClipboardList, Menu, LogIn, LogOut, User, Building2, ShieldCheck, FlaskConical, CalendarCheck, Tags } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { isEvalitics } from '@/auth/roles';
 import DemoFormDialog from '@/components/DemoFormDialog';
@@ -22,6 +22,7 @@ const baseNavItems = [
   { name: 'Home', href: '/', icon: Home },
   { name: 'File Manager', href: '/files', icon: FileText },
   { name: 'Licitaciones', href: '/tenders', icon: ClipboardList },
+  { name: 'Etiquetas', href: '/etiquetas', icon: Tags },
   { name: 'Escenarios', href: '/escenarios', icon: FlaskConical },
 ];
 
@@ -50,9 +51,8 @@ const Navigation = () => {
       <div className="container flex h-14 max-w-7xl mx-auto items-center px-4 gap-2">
 
         {/* Logo */}
-        <Link to="/" className="flex items-center space-x-2 mr-6 shrink-0">
-          <img src={evaliticsLogo} alt="Evalitics" className="w-7 h-7 object-contain" />
-          <span className="hidden md:inline-block font-bold text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Evalitics</span>
+        <Link to="/" className="flex items-center mr-6 shrink-0">
+          <img src={evaliticsLogo} alt="Evalitics" className="h-10 md:h-12 w-auto object-contain" />
         </Link>
 
         {/* Desktop nav items — left (solo si está autenticado) */}

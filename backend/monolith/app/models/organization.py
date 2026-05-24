@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, JSON
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from app.database.db import Base
@@ -13,6 +13,7 @@ class Organization(Base):
     rut = Column(String(20), unique=True, nullable=False)
     category = Column(String(50), nullable=True)
     is_active = Column(Boolean, default=False)
+    team_emails = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 

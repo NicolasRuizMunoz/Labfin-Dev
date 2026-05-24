@@ -74,6 +74,19 @@ RESET_CODE_EXPIRE_MINUTES = int(os.getenv("RESET_CODE_EXPIRE_MINUTES", "15"))
 
 # ── Google OAuth (optional) ───────────────────────────────────────────────────
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
+# Where Google redirects after the consent screen. Must be whitelisted in the
+# Google Cloud Console for this Client ID. Defaults to the local backend URL.
+GOOGLE_CALENDAR_REDIRECT_URI = os.getenv(
+    "GOOGLE_CALENDAR_REDIRECT_URI",
+    "http://localhost:8000/api/users/google/calendar/callback",
+)
+# Where to send the user after the popup closes. The popup will postMessage to
+# its opener and then redirect here as a fallback for browsers blocking
+# window.opener access.
+GOOGLE_CALENDAR_POPUP_RETURN = os.getenv(
+    "GOOGLE_CALENDAR_POPUP_RETURN", "http://localhost:5173"
+)
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
 CORS_ORIGINS: list[str] = [
@@ -106,6 +119,21 @@ EMBED_MODEL = os.getenv("EMBED_MODEL", "intfloat/multilingual-e5-small")
 # ── RAG ───────────────────────────────────────────────────────────────────────
 MAX_SOURCES = int(os.getenv("MAX_SOURCES", "5"))
 MAX_CHARS_PER_CHUNK = int(os.getenv("MAX_CHARS_PER_CHUNK", "1200"))
+
+# ── MercadoPúblico scraper ───────────────────────────────────────────────────
+# Public procurement API (https://desarrolladores.mercadopublico.cl).
+# Ticket is free; without it the scraper logs a warning and is a no-op.
+MP_API_BASE_URL = os.getenv(
+    "MP_API_BASE_URL",
+    "https://api.mercadopublico.cl/servicios/v1/publico/licitaciones.json",
+)
+MP_API_TICKET = os.getenv("MP_API_TICKET", "")
+# Daily job — set MP_SCHEDULER_ENABLED=true to start it inside the FastAPI process.
+# With multiple uvicorn workers this would multi-fire; either keep workers=1 or
+# externalize the job (cron / ECS scheduled task hitting /api/data/etiquetas/scrape/run).
+MP_SCHEDULER_ENABLED = os.getenv("MP_SCHEDULER_ENABLED", "false").lower() == "true"
+MP_SCHEDULER_HOUR = int(os.getenv("MP_SCHEDULER_HOUR", "7"))  # America/Santiago local hour
+MP_SCHEDULER_TZ = os.getenv("MP_SCHEDULER_TZ", "America/Santiago")
 
 # ── OpenAI ────────────────────────────────────────────────────────────────────
 # Used for: tender analysis, simulation analysis, and RAG chat.

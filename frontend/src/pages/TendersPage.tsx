@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ClipboardList, Plus, Trash2, Calendar, FileText, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -112,6 +113,16 @@ const TendersPage = () => {
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </CardTitle>
+                  {lic.fuente === 'mercadopublico' && (
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <Badge className="bg-secondary/10 text-secondary border border-secondary/30 text-[10px] font-normal hover:bg-secondary/10">
+                        MercadoPúblico
+                      </Badge>
+                      {lic.codigo_externo && (
+                        <span className="text-[10px] font-mono text-muted-foreground">{lic.codigo_externo}</span>
+                      )}
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground space-y-2">
                   {lic.fecha_vencimiento ? (
