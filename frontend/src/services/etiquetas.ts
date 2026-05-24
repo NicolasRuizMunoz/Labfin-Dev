@@ -42,6 +42,14 @@ export interface ScrapeRunResponse {
   errores: string[];
 }
 
+export interface DescubrirRunResponse {
+  dias: number;
+  licitaciones_revisadas: number;
+  licitaciones_nuevas: number;
+  licitaciones_actualizadas: number;
+  errores: string[];
+}
+
 export const listEtiquetas = () =>
   http<EtiquetaBusqueda[]>('/data/etiquetas/');
 
@@ -62,5 +70,14 @@ export const updateEtiqueta = (id: number, data: EtiquetaBusquedaUpdate) =>
 export const deleteEtiqueta = (id: number) =>
   http<void>(`/data/etiquetas/${id}`, { method: 'DELETE' });
 
-export const runScrapeNow = () =>
-  http<ScrapeRunResponse>('/data/etiquetas/scrape/run', { method: 'POST' });
+export const runScrapeNow = (dias?: number) =>
+  http<ScrapeRunResponse>(
+    `/data/etiquetas/scrape/run${dias != null ? `?dias=${dias}` : ''}`,
+    { method: 'POST' },
+  );
+
+export const descubrirLicitaciones = (dias?: number) =>
+  http<DescubrirRunResponse>(
+    `/data/etiquetas/descubrir${dias != null ? `?dias=${dias}` : ''}`,
+    { method: 'POST' },
+  );

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Tags, Plus, Trash2, Loader2, RefreshCw, Power, PowerOff, Search, Users, Mail } from 'lucide-react';
+import { Tags, Plus, Trash2, Loader2, RefreshCw, Power, PowerOff, Search, Users, Mail, Globe } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +14,7 @@ import {
   deleteEtiqueta,
   updateEtiqueta,
   runScrapeNow,
+  descubrirLicitaciones,
   type EtiquetaBusqueda,
 } from '@/services/etiquetas';
 import { getMyOrg, updateMyOrg } from '@/services/organizations';
@@ -94,18 +95,36 @@ const EtiquetasPage = () => {
   });
 
   const scrapeMut = useMutation({
-    mutationFn: runScrapeNow,
+    mutationFn: () => runScrapeNow(),
     onSuccess: (r) => {
       queryClient.invalidateQueries({ queryKey: ['licitaciones'] });
       const errores = r.errores.length ? ` · ${r.errores.length} errores` : '';
       toast({
-        title: 'Sincronización completada',
-        description: `Nuevas: ${r.licitaciones_nuevas} · Actualizadas: ${r.licitaciones_actualizadas} · Revisadas: ${r.licitaciones_revisadas}${errores}`,
+        title: 'Sincronización de etiquetas completada',
+        description: `Evaluadas: ${r.etiquetas_evaluadas} · Nuevas: ${r.licitaciones_nuevas} · Actualizadas: ${r.licitaciones_actualizadas} · Revisadas: ${r.licitaciones_revisadas}${errores}`,
       });
     },
     onError: (e: any) =>
       toast({
         title: 'Falló la sincronización',
+        description: e?.message ?? 'Revisa la configuración MP_API_TICKET',
+        variant: 'destructive',
+      }),
+  });
+
+  const discoverMut = useMutation({
+    mutationFn: () => descubrirLicitaciones(),
+    onSuccess: (r) => {
+      queryClient.invalidateQueries({ queryKey: ['licitaciones'] });
+      const errores = r.errores.length ? ` · ${r.errores.length} errores` : '';
+      toast({
+        title: 'Descubrimiento completado',
+        description: `Nuevas: ${r.licitaciones_nuevas} · Actualizadas: ${r.licitaciones_actualizadas} · Revisadas: ${r.licitaciones_revisadas} (próximos ${r.dias} días)${errores}`,
+      });
+    },
+    onError: (e: any) =>
+      toast({
+        title: 'Falló el descubrimiento',
         description: e?.message ?? 'Revisa la configuración MP_API_TICKET',
         variant: 'destructive',
       }),
@@ -129,19 +148,35 @@ const EtiquetasPage = () => {
                 </p>
               </div>
             </div>
-            <Button
-              onClick={() => scrapeMut.mutate()}
-              disabled={scrapeMut.isPending || etiquetas.length === 0}
-              variant="outline"
-              className="gap-2"
-            >
-              {scrapeMut.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <RefreshCw className="w-4 h-4" />
-              )}
-              Sincronizar ahora
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => discoverMut.mutate()}
+                disabled={discoverMut.isPending}
+                className="gap-2"
+                title="Trae todas las licitaciones publicadas (próximos días) para explorarlas"
+              >
+                {discoverMut.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Globe className="w-4 h-4" />
+                )}
+                Descubrir licitaciones
+              </Button>
+              <Button
+                onClick={() => scrapeMut.mutate()}
+                disabled={scrapeMut.isPending || etiquetas.length === 0}
+                variant="outline"
+                className="gap-2"
+                title="Sincroniza con detalle solo las que matchean tus etiquetas activas"
+              >
+                {scrapeMut.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-4 h-4" />
+                )}
+                Sincronizar etiquetas
+              </Button>
+            </div>
           </div>
         </div>
       </div>

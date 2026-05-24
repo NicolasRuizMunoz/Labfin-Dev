@@ -11,6 +11,7 @@ from app.schemas.file import FileEntryResponse
 from app.schemas.analisis_licitacion import AnalisisLicitacionResponse
 from app.services import licitacion_service, file_service, analysis_service
 from app.services import google_calendar_service as gcal
+from app.services import mercadopublico_service as mp
 
 
 class CalendarSyncOptions(BaseModel):
@@ -48,7 +49,15 @@ def get_licitacion(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    return licitacion_service.get_one(db, current_user.organization_id, lic_id)
+    lic = licitacion_service.get_one(db, current_user.organization_id, lic_id)
+    # Detalle on-demand: si es una licitación descubierta (solo datos del listado),
+    # completar con el detalle de MercadoPúblico la primera vez que se abre.
+    try:
+        if mp.asegurar_detalle(db, lic):
+            db.refresh(lic)
+    except Exception:
+        pass
+    return lic
 
 
 @router.get("/{lic_id}/files", response_model=List[FileEntryResponse])

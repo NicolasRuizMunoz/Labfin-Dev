@@ -11,13 +11,15 @@ so the scheduler can keep running across days.
 from __future__ import annotations
 
 import logging
-from datetime import date, datetime
+import threading
+import time
+from datetime import date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
-from app.config import MP_API_BASE_URL, MP_API_TICKET
+from app.config import MP_API_BASE_URL, MP_API_TICKET, MP_DESCUBRIR_DIAS
 from app.models.etiqueta_busqueda import EtiquetaBusqueda
 from app.models.licitacion import Licitacion
 
@@ -37,24 +39,70 @@ def _requests():
     return requests
 
 
+# MercadoPúblico penaliza ráfagas con 429 ("peticiones simultáneas"). Serializamos
+# y espaciamos todas las llamadas con un lock global + intervalo mínimo, y
+# reintentamos con backoff exponencial ante un 429.
+_MP_MIN_INTERVAL = 1.2   # segundos mínimos entre llamadas
+_MP_MAX_RETRIES = 4
+_last_call_ts = 0.0
+_call_lock = threading.Lock()
+
+
+def _throttle() -> None:
+    global _last_call_ts
+    with _call_lock:
+        wait = _MP_MIN_INTERVAL - (time.monotonic() - _last_call_ts)
+        if wait > 0:
+            time.sleep(wait)
+        _last_call_ts = time.monotonic()
+
+
 def _api_get(params: dict, timeout: int = 30) -> Optional[dict]:
     if not MP_API_TICKET:
         logger.warning("MP_API_TICKET no configurado — el scraper de MercadoPúblico está deshabilitado.")
         return None
     url = MP_API_BASE_URL
-    resp = _requests().get(url, params={**params, "ticket": MP_API_TICKET}, timeout=timeout)
-    if resp.status_code != 200:
+    full_params = {**params, "ticket": MP_API_TICKET}
+    backoff = 2.0
+    for attempt in range(_MP_MAX_RETRIES):
+        _throttle()
+        try:
+            resp = _requests().get(url, params=full_params, timeout=timeout)
+        except Exception as exc:  # noqa: BLE001 — errores de transporte
+            logger.warning("MP API error de transporte: %s", exc)
+            return None
+        if resp.status_code == 200:
+            try:
+                return resp.json()
+            except ValueError:
+                logger.warning("MP API devolvió contenido no-JSON: %s", resp.text[:200])
+                return None
+        if resp.status_code == 429:
+            logger.warning(
+                "MP API 429 (rate limit), intento %s/%s — esperando %.0fs",
+                attempt + 1, _MP_MAX_RETRIES, backoff,
+            )
+            time.sleep(backoff)
+            backoff *= 2
+            continue
         logger.warning("MP API %s -> %s: %s", url, resp.status_code, resp.text[:200])
         return None
-    try:
-        return resp.json()
-    except ValueError:
-        logger.warning("MP API devolvió contenido no-JSON: %s", resp.text[:200])
-        return None
+    logger.warning("MP API: agotados los reintentos por rate limit (429).")
+    return None
 
 
-def fetch_listado(estado: str = "publicada") -> List[dict]:
-    data = _api_get({"estado": estado})
+def _fecha_mp(d: date) -> str:
+    """MercadoPúblico espera la fecha como ddmmaaaa."""
+    return d.strftime("%d%m%Y")
+
+
+def fetch_listado(estado: Optional[str] = None, fecha: Optional[date] = None) -> List[dict]:
+    params: dict = {}
+    if estado is not None:
+        params["estado"] = estado
+    if fecha is not None:
+        params["fecha"] = _fecha_mp(fecha)
+    data = _api_get(params)
     if not data:
         return []
     return data.get("Listado") or []
@@ -208,9 +256,64 @@ def _upsert_licitacion(db: Session, org_id: int, payload: dict) -> tuple[Licitac
     return lic, created
 
 
+# ── lightweight upsert (discovery, listing-only) ──────────────────────────────
+_MP_ESTADOS = {
+    5: "publicada",
+    6: "cerrada",
+    7: "desierta",
+    8: "adjudicada",
+    18: "revocada",
+    19: "suspendida",
+}
+
+
+def _estado_nombre(code) -> Optional[str]:
+    try:
+        return _MP_ESTADOS.get(int(code), f"estado_{int(code)}")
+    except (TypeError, ValueError):
+        return None
+
+
+def _upsert_listado_item(db: Session, org_id: int, item: dict) -> tuple[Licitacion, bool]:
+    """Upsert usando solo los datos del listado (sin bajar el detalle)."""
+    codigo = item.get("CodigoExterno")
+    if not codigo:
+        raise ValueError("Item de listado sin CodigoExterno")
+
+    lic = (
+        db.query(Licitacion)
+        .filter(Licitacion.organization_id == org_id, Licitacion.codigo_externo == codigo)
+        .first()
+    )
+    created = False
+    if not lic:
+        lic = Licitacion(
+            organization_id=org_id,
+            nombre=(item.get("Nombre") or codigo)[:255],
+            codigo_externo=codigo,
+            fuente="mercadopublico",
+        )
+        db.add(lic)
+        created = True
+
+    if item.get("Nombre"):
+        lic.nombre = item["Nombre"][:255]
+    fc = _parse_date(item.get("FechaCierre"))
+    if fc:
+        lic.fecha_vencimiento = fc
+    estado_txt = _estado_nombre(item.get("CodigoEstado"))
+    if estado_txt:
+        lic.estado_mp = estado_txt
+    lic.link_externo = MP_DETAIL_URL_TEMPLATE.format(codigo=codigo)
+    return lic, created
+
+
 # ── orchestrators ────────────────────────────────────────────────────────────
-def sincronizar_para_org(db: Session, org_id: int) -> dict:
-    """Pull MP listing, fetch details for keyword pre-matches, upsert per etiqueta match."""
+def sincronizar_para_org(db: Session, org_id: int, dias_atras: Optional[int] = None) -> dict:
+    """Modo targeted: recorre las publicadas de los últimos `dias_atras` días
+    (por fecha de publicación), baja el detalle de las que pasan el pre-filtro por
+    keyword y hace upsert de las que matchean alguna etiqueta activa."""
+    dias = dias_atras if dias_atras is not None else MP_DESCUBRIR_DIAS
     etiquetas = (
         db.query(EtiquetaBusqueda)
         .filter(
@@ -229,47 +332,119 @@ def sincronizar_para_org(db: Session, org_id: int) -> dict:
     if not etiquetas:
         return result
 
-    listado = fetch_listado()
-    if not listado:
-        return result
-
     # Cheap pre-filter against the listing's `Nombre` to avoid hitting the
     # detail endpoint for everything (MP returns ~1k items/day).
     pre_filter = [k.lower() for e in etiquetas for k in (e.keywords or []) if k]
     seen: set[str] = set()
+    hoy = date.today()
 
-    for item in listado:
-        codigo = item.get("CodigoExterno")
-        if not codigo or codigo in seen:
-            continue
-        seen.add(codigo)
-        nombre_l = (item.get("Nombre") or "").lower()
-        if pre_filter and not any(kw in nombre_l for kw in pre_filter):
-            continue
+    for offset in range(dias + 1):
+        listado = fetch_listado(fecha=hoy - timedelta(days=offset))
+        for item in listado:
+            codigo = item.get("CodigoExterno")
+            if not codigo or codigo in seen:
+                continue
+            seen.add(codigo)
+            if _estado_nombre(item.get("CodigoEstado")) != "publicada":
+                continue
+            nombre_l = (item.get("Nombre") or "").lower()
+            if pre_filter and not any(kw in nombre_l for kw in pre_filter):
+                continue
 
-        detail = fetch_detail(codigo)
-        if not detail:
-            result["errores"].append(f"Sin detalle para {codigo}")
-            continue
-        payload = normalize_detail(detail)
-        result["licitaciones_revisadas"] += 1
+            detail = fetch_detail(codigo)
+            if not detail:
+                result["errores"].append(f"Sin detalle para {codigo}")
+                continue
+            payload = normalize_detail(detail)
+            result["licitaciones_revisadas"] += 1
 
-        if not any(_matches_etiqueta(payload, e) for e in etiquetas):
-            continue
+            if not any(_matches_etiqueta(payload, e) for e in etiquetas):
+                continue
 
-        try:
-            _, created = _upsert_licitacion(db, org_id, payload)
-            if created:
-                result["licitaciones_nuevas"] += 1
-            else:
-                result["licitaciones_actualizadas"] += 1
-        except Exception as exc:
-            db.rollback()
-            result["errores"].append(f"{codigo}: {exc}")
-            continue
+            try:
+                _, created = _upsert_licitacion(db, org_id, payload)
+                if created:
+                    result["licitaciones_nuevas"] += 1
+                else:
+                    result["licitaciones_actualizadas"] += 1
+            except Exception as exc:
+                db.rollback()
+                result["errores"].append(f"{codigo}: {exc}")
+                continue
 
     db.commit()
     return result
+
+
+def descubrir_para_org(
+    db: Session,
+    org_id: int,
+    dias_atras: Optional[int] = None,
+    keywords: Optional[List[str]] = None,
+) -> dict:
+    """Modo descubrimiento: barre TODAS las publicadas en los últimos `dias_atras`
+    días (por fecha de publicación) y las guarda con datos livianos del listado
+    (sin bajar el detalle de cada una). El detalle se completa on-demand al abrir
+    la licitación."""
+    dias = dias_atras if dias_atras is not None else MP_DESCUBRIR_DIAS
+    kws = [k.lower() for k in (keywords or []) if k]
+    result = {
+        "dias": dias,
+        "licitaciones_revisadas": 0,
+        "licitaciones_nuevas": 0,
+        "licitaciones_actualizadas": 0,
+        "errores": [],
+    }
+    hoy = date.today()
+    seen: set[str] = set()
+
+    for offset in range(dias + 1):
+        listado = fetch_listado(fecha=hoy - timedelta(days=offset))
+        for item in listado:
+            codigo = item.get("CodigoExterno")
+            if not codigo or codigo in seen:
+                continue
+            seen.add(codigo)
+            if _estado_nombre(item.get("CodigoEstado")) != "publicada":
+                continue
+            if kws:
+                nombre_l = (item.get("Nombre") or "").lower()
+                if not any(k in nombre_l for k in kws):
+                    continue
+            result["licitaciones_revisadas"] += 1
+            try:
+                _, created = _upsert_listado_item(db, org_id, item)
+                if created:
+                    result["licitaciones_nuevas"] += 1
+                else:
+                    result["licitaciones_actualizadas"] += 1
+            except Exception as exc:
+                db.rollback()
+                result["errores"].append(f"{codigo}: {exc}")
+                continue
+
+    db.commit()
+    return result
+
+
+def asegurar_detalle(db: Session, lic: Licitacion) -> bool:
+    """Completa el detalle MP de una licitación descubierta (que solo tiene datos
+    del listado). Devuelve True si bajó y guardó datos nuevos."""
+    if getattr(lic, "fuente", None) != "mercadopublico" or not lic.codigo_externo:
+        return False
+    # ¿Ya tiene detalle? (algún campo que solo viene del detalle)
+    if lic.descripcion or lic.monto_estimado is not None or lic.organismo or lic.region:
+        return False
+    detail = fetch_detail(lic.codigo_externo)
+    if not detail:
+        return False
+    payload = normalize_detail(detail)
+    for field in _REMOTE_FIELDS:
+        value = payload.get(field)
+        if value is not None:
+            setattr(lic, field, value)
+    db.commit()
+    return True
 
 
 def sincronizar_todas_las_orgs(db: Session) -> dict:

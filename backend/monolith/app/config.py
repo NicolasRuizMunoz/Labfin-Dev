@@ -134,6 +134,10 @@ MP_API_TICKET = os.getenv("MP_API_TICKET", "")
 MP_SCHEDULER_ENABLED = os.getenv("MP_SCHEDULER_ENABLED", "false").lower() == "true"
 MP_SCHEDULER_HOUR = int(os.getenv("MP_SCHEDULER_HOUR", "7"))  # America/Santiago local hour
 MP_SCHEDULER_TZ = os.getenv("MP_SCHEDULER_TZ", "America/Santiago")
+# Discovery sweep: cuántos días hacia ATRÁS (por fecha de publicación) barrer las
+# licitaciones publicadas. La API de MP rechaza fechas futuras. Acota el costo:
+# un día = una llamada al listado (más el throttle de ~1.2s entre llamadas).
+MP_DESCUBRIR_DIAS = int(os.getenv("MP_DESCUBRIR_DIAS", "3"))
 
 # ── OpenAI ────────────────────────────────────────────────────────────────────
 # Used for: tender analysis, simulation analysis, and RAG chat.

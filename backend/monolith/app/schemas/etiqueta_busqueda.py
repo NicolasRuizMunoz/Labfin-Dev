@@ -44,3 +44,11 @@ class ScrapeRunResponse(BaseModel):
     licitaciones_nuevas: int
     licitaciones_actualizadas: int
     errores: List[str] = Field(default_factory=list)
+
+
+class DescubrirRunResponse(BaseModel):
+    dias: int
+    licitaciones_revisadas: int
+    licitaciones_nuevas: int
+    licitaciones_actualizadas: int
+    errores: List[str] = Field(default_factory=list)
