@@ -4,18 +4,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database.db import get_db
-from app.dependencies.auth import get_current_user, UserTokenData
+from app.dependencies.auth import get_current_user, UserTokenData, require_org
 from app.schemas.simulacion import SimulacionCreate, SimulacionUpdate, SimulacionOut, AnalisisSimulacionOut
 from app.schemas.escenario import EscenarioOut
 from app.services import simulacion_service, licitacion_service, escenario_service
 
 router = APIRouter(prefix="/licitacion", tags=["Simulaciones"])
 
-
-def _require_org(current_user: UserTokenData) -> int:
-    if current_user.organization_id is None:
-        raise HTTPException(status_code=403, detail="El usuario no pertenece a ninguna organización")
-    return int(current_user.organization_id)
 
 
 def _sim_to_out(db: Session, sim) -> dict:
@@ -63,7 +58,7 @@ def create_simulacion(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     licitacion_service.get_one(db, org_id, lic_id)
     sim = simulacion_service.create(db, org_id, current_user.user_id, lic_id, data)
     return _sim_to_out(db, sim)
@@ -75,7 +70,7 @@ def list_simulaciones(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     licitacion_service.get_one(db, org_id, lic_id)
     sims = simulacion_service.get_all_for_licitacion(db, org_id, lic_id)
     return [_sim_to_out(db, s) for s in sims]
@@ -89,7 +84,7 @@ def update_simulacion(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     licitacion_service.get_one(db, org_id, lic_id)
     sim = simulacion_service.update(db, org_id, lic_id, sim_id, data)
     return _sim_to_out(db, sim)
@@ -102,7 +97,7 @@ def delete_simulacion(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     simulacion_service.delete(db, org_id, lic_id, sim_id)
 
 
@@ -113,7 +108,7 @@ def toggle_simulacion(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     sim = simulacion_service.toggle_active(db, org_id, lic_id, sim_id)
     return _sim_to_out(db, sim)
 
@@ -125,7 +120,7 @@ def analizar_simulacion(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     return simulacion_service.analyze_simulacion(db, org_id, lic_id, sim_id, user_id=current_user.user_id)
 
 
@@ -136,5 +131,5 @@ def get_analisis_history(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     return simulacion_service.get_analisis_history(db, org_id, lic_id, sim_id)

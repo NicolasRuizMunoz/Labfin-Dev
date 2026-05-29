@@ -100,3 +100,10 @@ def require_role(*roles: str):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
         return current
     return _check
+
+
+def require_org(current_user: UserTokenData) -> int:
+    """Raises 403 if the user has no organization. Returns the org id as int."""
+    if current_user.organization_id is None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="El usuario no pertenece a ninguna organización")
+    return int(current_user.organization_id)

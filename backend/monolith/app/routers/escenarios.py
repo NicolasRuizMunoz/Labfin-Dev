@@ -4,17 +4,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database.db import get_db
-from app.dependencies.auth import get_current_user, UserTokenData
+from app.dependencies.auth import get_current_user, UserTokenData, require_org
 from app.schemas.escenario import EscenarioCreate, EscenarioUpdate, EscenarioOut
 from app.services import escenario_service
 
 router = APIRouter(prefix="/escenarios", tags=["Escenarios"])
 
-
-def _require_org(current_user: UserTokenData) -> int:
-    if current_user.organization_id is None:
-        raise HTTPException(status_code=403, detail="El usuario no pertenece a ninguna organización")
-    return int(current_user.organization_id)
 
 
 def _to_out(db: Session, esc) -> dict:
@@ -40,7 +35,7 @@ def create_escenario(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     esc = escenario_service.create(db, org_id, current_user.user_id, data)
     return _to_out(db, esc)
 
@@ -50,7 +45,7 @@ def list_escenarios(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     escenarios = escenario_service.get_all(db, org_id)
     return [_to_out(db, e) for e in escenarios]
 
@@ -61,7 +56,7 @@ def get_escenario(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     esc = escenario_service.get_one(db, org_id, escenario_id)
     return _to_out(db, esc)
 
@@ -73,7 +68,7 @@ def update_escenario(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     esc = escenario_service.update(db, org_id, escenario_id, data)
     return _to_out(db, esc)
 
@@ -84,5 +79,5 @@ def delete_escenario(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     escenario_service.delete(db, org_id, escenario_id)

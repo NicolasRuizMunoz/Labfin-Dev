@@ -5,7 +5,7 @@ from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 
 from app.database.db import get_db
-from app.dependencies.auth import UserTokenData, get_current_user
+from app.dependencies.auth import UserTokenData, get_current_user, require_org
 from app.models.organization import Organization
 
 router = APIRouter(prefix="/organizations", tags=["Organizations"])
@@ -23,11 +23,6 @@ class OrgSettingsUpdate(BaseModel):
     team_emails: Optional[List[EmailStr]] = None
 
 
-def _require_org(current: UserTokenData) -> int:
-    if current.organization_id is None:
-        raise HTTPException(403, "El usuario no pertenece a ninguna organización.")
-    return int(current.organization_id)
-
 
 def _emails_to_list(raw) -> List[str]:
     if isinstance(raw, list):
@@ -42,7 +37,7 @@ def get_my_org(
     db: Session = Depends(get_db),
     current: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current)
+    org_id = require_org(current)
     org = db.get(Organization, org_id)
     if not org:
         raise HTTPException(404, "Organización no encontrada")
@@ -59,7 +54,7 @@ def update_my_org(
     db: Session = Depends(get_db),
     current: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current)
+    org_id = require_org(current)
     org = db.get(Organization, org_id)
     if not org:
         raise HTTPException(404, "Organización no encontrada")

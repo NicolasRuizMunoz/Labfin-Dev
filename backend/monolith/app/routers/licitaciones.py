@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.database.db import get_db
-from app.dependencies.auth import get_current_user, UserTokenData
+from app.dependencies.auth import get_current_user, UserTokenData, require_org
 from app.schemas.licitacion import LicitacionCreate, LicitacionUpdate, LicitacionResponse
 from app.schemas.file import FileEntryResponse
 from app.schemas.analisis_licitacion import AnalisisLicitacionResponse
@@ -20,19 +20,14 @@ class CalendarSyncOptions(BaseModel):
 router = APIRouter(prefix="/licitacion", tags=["Licitaciones"])
 
 
-def _require_org(current_user: UserTokenData) -> int:
-    if current_user.organization_id is None:
-        raise HTTPException(status_code=403, detail="El usuario no pertenece a ninguna organización")
-    return int(current_user.organization_id)
-
-
 @router.post("/", response_model=LicitacionResponse, status_code=status.HTTP_201_CREATED)
 def create_licitacion(
     data: LicitacionCreate,
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    return licitacion_service.create(db, current_user.organization_id, data)
+    org_id = require_org(current_user)
+    return licitacion_service.create(db, org_id, data)
 
 
 @router.get("/", response_model=List[LicitacionResponse])
@@ -40,7 +35,8 @@ def list_licitaciones(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    return licitacion_service.get_all(db, current_user.organization_id)
+    org_id = require_org(current_user)
+    return licitacion_service.get_all(db, org_id)
 
 
 @router.get("/{lic_id}", response_model=LicitacionResponse)
@@ -49,7 +45,8 @@ def get_licitacion(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    lic = licitacion_service.get_one(db, current_user.organization_id, lic_id)
+    org_id = require_org(current_user)
+    lic = licitacion_service.get_one(db, org_id, lic_id)
     # Detalle on-demand: si es una licitación descubierta (solo datos del listado),
     # completar con el detalle de MercadoPúblico la primera vez que se abre.
     try:
@@ -66,7 +63,7 @@ def list_licitacion_files(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     licitacion_service.get_one(db, org_id, lic_id)
     return file_service.get_files_by_licitacion(db, org_id, lic_id)
 
@@ -77,7 +74,7 @@ def get_analisis_history(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     licitacion_service.get_one(db, org_id, lic_id)
     return analysis_service.get_analisis_history(db, org_id, lic_id)
 
@@ -88,7 +85,7 @@ def analizar_licitacion(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     return analysis_service.analyze_licitacion(db, org_id, lic_id, user_id=current_user.user_id)
 
 
@@ -99,8 +96,9 @@ def update_licitacion(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    lic = licitacion_service.update(db, current_user.organization_id, lic_id, data)
-    attendees = gcal.get_team_emails(db, current_user.organization_id)
+    org_id = require_org(current_user)
+    lic = licitacion_service.update(db, org_id, lic_id, data)
+    attendees = gcal.get_team_emails(db, org_id)
     # Keep linked calendar events in sync transparently.
     if lic.google_calendar_event_id and lic.fecha_vencimiento:
         try:
@@ -141,14 +139,14 @@ def delete_licitacion(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    # Best-effort: remove linked calendar events if any
-    lic = licitacion_service.get_one(db, current_user.organization_id, lic_id)
+    org_id = require_org(current_user)
+    lic = licitacion_service.get_one(db, org_id, lic_id)
     for event_id in filter(None, (lic.google_calendar_event_id, lic.google_calendar_event_id_preguntas)):
         try:
             gcal.delete_event(db, current_user.user_id, event_id)
         except HTTPException:
             pass
-    licitacion_service.delete(db, current_user.organization_id, lic_id)
+    licitacion_service.delete(db, org_id, lic_id)
 
 
 # ── Google Calendar sync ─────────────────────────────────────────────────────
@@ -161,7 +159,8 @@ def sync_calendar_event(
     current_user: UserTokenData = Depends(get_current_user),
 ):
     """Create or update a Google Calendar event for this licitacion's fecha_vencimiento."""
-    lic = licitacion_service.get_one(db, current_user.organization_id, lic_id)
+    org_id = require_org(current_user)
+    lic = licitacion_service.get_one(db, org_id, lic_id)
     if not lic.fecha_vencimiento:
         raise HTTPException(400, "La licitación no tiene fecha de vencimiento.")
 
@@ -177,7 +176,7 @@ def sync_calendar_event(
         summary=summary,
         fecha=lic.fecha_vencimiento,
         description=description,
-        attendees=gcal.get_team_emails(db, current_user.organization_id),
+        attendees=gcal.get_team_emails(db, org_id),
         include_meet=bool(options and options.include_meet),
     )
     lic.google_calendar_event_id = event_id
@@ -191,7 +190,8 @@ def remove_calendar_event(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    lic = licitacion_service.get_one(db, current_user.organization_id, lic_id)
+    org_id = require_org(current_user)
+    lic = licitacion_service.get_one(db, org_id, lic_id)
     if lic.google_calendar_event_id:
         gcal.delete_event(db, current_user.user_id, lic.google_calendar_event_id)
         lic.google_calendar_event_id = None
@@ -208,7 +208,8 @@ def sync_calendar_event_preguntas(
     current_user: UserTokenData = Depends(get_current_user),
 ):
     """Create or update a Calendar event for the question/clarification deadline."""
-    lic = licitacion_service.get_one(db, current_user.organization_id, lic_id)
+    org_id = require_org(current_user)
+    lic = licitacion_service.get_one(db, org_id, lic_id)
     if not lic.fecha_vencimiento_preguntas:
         raise HTTPException(400, "La licitación no tiene fecha de vencimiento de preguntas.")
     summary = f"Vence plazo de preguntas: {lic.nombre}"
@@ -223,7 +224,7 @@ def sync_calendar_event_preguntas(
         summary=summary,
         fecha=lic.fecha_vencimiento_preguntas,
         description=description,
-        attendees=gcal.get_team_emails(db, current_user.organization_id),
+        attendees=gcal.get_team_emails(db, org_id),
         include_meet=bool(options and options.include_meet),
     )
     lic.google_calendar_event_id_preguntas = event_id
@@ -237,7 +238,8 @@ def remove_calendar_event_preguntas(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    lic = licitacion_service.get_one(db, current_user.organization_id, lic_id)
+    org_id = require_org(current_user)
+    lic = licitacion_service.get_one(db, org_id, lic_id)
     if lic.google_calendar_event_id_preguntas:
         gcal.delete_event(db, current_user.user_id, lic.google_calendar_event_id_preguntas)
         lic.google_calendar_event_id_preguntas = None

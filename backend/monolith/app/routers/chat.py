@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.database.db import get_db
-from app.dependencies.auth import get_current_user, UserTokenData
+from app.dependencies.auth import get_current_user, UserTokenData, require_org
 from app.schemas.chat import (
     ChatMessageCreate, ChatMessageResponse, ChatSessionCreate, ChatSessionResponse, ChatSource,
 )
@@ -12,11 +12,6 @@ from app.services import chat_service
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
-
-def _require_org(current_user: UserTokenData) -> int:
-    if current_user.organization_id is None:
-        raise HTTPException(status_code=403, detail="User does not belong to any organization")
-    return int(current_user.organization_id)
 
 
 def _msg_response(m) -> ChatMessageResponse:
@@ -46,7 +41,7 @@ def get_or_create_licitacion_session(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     session = chat_service.get_or_create_licitacion_session(
         db, organization_id=org_id, user_id=current_user.user_id,
         licitacion_id=lic_id, title=title,
@@ -63,7 +58,7 @@ def create_session(
     current_user: UserTokenData = Depends(get_current_user),
 ):
     session = chat_service.create_session(
-        db, organization_id=_require_org(current_user), user_id=current_user.user_id, title=payload.title,
+        db, organization_id=require_org(current_user), user_id=current_user.user_id, title=payload.title,
     )
     return ChatSessionResponse.model_validate(session, from_attributes=True)
 
@@ -76,7 +71,7 @@ def list_sessions(
     offset: int = Query(0, ge=0),
 ):
     sessions = chat_service.list_sessions(
-        db, organization_id=_require_org(current_user), user_id=current_user.user_id,
+        db, organization_id=require_org(current_user), user_id=current_user.user_id,
         limit=limit, offset=offset,
     )
     return [ChatSessionResponse.model_validate(s, from_attributes=True) for s in sessions]
@@ -89,7 +84,7 @@ def get_session(
     current_user: UserTokenData = Depends(get_current_user),
 ):
     session = chat_service.get_session_owned(
-        db, session_id=session_id, organization_id=_require_org(current_user), user_id=current_user.user_id,
+        db, session_id=session_id, organization_id=require_org(current_user), user_id=current_user.user_id,
     )
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -103,7 +98,7 @@ def delete_session(
     current_user: UserTokenData = Depends(get_current_user),
 ):
     session = chat_service.get_session_owned(
-        db, session_id=session_id, organization_id=_require_org(current_user), user_id=current_user.user_id,
+        db, session_id=session_id, organization_id=require_org(current_user), user_id=current_user.user_id,
     )
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -122,7 +117,7 @@ def list_messages(
     asc: bool = Query(True),
 ):
     session = chat_service.get_session_owned(
-        db, session_id=session_id, organization_id=_require_org(current_user), user_id=current_user.user_id,
+        db, session_id=session_id, organization_id=require_org(current_user), user_id=current_user.user_id,
     )
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -137,7 +132,7 @@ def post_message(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     session = chat_service.get_session_owned(
         db, session_id=session_id, organization_id=org_id, user_id=current_user.user_id,
     )

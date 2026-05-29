@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.config import UPLOAD_DIR, PROCESSED_DIR
 from app.utils.files import delete_file as delete_local_file
 from app.database.db import get_db
-from app.dependencies.auth import get_current_user, UserTokenData
+from app.dependencies.auth import get_current_user, UserTokenData, require_org
 from app.enums.file_status import FileStatusEnum
 from app.schemas.file import FileActiveStatusUpdate, FileEntryResponse, FileIdsRequest
 from app.services import file_service, index_service, s3_service
@@ -19,11 +19,6 @@ from app.database.db import SessionLocal
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/file", tags=["File"])
 
-
-def _require_org(current_user: UserTokenData) -> int:
-    if current_user.organization_id is None:
-        raise HTTPException(status_code=403, detail="El usuario no pertenece a ninguna organización")
-    return int(current_user.organization_id)
 
 
 def _run_pipeline(file_id: int, local_path: str) -> int:
@@ -52,7 +47,7 @@ def list_files(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     files = file_service.get_files_by_organization(db, org_id)
     grouped: Dict[str, List[FileEntryResponse]] = defaultdict(list)
     for f in files:
@@ -69,7 +64,7 @@ def set_active(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     if body.is_active:
         file = file_service.get_file_by_id(db, file_id, org_id)
         if file.status != FileStatusEnum.ACTIVE:
@@ -84,7 +79,7 @@ def download_url(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     file = file_service.get_file_by_id(db, file_id, org_id)
     if not file.s3_key_original:
         raise HTTPException(status_code=400, detail="El archivo aún no ha sido subido a S3.")
@@ -98,7 +93,7 @@ def preview_url(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     file = file_service.get_file_by_id(db, file_id, org_id)
     if not file.s3_key_original:
         raise HTTPException(status_code=400, detail="El archivo aún no ha sido subido a S3.")
@@ -112,7 +107,7 @@ def delete_file(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     file = file_service.get_file_by_id(db, file_id, org_id)
     if file.s3_key_original:
         s3_service.delete_file_from_s3(file.s3_key_original)
@@ -130,7 +125,7 @@ async def confirm_bulk(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     processed, indexed_total, errors = 0, 0, []
 
     for fid in body.file_ids:
@@ -158,7 +153,7 @@ def confirm_file(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    org_id = _require_org(current_user)
+    org_id = require_org(current_user)
     f = file_service.get_file_by_id(db, file_id, org_id)
     saved_name = f"{org_id}__{f.original_filename}"
     local_path = os.path.join(UPLOAD_DIR, saved_name)

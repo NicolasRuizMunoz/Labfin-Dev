@@ -5,9 +5,9 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, s
 from sqlalchemy.orm import Session
 
 from app.database.db import get_db
-from app.dependencies.auth import get_current_user, UserTokenData
+from app.dependencies.auth import get_current_user, UserTokenData, require_org
 from app.schemas.upload import UploadFileResponse
-from app.services import upload_service
+from app.services import upload_service, licitacion_service
 
 router = APIRouter(prefix="/upload", tags=["Upload"])
 
@@ -20,13 +20,14 @@ def upload_file(
     db: Session = Depends(get_db),
     current_user: UserTokenData = Depends(get_current_user),
 ):
-    if current_user.organization_id is None:
-        raise HTTPException(status_code=403, detail="El usuario no pertenece a ninguna organización")
+    org_id = require_org(current_user)
+    if licitacion_id is not None:
+        licitacion_service.get_one(db, org_id, licitacion_id)
     try:
         file_entry, _ = upload_service.save_upload(
             db=db,
             file=file,
-            organization_id=int(current_user.organization_id),
+            organization_id=org_id,
             licitacion_id=licitacion_id,
             logical_filename=logical_filename,
         )

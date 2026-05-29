@@ -10,6 +10,8 @@ from app.models.chat import ChatSession, ChatMessage
 from app.models.analisis_licitacion import AnalisisLicitacion
 from app.models.document_chunk import DocumentChunk
 from app.models.file import FileEntry
+from app.models.licitacion import Licitacion
+from app.models.organization import Organization
 from app.schemas.chat import ChatSource
 
 LOGGER = logging.getLogger(__name__)
@@ -123,15 +125,70 @@ def list_messages(
 
 # ------------ Licitacion chat (OpenAI + historial) ------------
 
+def _build_licitacion_context(licitacion: "Licitacion") -> str:
+    """Construye un bloque de texto con los datos clave de la licitación."""
+    lines = [f"Nombre: {licitacion.nombre}"]
+    if licitacion.codigo_externo:
+        lines.append(f"Código: {licitacion.codigo_externo}")
+    if licitacion.organismo:
+        lines.append(f"Organismo licitante: {licitacion.organismo}")
+    if licitacion.region:
+        lines.append(f"Región: {licitacion.region}")
+    if licitacion.categoria:
+        lines.append(f"Categoría: {licitacion.categoria}")
+    if licitacion.monto_estimado is not None:
+        moneda = licitacion.moneda or "$"
+        lines.append(f"Monto estimado: {moneda} {licitacion.monto_estimado:,.0f}")
+    if licitacion.fecha_vencimiento:
+        lines.append(f"Fecha de cierre: {licitacion.fecha_vencimiento}")
+    if licitacion.fecha_vencimiento_preguntas:
+        lines.append(f"Fecha límite preguntas: {licitacion.fecha_vencimiento_preguntas}")
+    if licitacion.estado_mp:
+        lines.append(f"Estado: {licitacion.estado_mp}")
+    if licitacion.descripcion:
+        lines.append(f"Descripción: {licitacion.descripcion[:2000]}")
+    if licitacion.link_externo:
+        lines.append(f"Enlace oficial: {licitacion.link_externo}")
+    return "\n".join(lines)
+
+
+def _build_org_context(org: "Organization") -> str:
+    """Construye un bloque de texto con los datos clave de la organización."""
+    lines = [f"Empresa: {org.name}"]
+    if org.rut:
+        lines.append(f"RUT: {org.rut}")
+    if org.category:
+        lines.append(f"Rubro/Categoría: {org.category}")
+    if org.address:
+        lines.append(f"Dirección: {org.address}")
+    if org.phone_number:
+        lines.append(f"Teléfono: {org.phone_number}")
+    return "\n".join(lines)
+
+
 def _generate_licitacion_reply(
     db: Session, session: ChatSession, *, user_id: int
 ) -> Tuple[str, List[ChatSource]]:
     """
     Llama a OpenAI con:
-    - System prompt con el análisis más reciente de la licitación
+    - System prompt con datos completos de la licitación, la organización y el análisis EVA
     - Historial completo de la sesión (ya incluye el mensaje del usuario recién guardado)
     """
-    # 1. Obtener el análisis más reciente de la licitación
+    # 1. Datos de la licitación
+    licitacion = (
+        db.query(Licitacion)
+        .filter(Licitacion.id == session.licitacion_id)
+        .first()
+    )
+
+    # 2. Datos de la organización
+    org = (
+        db.query(Organization)
+        .filter(Organization.id == session.organization_id)
+        .first()
+    )
+
+    # 3. Análisis EVA más reciente
     analisis = (
         db.query(AnalisisLicitacion)
         .filter(
@@ -142,25 +199,38 @@ def _generate_licitacion_reply(
         .first()
     )
 
-    # 2. System prompt
+    # 4. System prompt con todo el contexto
     system_content = (
         "Eres EVA, un asistente experto en análisis de licitaciones públicas y privadas. "
-        "Ayudas al equipo de la empresa a entender, evaluar y responder preguntas sobre licitaciones. "
+        "Ayudas al equipo de la empresa a entender, evaluar y prepararse para responder licitaciones. "
         "Responde siempre en español, de forma clara y concisa. "
         "Si no tienes información suficiente para responder, indícalo honestamente."
     )
+
+    if org:
+        system_content += (
+            "\n\n## Información de la empresa\n"
+            + _build_org_context(org)
+        )
+
+    if licitacion:
+        system_content += (
+            "\n\n## Información de la licitación\n"
+            + _build_licitacion_context(licitacion)
+        )
+
     if analisis:
         system_content += (
-            "\n\nCuentas con el siguiente análisis generado automáticamente para esta licitación:\n\n"
+            "\n\n## Análisis EVA de esta licitación\n"
             f"{analisis.analisis}"
         )
     else:
         system_content += (
             "\n\nAún no hay un análisis EVA generado para esta licitación. "
-            "Responde con la información que el usuario te proporcione en la conversación."
+            "Responde con la información disponible arriba y lo que el usuario te proporcione."
         )
 
-    # 3. Historial completo de la sesión (ya contiene el mensaje del usuario actual al final)
+    # 5. Historial completo de la sesión
     history = (
         db.query(ChatMessage)
         .filter(ChatMessage.session_id == session.id)
@@ -172,7 +242,7 @@ def _generate_licitacion_reply(
     for msg in history:
         messages.append({"role": msg.role, "content": msg.message})
 
-    # 4. Llamar a OpenAI
+    # 6. Llamar a OpenAI
     client = OpenAI(api_key=OPENAI_API_KEY)
     response = client.chat.completions.create(
         model=OPENAI_MODEL,

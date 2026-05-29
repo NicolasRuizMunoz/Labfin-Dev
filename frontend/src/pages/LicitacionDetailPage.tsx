@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -1296,31 +1297,32 @@ const LicitacionDetailPage: React.FC = () => {
         </div>
       )}
 
-      {/* ── Widget flotante de chat ──────────────────────────────────────── */}
-
-      {/* Panel flotante (aparece sobre el botón) */}
-      {chatOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-[360px] h-[560px] rounded-2xl shadow-2xl border overflow-hidden">
-          <LicitacionChatPanel
-            licitacionId={licitacionId}
-            licitacionNombre={licitacion?.nombre}
-            onClose={() => setChatOpen(false)}
-          />
-        </div>
+      {/* ── Widget flotante de chat (Portal → escapa cualquier stacking context) ── */}
+      {createPortal(
+        <>
+          {chatOpen && (
+            <div className="fixed bottom-24 right-6 z-[9999] w-[360px] h-[560px] rounded-2xl shadow-2xl border overflow-hidden">
+              <LicitacionChatPanel
+                licitacionId={licitacionId}
+                licitacionNombre={licitacion?.nombre}
+                onClose={() => setChatOpen(false)}
+              />
+            </div>
+          )}
+          <button
+            onClick={() => setChatOpen((v) => !v)}
+            className={`fixed bottom-6 right-6 z-[9999] w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+              chatOpen
+                ? 'bg-muted text-muted-foreground hover:bg-muted/80'
+                : 'bg-primary text-primary-foreground hover:bg-primary/90'
+            }`}
+            aria-label={chatOpen ? 'Cerrar chat EVA' : 'Abrir chat EVA'}
+          >
+            <MessageSquare className="w-6 h-6" />
+          </button>
+        </>,
+        document.body
       )}
-
-      {/* Botón circular flotante */}
-      <button
-        onClick={() => setChatOpen((v) => !v)}
-        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-          chatOpen
-            ? 'bg-muted text-muted-foreground hover:bg-muted/80'
-            : 'bg-primary text-primary-foreground hover:bg-primary/90'
-        }`}
-        aria-label={chatOpen ? 'Cerrar chat EVA' : 'Abrir chat EVA'}
-      >
-        <MessageSquare className="w-6 h-6" />
-      </button>
       </div>
     </div>
   );
