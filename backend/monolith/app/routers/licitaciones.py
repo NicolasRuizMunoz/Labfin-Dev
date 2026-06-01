@@ -1,7 +1,6 @@
-from typing import List, Optional
+from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.database.db import get_db
@@ -10,12 +9,7 @@ from app.schemas.licitacion import LicitacionCreate, LicitacionUpdate, Licitacio
 from app.schemas.file import FileEntryResponse
 from app.schemas.analisis_licitacion import AnalisisLicitacionResponse
 from app.services import licitacion_service, file_service, analysis_service
-from app.services import google_calendar_service as gcal
 from app.services import mercadopublico_service as mp
-
-
-class CalendarSyncOptions(BaseModel):
-    include_meet: bool = False
 
 router = APIRouter(prefix="/licitacion", tags=["Licitaciones"])
 
@@ -97,40 +91,7 @@ def update_licitacion(
     current_user: UserTokenData = Depends(get_current_user),
 ):
     org_id = require_org(current_user)
-    lic = licitacion_service.update(db, org_id, lic_id, data)
-    attendees = gcal.get_team_emails(db, org_id)
-    # Keep linked calendar events in sync transparently.
-    if lic.google_calendar_event_id and lic.fecha_vencimiento:
-        try:
-            new_id = gcal.upsert_event(
-                db,
-                current_user.user_id,
-                existing_event_id=lic.google_calendar_event_id,
-                summary=f"Cierre licitación: {lic.nombre}",
-                fecha=lic.fecha_vencimiento,
-                description=f"Recordatorio de cierre de la licitación '{lic.nombre}'.",
-                attendees=attendees,
-            )
-            lic.google_calendar_event_id = new_id
-            db.commit()
-        except HTTPException:
-            pass
-    if lic.google_calendar_event_id_preguntas and lic.fecha_vencimiento_preguntas:
-        try:
-            new_id = gcal.upsert_event(
-                db,
-                current_user.user_id,
-                existing_event_id=lic.google_calendar_event_id_preguntas,
-                summary=f"Vence plazo de preguntas: {lic.nombre}",
-                fecha=lic.fecha_vencimiento_preguntas,
-                description=f"Cierre del plazo de preguntas y aclaraciones para '{lic.nombre}'.",
-                attendees=attendees,
-            )
-            lic.google_calendar_event_id_preguntas = new_id
-            db.commit()
-        except HTTPException:
-            pass
-    return lic
+    return licitacion_service.update(db, org_id, lic_id, data)
 
 
 @router.delete("/{lic_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -140,107 +101,5 @@ def delete_licitacion(
     current_user: UserTokenData = Depends(get_current_user),
 ):
     org_id = require_org(current_user)
-    lic = licitacion_service.get_one(db, org_id, lic_id)
-    for event_id in filter(None, (lic.google_calendar_event_id, lic.google_calendar_event_id_preguntas)):
-        try:
-            gcal.delete_event(db, current_user.user_id, event_id)
-        except HTTPException:
-            pass
+    licitacion_service.get_one(db, org_id, lic_id)
     licitacion_service.delete(db, org_id, lic_id)
-
-
-# ── Google Calendar sync ─────────────────────────────────────────────────────
-
-@router.post("/{lic_id}/calendar/sync")
-def sync_calendar_event(
-    lic_id: int,
-    options: Optional[CalendarSyncOptions] = None,
-    db: Session = Depends(get_db),
-    current_user: UserTokenData = Depends(get_current_user),
-):
-    """Create or update a Google Calendar event for this licitacion's fecha_vencimiento."""
-    org_id = require_org(current_user)
-    lic = licitacion_service.get_one(db, org_id, lic_id)
-    if not lic.fecha_vencimiento:
-        raise HTTPException(400, "La licitación no tiene fecha de vencimiento.")
-
-    summary = f"Cierre licitación: {lic.nombre}"
-    description = (
-        f"Recordatorio de cierre de la licitación '{lic.nombre}'.\n"
-        f"Generado automáticamente por LabFin."
-    )
-    event_id = gcal.upsert_event(
-        db,
-        current_user.user_id,
-        existing_event_id=lic.google_calendar_event_id,
-        summary=summary,
-        fecha=lic.fecha_vencimiento,
-        description=description,
-        attendees=gcal.get_team_emails(db, org_id),
-        include_meet=bool(options and options.include_meet),
-    )
-    lic.google_calendar_event_id = event_id
-    db.commit()
-    return {"event_id": event_id}
-
-
-@router.delete("/{lic_id}/calendar/sync", status_code=status.HTTP_204_NO_CONTENT)
-def remove_calendar_event(
-    lic_id: int,
-    db: Session = Depends(get_db),
-    current_user: UserTokenData = Depends(get_current_user),
-):
-    org_id = require_org(current_user)
-    lic = licitacion_service.get_one(db, org_id, lic_id)
-    if lic.google_calendar_event_id:
-        gcal.delete_event(db, current_user.user_id, lic.google_calendar_event_id)
-        lic.google_calendar_event_id = None
-        db.commit()
-
-
-# ── Fecha de preguntas: sync independiente ────────────────────────────────────
-
-@router.post("/{lic_id}/calendar/sync-preguntas")
-def sync_calendar_event_preguntas(
-    lic_id: int,
-    options: Optional[CalendarSyncOptions] = None,
-    db: Session = Depends(get_db),
-    current_user: UserTokenData = Depends(get_current_user),
-):
-    """Create or update a Calendar event for the question/clarification deadline."""
-    org_id = require_org(current_user)
-    lic = licitacion_service.get_one(db, org_id, lic_id)
-    if not lic.fecha_vencimiento_preguntas:
-        raise HTTPException(400, "La licitación no tiene fecha de vencimiento de preguntas.")
-    summary = f"Vence plazo de preguntas: {lic.nombre}"
-    description = (
-        f"Cierre del plazo de preguntas y aclaraciones para '{lic.nombre}'.\n"
-        f"Generado automáticamente por LabFin."
-    )
-    event_id = gcal.upsert_event(
-        db,
-        current_user.user_id,
-        existing_event_id=lic.google_calendar_event_id_preguntas,
-        summary=summary,
-        fecha=lic.fecha_vencimiento_preguntas,
-        description=description,
-        attendees=gcal.get_team_emails(db, org_id),
-        include_meet=bool(options and options.include_meet),
-    )
-    lic.google_calendar_event_id_preguntas = event_id
-    db.commit()
-    return {"event_id": event_id}
-
-
-@router.delete("/{lic_id}/calendar/sync-preguntas", status_code=status.HTTP_204_NO_CONTENT)
-def remove_calendar_event_preguntas(
-    lic_id: int,
-    db: Session = Depends(get_db),
-    current_user: UserTokenData = Depends(get_current_user),
-):
-    org_id = require_org(current_user)
-    lic = licitacion_service.get_one(db, org_id, lic_id)
-    if lic.google_calendar_event_id_preguntas:
-        gcal.delete_event(db, current_user.user_id, lic.google_calendar_event_id_preguntas)
-        lic.google_calendar_event_id_preguntas = None
-        db.commit()

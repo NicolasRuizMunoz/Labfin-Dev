@@ -13,8 +13,6 @@ class Licitacion(Base):
     fecha_vencimiento = Column(Date, nullable=True)
     fecha_vencimiento_preguntas = Column(Date, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
-    google_calendar_event_id = Column(String(255), nullable=True)
-    google_calendar_event_id_preguntas = Column(String(255), nullable=True)
 
     codigo_externo = Column(String(50), nullable=True, index=True)
     link_externo = Column(String(500), nullable=True)

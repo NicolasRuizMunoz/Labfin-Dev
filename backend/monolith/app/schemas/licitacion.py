@@ -31,8 +31,6 @@ class LicitacionResponse(BaseModel):
     fecha_vencimiento: Optional[date]
     fecha_vencimiento_preguntas: Optional[date] = None
     created_at: datetime
-    google_calendar_event_id: Optional[str] = None
-    google_calendar_event_id_preguntas: Optional[str] = None
     files: List[FileSummaryForLicitacion] = []
 
     codigo_externo: Optional[str] = None

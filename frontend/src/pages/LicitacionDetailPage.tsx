@@ -27,9 +27,6 @@ import {
   Globe2,
   History,
   Wallet,
-  CalendarPlus,
-  CalendarCheck,
-  CalendarX,
   Link as LinkIcon,
 } from 'lucide-react';
 import LicitacionChatPanel from '@/components/LicitacionChatPanel';
@@ -48,25 +45,14 @@ import {
   getAnalisisHistory,
   analizarLicitacion,
   updateLicitacion,
-  syncCalendarEvent,
-  removeCalendarEvent,
-  syncCalendarEventPreguntas,
-  removeCalendarEventPreguntas,
   type AnalisisResult,
   type AnalisisExtraData,
   type ScoringCriterion,
   type FactorExterno,
 } from '@/services/tenders';
-import { Video } from 'lucide-react';
 import { listSimulaciones } from '@/services/simulaciones';
 import * as dataApi from '@/services/data';
 import http from '@/lib/http';
-import {
-  getGoogleCalendarStatus,
-  getGoogleCalendarConnectUrl,
-  openGoogleCalendarConsent,
-  disconnectGoogleCalendar,
-} from '@/services/googleCalendar';
 
 // ---- Helpers ----
 const fmt = (n: number | null | undefined, prefix = '') =>
@@ -722,7 +708,6 @@ const LicitacionDetailPage: React.FC = () => {
   const [draftName, setDraftName] = useState('');
   const [draftFecha, setDraftFecha] = useState('');
   const [draftFechaPreguntas, setDraftFechaPreguntas] = useState('');
-  const [includeMeet, setIncludeMeet] = useState(false);
   const [filesOpen, setFilesOpen] = useState(false);
 
   const { data: licitacion } = useQuery({
@@ -756,96 +741,6 @@ const LicitacionDetailPage: React.FC = () => {
         })),
     [simulaciones]
   );
-
-  // Google Calendar connection status
-  const { data: gcalStatus, refetch: refetchGcalStatus } = useQuery({
-    queryKey: ['gcal-status'],
-    queryFn: getGoogleCalendarStatus,
-  });
-  const [gcalBusy, setGcalBusy] = useState(false);
-  const [gcalError, setGcalError] = useState<string | null>(null);
-
-  const handleConnectCalendar = async () => {
-    setGcalError(null);
-    setGcalBusy(true);
-    try {
-      const { url } = await getGoogleCalendarConnectUrl();
-      const ok = await openGoogleCalendarConsent(url);
-      if (!ok) setGcalError('La conexión con Google Calendar fue cancelada o falló.');
-      await refetchGcalStatus();
-    } catch (err: any) {
-      setGcalError(err?.message ?? 'No se pudo iniciar la conexión con Google Calendar.');
-    } finally {
-      setGcalBusy(false);
-    }
-  };
-
-  const handleDisconnectCalendar = async () => {
-    setGcalBusy(true);
-    try {
-      await disconnectGoogleCalendar();
-      await refetchGcalStatus();
-    } finally {
-      setGcalBusy(false);
-    }
-  };
-
-  const handleSyncEvent = async () => {
-    setGcalError(null);
-    setGcalBusy(true);
-    try {
-      await syncCalendarEvent(licitacionId, { include_meet: includeMeet });
-      queryClient.invalidateQueries({ queryKey: ['licitacion', licitacionId] });
-    } catch (err: any) {
-      const msg = err?.message ?? '';
-      // 401 from backend means tokens are gone — re-trigger consent
-      if (msg.includes('no está conectado')) {
-        await refetchGcalStatus();
-      }
-      setGcalError(err?.message ?? 'No se pudo crear el evento en Google Calendar.');
-    } finally {
-      setGcalBusy(false);
-    }
-  };
-
-  const handleRemoveEvent = async () => {
-    setGcalBusy(true);
-    try {
-      await removeCalendarEvent(licitacionId);
-      queryClient.invalidateQueries({ queryKey: ['licitacion', licitacionId] });
-    } catch (err: any) {
-      setGcalError(err?.message ?? 'No se pudo borrar el evento.');
-    } finally {
-      setGcalBusy(false);
-    }
-  };
-
-  const handleSyncEventPreguntas = async () => {
-    setGcalError(null);
-    setGcalBusy(true);
-    try {
-      await syncCalendarEventPreguntas(licitacionId, { include_meet: includeMeet });
-      queryClient.invalidateQueries({ queryKey: ['licitacion', licitacionId] });
-    } catch (err: any) {
-      const msg = err?.message ?? '';
-      if (msg.includes('no está conectado')) await refetchGcalStatus();
-      setGcalError(err?.message ?? 'No se pudo crear el evento de preguntas.');
-    } finally {
-      setGcalBusy(false);
-    }
-  };
-
-  const handleRemoveEventPreguntas = async () => {
-    setGcalBusy(true);
-    try {
-      await removeCalendarEventPreguntas(licitacionId);
-      queryClient.invalidateQueries({ queryKey: ['licitacion', licitacionId] });
-    } catch (err: any) {
-      setGcalError(err?.message ?? 'No se pudo borrar el evento de preguntas.');
-    } finally {
-      setGcalBusy(false);
-    }
-  };
 
   // Mapa id→nombre para todos los archivos de la organización (empresa + licitación)
   const { data: allOrgFilesGrouped = {} } = useQuery({
@@ -949,65 +844,6 @@ const LicitacionDetailPage: React.FC = () => {
                     onChange={(e) => saveFecha(e.target.value)}
                     className="h-6 w-36 text-xs px-1 py-0 border-transparent hover:border-border focus:border-primary/40"
                   />
-                  {(() => {
-                    const hasFecha = !!(licitacion?.fecha_vencimiento);
-                    const hasEvent = !!(licitacion?.google_calendar_event_id);
-                    const connected = !!gcalStatus?.connected;
-
-                    if (!hasFecha) {
-                      return (
-                        <span className="text-[10px] text-muted-foreground/70 italic ml-1">
-                          Define una fecha para sincronizar con Calendar
-                        </span>
-                      );
-                    }
-                    if (hasEvent) {
-                      return (
-                        <div className="flex items-center gap-1 ml-1">
-                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-300/60 dark:border-emerald-800 rounded px-1.5 py-0.5">
-                            <CalendarCheck className="w-3 h-3" /> En Google Calendar
-                          </span>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            disabled={gcalBusy}
-                            onClick={handleRemoveEvent}
-                            title="Quitar el evento de tu Google Calendar"
-                            className="h-5 w-5 text-muted-foreground hover:text-destructive"
-                          >
-                            <CalendarX className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      );
-                    }
-                    if (connected) {
-                      return (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={gcalBusy}
-                          onClick={handleSyncEvent}
-                          className="h-6 text-[11px] gap-1 ml-1 px-2"
-                        >
-                          {gcalBusy ? <Loader2 className="w-3 h-3 animate-spin" /> : <CalendarPlus className="w-3 h-3" />}
-                          Agregar a Calendar
-                        </Button>
-                      );
-                    }
-                    return (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={gcalBusy}
-                        onClick={handleConnectCalendar}
-                        className="h-6 text-[11px] gap-1 ml-1 px-2"
-                        title="Conecta tu cuenta de Google para crear eventos desde LabFin"
-                      >
-                        {gcalBusy ? <Loader2 className="w-3 h-3 animate-spin" /> : <LinkIcon className="w-3 h-3" />}
-                        Conectar Google Calendar
-                      </Button>
-                    );
-                  })()}
                 </div>
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <Calendar className="w-3.5 h-3.5 text-primary/70" />
@@ -1018,79 +854,7 @@ const LicitacionDetailPage: React.FC = () => {
                     onChange={(e) => saveFechaPreguntas(e.target.value)}
                     className="h-6 w-36 text-xs px-1 py-0 border-transparent hover:border-border focus:border-primary/40"
                   />
-                  {(() => {
-                    const hasFecha = !!(licitacion?.fecha_vencimiento_preguntas);
-                    const hasEvent = !!(licitacion?.google_calendar_event_id_preguntas);
-                    const connected = !!gcalStatus?.connected;
-
-                    if (!hasFecha) {
-                      return (
-                        <span className="text-[10px] text-muted-foreground/70 italic ml-1">
-                          Define una fecha para sincronizar con Calendar
-                        </span>
-                      );
-                    }
-                    if (hasEvent) {
-                      return (
-                        <div className="flex items-center gap-1 ml-1">
-                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-300/60 dark:border-emerald-800 rounded px-1.5 py-0.5">
-                            <CalendarCheck className="w-3 h-3" /> En Google Calendar
-                          </span>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            disabled={gcalBusy}
-                            onClick={handleRemoveEventPreguntas}
-                            title="Quitar el evento de preguntas de tu Calendar"
-                            className="h-5 w-5 text-muted-foreground hover:text-destructive"
-                          >
-                            <CalendarX className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      );
-                    }
-                    if (connected) {
-                      return (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={gcalBusy}
-                          onClick={handleSyncEventPreguntas}
-                          className="h-6 text-[11px] gap-1 ml-1 px-2"
-                        >
-                          {gcalBusy ? <Loader2 className="w-3 h-3 animate-spin" /> : <CalendarPlus className="w-3 h-3" />}
-                          Agregar a Calendar
-                        </Button>
-                      );
-                    }
-                    return null;
-                  })()}
                 </div>
-                <label className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground cursor-pointer select-none w-fit">
-                  <input
-                    type="checkbox"
-                    checked={includeMeet}
-                    onChange={(e) => setIncludeMeet(e.target.checked)}
-                    className="h-3 w-3 accent-primary cursor-pointer"
-                  />
-                  <Video className="w-3 h-3 text-primary/70" />
-                  Incluir link de Meet en próximas sincronizaciones
-                </label>
-                {gcalError && (
-                  <p className="text-[11px] text-destructive">{gcalError}</p>
-                )}
-                {gcalStatus?.connected && (
-                  <p className="text-[10px] text-muted-foreground/70">
-                    Google Calendar: {gcalStatus.email}{' '}
-                    <button
-                      onClick={handleDisconnectCalendar}
-                      className="underline hover:text-foreground"
-                      type="button"
-                    >
-                      desconectar
-                    </button>
-                  </p>
-                )}
               </div>
             </div>
             <Button onClick={handleAnalizar} disabled={analizando} className="gap-2 shadow-sm">

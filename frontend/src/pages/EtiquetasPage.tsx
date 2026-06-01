@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Tags, Plus, Trash2, Loader2, RefreshCw, Power, PowerOff, Search, Users, Mail, Globe } from 'lucide-react';
+import { Tags, Plus, Trash2, Loader2, RefreshCw, Power, PowerOff, Search, Globe } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +17,6 @@ import {
   descubrirLicitaciones,
   type EtiquetaBusqueda,
 } from '@/services/etiquetas';
-import { getMyOrg, updateMyOrg } from '@/services/organizations';
 
 type FormState = {
   nombre: string;
@@ -295,9 +294,6 @@ const EtiquetasPage = () => {
             ))}
           </div>
         )}
-
-        {/* Equipo */}
-        <TeamEmailsCard />
       </div>
     </div>
   );
@@ -354,131 +350,6 @@ function EtiquetaCard({
             {' · '}
             {e.monto_max != null ? `≤ $${Number(e.monto_max).toLocaleString('es-CL')}` : 'sin máximo'}
           </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function TeamEmailsCard() {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const { data: org, isLoading } = useQuery({ queryKey: ['my-org'], queryFn: getMyOrg });
-  const [newEmail, setNewEmail] = useState('');
-
-  const teamEmails = org?.team_emails ?? [];
-
-  const saveMut = useMutation({
-    mutationFn: (list: string[]) => updateMyOrg({ team_emails: list }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-org'] }),
-    onError: () =>
-      toast({
-        title: 'No se pudo guardar el equipo',
-        description: 'Revisa que el correo sea válido.',
-        variant: 'destructive',
-      }),
-  });
-
-  const handleAdd = () => {
-    const email = newEmail.trim().toLowerCase();
-    if (!email) return;
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      toast({ title: 'Correo inválido', variant: 'destructive' });
-      return;
-    }
-    if (teamEmails.some((e) => e.toLowerCase() === email)) {
-      toast({ title: 'Ese correo ya está en el equipo', variant: 'destructive' });
-      return;
-    }
-    saveMut.mutate([...teamEmails, email], {
-      onSuccess: () => {
-        setNewEmail('');
-        toast({ title: 'Correo agregado al equipo' });
-      },
-    });
-  };
-
-  const handleRemove = (email: string) => {
-    saveMut.mutate(
-      teamEmails.filter((e) => e !== email),
-      { onSuccess: () => toast({ title: 'Correo eliminado' }) },
-    );
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base flex items-center gap-2">
-          <Users className="w-4 h-4 text-secondary" />
-          Equipo
-          {teamEmails.length > 0 && (
-            <Badge variant="secondary" className="ml-1 text-[10px] font-normal">
-              {teamEmails.length}
-            </Badge>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <p className="text-xs text-muted-foreground">
-          Correos del equipo que serán invitados automáticamente a cada evento de Google Calendar creado
-          desde LabFin, para que la licitación aparezca en el calendario de todos.
-        </p>
-
-        <div className="flex gap-2">
-          <Input
-            type="email"
-            placeholder="comercial@famae.cl"
-            value={newEmail}
-            onChange={(e) => setNewEmail(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleAdd();
-              }
-            }}
-          />
-          <Button
-            onClick={handleAdd}
-            disabled={saveMut.isPending || !newEmail.trim()}
-            className="gap-2 shrink-0"
-          >
-            {saveMut.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-            Agregar
-          </Button>
-        </div>
-
-        {isLoading ? (
-          <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
-            <Loader2 className="w-4 h-4 animate-spin" /> Cargando equipo...
-          </div>
-        ) : teamEmails.length === 0 ? (
-          <p className="text-xs text-muted-foreground italic py-2">
-            Aún no has agregado correos. Los que agregues aparecerán listados aquí.
-          </p>
-        ) : (
-          <ul className="space-y-1.5">
-            {teamEmails.map((email) => (
-              <li
-                key={email}
-                className="flex items-center justify-between gap-2 rounded-md border border-border/40 bg-muted/30 px-3 py-2"
-              >
-                <span className="flex items-center gap-2 text-sm text-foreground truncate">
-                  <Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                  <span className="truncate">{email}</span>
-                </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
-                  onClick={() => handleRemove(email)}
-                  disabled={saveMut.isPending}
-                  title="Eliminar del equipo"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </li>
-            ))}
-          </ul>
         )}
       </CardContent>
     </Card>

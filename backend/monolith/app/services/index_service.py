@@ -56,6 +56,14 @@ def index_file(db: Session, file_id: int) -> int:
     if not chunks:
         return 0
 
+    # Re-indexar debe ser idempotente: vector_id tiene un índice UNIQUE, así que
+    # eliminamos los chunks existentes de este archivo antes de insertar los nuevos.
+    # El delete y los inserts viajan en el mismo commit de abajo → atómico.
+    db.query(DocumentChunk).filter(
+        DocumentChunk.file_entry_id == fe.id,
+        DocumentChunk.organization_id == fe.organization_id,
+    ).delete(synchronize_session=False)
+
     for i, chunk in enumerate(chunks):
         meta = {
             "file_id": fe.id,

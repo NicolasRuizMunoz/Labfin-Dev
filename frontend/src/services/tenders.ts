@@ -13,8 +13,6 @@ export interface Licitacion {
   fecha_vencimiento: string | null;
   fecha_vencimiento_preguntas: string | null;
   created_at: string;
-  google_calendar_event_id: string | null;
-  google_calendar_event_id_preguntas: string | null;
   files: LicitacionFile[];
   // MercadoPúblico-sourced fields (fuente === 'mercadopublico')
   codigo_externo?: string | null;
@@ -147,26 +145,6 @@ export const getAnalisisHistory = (id: number) =>
 
 export const analizarLicitacion = (id: number) =>
   http<AnalisisResult>(`/data/licitacion/${id}/analizar`, { method: 'POST' });
-
-export const syncCalendarEvent = (id: number, options?: { include_meet?: boolean }) =>
-  http<{ event_id: string }>(`/data/licitacion/${id}/calendar/sync`, {
-    method: 'POST',
-    body: JSON.stringify({ include_meet: !!options?.include_meet }),
-    headers: { 'Content-Type': 'application/json' },
-  });
-
-export const removeCalendarEvent = (id: number) =>
-  http<void>(`/data/licitacion/${id}/calendar/sync`, { method: 'DELETE' });
-
-export const syncCalendarEventPreguntas = (id: number, options?: { include_meet?: boolean }) =>
-  http<{ event_id: string }>(`/data/licitacion/${id}/calendar/sync-preguntas`, {
-    method: 'POST',
-    body: JSON.stringify({ include_meet: !!options?.include_meet }),
-    headers: { 'Content-Type': 'application/json' },
-  });
-
-export const removeCalendarEventPreguntas = (id: number) =>
-  http<void>(`/data/licitacion/${id}/calendar/sync-preguntas`, { method: 'DELETE' });
 
 export const uploadFilesToLicitacion = async (licitacionId: number, files: File[]) => {
   for (const file of files) {

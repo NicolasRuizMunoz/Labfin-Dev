@@ -26,9 +26,9 @@ boto3==1.34.110
 # OpenAI API
 openai>=1.30.0
 
-# Google OAuth (optional — comment out if not needed)
+# Google OAuth ("Sign in with Google" — ID token verification)
 google-auth==2.29.0
-# Used for Google Calendar API calls (OAuth token exchange + calendar.events CRUD)
+# HTTP client (Google auth transport + MercadoPúblico scraper)
 requests==2.32.3
 
 # Scheduled jobs (MercadoPúblico daily scraper)

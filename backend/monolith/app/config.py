@@ -72,21 +72,8 @@ SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 SMTP_FROM = os.getenv("SMTP_FROM", "") or SMTP_USER
 RESET_CODE_EXPIRE_MINUTES = int(os.getenv("RESET_CODE_EXPIRE_MINUTES", "15"))
 
-# ── Google OAuth (optional) ───────────────────────────────────────────────────
+# ── Google OAuth (optional, used for "Sign in with Google") ───────────────────
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
-# Where Google redirects after the consent screen. Must be whitelisted in the
-# Google Cloud Console for this Client ID. Defaults to the local backend URL.
-GOOGLE_CALENDAR_REDIRECT_URI = os.getenv(
-    "GOOGLE_CALENDAR_REDIRECT_URI",
-    "http://localhost:8000/api/users/google/calendar/callback",
-)
-# Where to send the user after the popup closes. The popup will postMessage to
-# its opener and then redirect here as a fallback for browsers blocking
-# window.opener access.
-GOOGLE_CALENDAR_POPUP_RETURN = os.getenv(
-    "GOOGLE_CALENDAR_POPUP_RETURN", "http://localhost:5173"
-)
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
 CORS_ORIGINS: list[str] = [
